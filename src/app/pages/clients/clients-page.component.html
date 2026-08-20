@@ -21,6 +21,10 @@
         <span class="metric__value">{{ stats().phase2 }}</span>
         <span class="metric__label">Fase 2</span>
       </div>
+      <div class="metric metric--blue">
+        <span class="metric__value">{{ stats().phase3 }}</span>
+        <span class="metric__label">Fase 3</span>
+      </div>
     </div>
   </div>
 
@@ -68,6 +72,9 @@
             (click)="selectClient(client)">
             <div class="client-card__media">
               <img [src]="client.avatar" [alt]="client.fullName" />
+              @if (client.upcomingReview) {
+                <span class="badge badge--review">Revisión</span>
+              }
             </div>
             <div class="client-card__body">
               <h3>{{ client.fullName }}</h3>

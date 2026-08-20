@@ -44,7 +44,7 @@
 
 .hero__metrics {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.75rem;
 }
 
@@ -79,6 +79,10 @@
 
 .metric--teal .metric__value {
   color: #0e9f92;
+}
+
+.metric--blue .metric__value {
+  color: var(--blue);
 }
 
 .toolbar {
@@ -313,7 +317,7 @@
   }
 
   .hero__metrics {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .client-card {
