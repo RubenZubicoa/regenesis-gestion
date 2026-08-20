@@ -14,12 +14,12 @@
         <span class="metric__label">Clientes</span>
       </div>
       <div class="metric metric--gold">
-        <span class="metric__value">{{ stats().review }}</span>
-        <span class="metric__label">Revisión</span>
+        <span class="metric__value">{{ stats().phase1 }}</span>
+        <span class="metric__label">Fase 1</span>
       </div>
       <div class="metric metric--teal">
-        <span class="metric__value">{{ stats().active }}</span>
-        <span class="metric__label">En curso</span>
+        <span class="metric__value">{{ stats().phase2 }}</span>
+        <span class="metric__label">Fase 2</span>
       </div>
     </div>
   </div>
@@ -65,20 +65,9 @@
           <button
             type="button"
             class="client-card accent-{{ client.accent }}"
-            [class.has-review]="client.upcomingReview"
             (click)="selectClient(client)">
             <div class="client-card__media">
               <img [src]="client.avatar" [alt]="client.fullName" />
-              <span
-                class="badge"
-                [class.badge--review]="client.upcomingReview"
-                [class.badge--muted]="!client.upcomingReview">
-                {{
-                  client.upcomingReview
-                    ? 'Revisión'
-                    : timelineLabel(client.timeline)
-                }}
-              </span>
             </div>
             <div class="client-card__body">
               <h3>{{ client.fullName }}</h3>

@@ -22,9 +22,9 @@ export class ClientsPageComponent {
 
   readonly filters: { key: ClientFilterKey; label: string }[] = [
     { key: 'all', label: 'Todos' },
-    { key: 'active', label: 'En curso' },
-    { key: 'review', label: 'Revisión' },
-    { key: 'finished', label: 'Finalizados' },
+    { key: 1, label: 'Fase 1' },
+    { key: 2, label: 'Fase 2' },
+    { key: 3, label: 'Fase 3' },
   ];
 
   private readonly listItems = computed(() =>
@@ -36,11 +36,7 @@ export class ClientsPageComponent {
     const f = this.filter();
     return this.listItems()
       .filter((item) => {
-        const matchFilter =
-          f === 'all' ||
-          (f === 'review' && item.upcomingReview != null) ||
-          (f === 'active' && item.timeline === 'active') ||
-          (f === 'finished' && item.timeline === 'finished');
+        const matchFilter = f === 'all' || item.phase === f;
 
         const matchQuery =
           !q ||
@@ -59,8 +55,9 @@ export class ClientsPageComponent {
     const items = this.listItems();
     return {
       total: items.length,
-      review: items.filter((i) => i.upcomingReview != null).length,
-      active: items.filter((i) => i.timeline === 'active').length,
+      phase1: items.filter((i) => i.phase === 1).length,
+      phase2: items.filter((i) => i.phase === 2).length,
+      phase3: items.filter((i) => i.phase === 3).length,
     };
   });
 
@@ -74,17 +71,6 @@ export class ClientsPageComponent {
 
   selectClient(client: ClientListItem): void {
     console.info('Cliente seleccionado:', client._id, client.fullName);
-  }
-
-  timelineLabel(timeline: ClientListItem['timeline']): string {
-    switch (timeline) {
-      case 'active':
-        return 'En curso';
-      case 'finished':
-        return 'Finalizado';
-      case 'upcoming':
-        return 'Por empezar';
-    }
   }
 
   deltaLabel(delta: number | null, unit: string): string {

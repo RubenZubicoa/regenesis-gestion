@@ -14,4 +14,4 @@ export type ClientListItem = Client & {
   accent: 'gold' | 'teal' | 'coral' | 'blue';
 };
 
-export type ClientFilterKey = 'all' | 'review' | 'active' | 'finished';
+export type ClientFilterKey = 'all' | 1 | 2 | 3;
