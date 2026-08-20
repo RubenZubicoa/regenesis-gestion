@@ -1,1 +1,93 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  /* Marca REGENESIS (alineada con app-fitness) */
+  --blue: #1863dc;
+  --blue-dark: #0056a7;
+  --blue-light: #4c8df6;
+  --navy: #0a1b33;
+  --navy-mid: #12274a;
+  --gold: #e4a93c;
+  --gold-light: #f2c868;
+  --gold-soft: #fbf0d8;
+  --teal: #12b5a5;
+  --coral: #ff6b6b;
+  --success: #2fbf71;
+  --purple: #7c5cfc;
+
+  --text: #0e1b2e;
+  --text-secondary: #5b6b85;
+  --text-muted: #8a98ae;
+  --bg: #f6f9fd;
+  --card: #ffffff;
+  --bg-element: #f2f5fa;
+  --border: #e4e9f1;
+  --track: #e8edf5;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+
+  --shadow-card: 0 10px 28px rgba(10, 27, 51, 0.1);
+  --shadow-float: 0 16px 40px rgba(10, 27, 51, 0.16);
+
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-body: 'Spline Sans', system-ui, sans-serif;
+
+  --header-h: 72px;
+  --content-max: 1180px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(24, 99, 220, 0.08), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 95% 5%, rgba(228, 169, 60, 0.12), transparent 50%),
+    radial-gradient(ellipse 50% 35% at 50% 100%, rgba(18, 181, 165, 0.06), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}

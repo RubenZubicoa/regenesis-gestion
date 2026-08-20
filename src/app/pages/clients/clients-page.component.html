@@ -1,0 +1,108 @@
+<section class="page">
+  <div class="hero">
+    <div class="hero__copy">
+      <p class="eyebrow">Panel del entrenador</p>
+      <h1>Elige el cliente<br />a gestionar</h1>
+      <p class="hero__sub">
+        Accede al progreso, revisiones y plan de cada persona de tu roster.
+      </p>
+    </div>
+
+    <div class="hero__metrics" aria-label="Resumen del roster">
+      <div class="metric">
+        <span class="metric__value">{{ stats().total }}</span>
+        <span class="metric__label">Clientes</span>
+      </div>
+      <div class="metric metric--gold">
+        <span class="metric__value">{{ stats().review }}</span>
+        <span class="metric__label">Revisión</span>
+      </div>
+      <div class="metric metric--teal">
+        <span class="metric__value">{{ stats().active }}</span>
+        <span class="metric__label">En curso</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <label class="search">
+      <span class="search__icon" aria-hidden="true">⌕</span>
+      <input
+        type="search"
+        placeholder="Buscar por nombre, programa, objetivo o email…"
+        [ngModel]="query()"
+        (ngModelChange)="onQuery($event)"
+      />
+    </label>
+
+    <div class="chips" role="tablist" aria-label="Filtrar clientes">
+      @for (item of filters; track item.key) {
+        <button
+          type="button"
+          role="tab"
+          class="chip"
+          [class.is-on]="filter() === item.key"
+          (click)="setFilter(item.key)">
+          {{ item.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="roster">
+    <div class="section-head">
+      <h2>Clientes</h2>
+      <p>{{ filtered().length }} resultado{{ filtered().length === 1 ? '' : 's' }}</p>
+    </div>
+
+    @if (filtered().length === 0) {
+      <div class="empty">
+        <p>No hay clientes con ese filtro.</p>
+      </div>
+    } @else {
+      <div class="client-grid">
+        @for (client of filtered(); track client._id) {
+          <button
+            type="button"
+            class="client-card accent-{{ client.accent }}"
+            [class.has-review]="client.upcomingReview"
+            (click)="selectClient(client)">
+            <div class="client-card__media">
+              <img [src]="client.avatar" [alt]="client.fullName" />
+              <span
+                class="badge"
+                [class.badge--review]="client.upcomingReview"
+                [class.badge--muted]="!client.upcomingReview">
+                {{
+                  client.upcomingReview
+                    ? 'Revisión'
+                    : timelineLabel(client.timeline)
+                }}
+              </span>
+            </div>
+            <div class="client-card__body">
+              <h3>{{ client.fullName }}</h3>
+              <p class="program">{{ client.programName }} · {{ client.goal }}</p>
+              @if (client.upcomingReview; as review) {
+                <p class="review-when">{{ review.date }}</p>
+              } @else {
+                <p class="review-when review-when--soft">
+                  Fase {{ client.phase }}/{{ client.totalPhases }}
+                </p>
+              }
+              <div class="client-card__meta">
+                <span>Sem. {{ client.week }}/{{ client.totalWeeks }}</span>
+                <span
+                  [class.down]="(client.weightDelta ?? 0) < 0"
+                  [class.up]="(client.weightDelta ?? 0) > 0">
+                  {{ deltaLabel(client.weightDelta, client.weightUnit) }}
+                </span>
+              </div>
+            </div>
+            <span class="cta">Abrir ficha →</span>
+          </button>
+        }
+      </div>
+    }
+  </div>
+</section>

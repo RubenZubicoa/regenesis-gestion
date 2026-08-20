@@ -1,0 +1,30 @@
+<header class="header">
+  <div class="header__glow" aria-hidden="true"></div>
+  <div class="header__inner">
+    <a class="brand" routerLink="/">
+      <span class="brand__mark" aria-hidden="true">
+        <span class="brand__orb"></span>
+      </span>
+      <span class="brand__text">
+        <span class="brand__name">REGENESIS</span>
+        <span class="brand__tag">Gestión · Entrenador</span>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Principal">
+      <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">
+        Clientes
+      </a>
+      <span class="nav__soon" title="Próximamente">Revisiones</span>
+      <span class="nav__soon" title="Próximamente">Comunidad</span>
+    </nav>
+
+    <div class="coach">
+      <div class="coach__meta">
+        <span class="coach__name">{{ coachName }}</span>
+        <span class="coach__role">{{ coachRole }}</span>
+      </div>
+      <div class="coach__avatar" aria-hidden="true">{{ coachName.charAt(0) }}</div>
+    </div>
+  </div>
+</header>
