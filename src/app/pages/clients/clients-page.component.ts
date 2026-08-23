@@ -1,5 +1,6 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import { MOCK_CLIENTS } from '../../data/mock-clients';
 import { MOCK_PROGRAMS } from '../../data/mock-programs';
@@ -17,6 +18,8 @@ import type { Review } from '../../models/review';
   styleUrl: './clients-page.component.scss',
 })
 export class ClientsPageComponent {
+  private readonly router = inject(Router);
+
   readonly query = signal('');
   readonly filter = signal<ClientFilterKey>('all');
 
@@ -70,7 +73,7 @@ export class ClientsPageComponent {
   }
 
   selectClient(client: ClientListItem): void {
-    console.info('Cliente seleccionado:', client._id, client.fullName);
+    void this.router.navigate(['/clients', client._id]);
   }
 
   deltaLabel(delta: number | null, unit: string): string {

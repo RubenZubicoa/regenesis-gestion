@@ -1,0 +1,425 @@
+@if (detail(); as d) {
+  <section class="page">
+    <button type="button" class="back" (click)="goBack()">← Volver al roster</button>
+
+    <header class="profile">
+      <div class="profile__glow" aria-hidden="true"></div>
+      <div class="profile__main">
+        <div class="profile__avatar-wrap">
+          <img [src]="d.client.avatar" [alt]="d.client.fullName" class="profile__avatar" />
+          @if (d.upcomingReview) {
+            <span class="profile__review-pill">Revisión pendiente</span>
+          }
+        </div>
+        <div class="profile__info">
+          <p class="eyebrow">{{ d.programName }} · Fase {{ d.client.phase }}/{{ d.client.totalPhases }}</p>
+          <h1>{{ d.client.fullName }}</h1>
+          <p class="profile__goal">{{ d.client.goal }} · {{ d.client.plan }}</p>
+          <div class="profile__chips">
+            <span class="chip">{{ d.client.email }}</span>
+            <span class="chip">{{ d.client.telefono }}</span>
+            <span class="chip">{{ formatDate(d.client.startDate) }} → {{ formatDate(d.client.endDate) }}</span>
+          </div>
+        </div>
+        <div class="profile__ring">
+          <svg viewBox="0 0 120 120" class="ring">
+            <circle cx="60" cy="60" r="52" class="ring__track" />
+            <circle
+              cx="60"
+              cy="60"
+              r="52"
+              class="ring__fill"
+              [style.strokeDasharray]="326.7"
+              [style.strokeDashoffset]="326.7 - (326.7 * weekProgress()) / 100"
+            />
+          </svg>
+          <div class="ring__label">
+            <span class="ring__value">Sem. {{ d.client.week }}</span>
+            <span class="ring__sub">de {{ d.client.totalWeeks }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile__stats">
+        @if (d.weight; as w) {
+          <div class="stat-card">
+            <span class="stat-card__label">Peso actual</span>
+            <span class="stat-card__value">{{ w.current }} <small>{{ w.unit }}</small></span>
+            <span class="stat-card__meta" [class]="deltaClass(weightDelta() ?? 0)">
+              {{ weightDelta() != null ? (weightDelta()! > 0 ? '+' : '') + weightDelta() + ' ' + w.unit : '—' }}
+              vs inicio
+            </span>
+          </div>
+        }
+        @if (d.macros; as m) {
+          <div class="stat-card">
+            <span class="stat-card__label">Calorías hoy</span>
+            <span class="stat-card__value">{{ m.calories }} <small>kcal</small></span>
+            <span class="stat-card__meta">Objetivo {{ m.target }} kcal</span>
+          </div>
+        }
+        <div class="stat-card">
+          <span class="stat-card__label">Entrenos semana</span>
+          <span class="stat-card__value">{{ d.workoutHistory.length }}</span>
+          <span class="stat-card__meta">
+            {{ routineDoneCount() }}/{{ routineTotalCount() }} días hechos
+          </span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__label">Revisiones</span>
+          <span class="stat-card__value">{{ d.reviews.length }}</span>
+          <span class="stat-card__meta">
+            {{ d.upcomingReview ? '1 pendiente' : 'Al día' }}
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="Secciones del cliente">
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.is-active]="activeTab() === 'nutrition'"
+        (click)="setTab('nutrition')">
+        Nutrición
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.is-active]="activeTab() === 'training'"
+        (click)="setTab('training')">
+        Entrenamiento
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.is-active]="activeTab() === 'progress'"
+        (click)="setTab('progress')">
+        Progreso
+      </button>
+    </nav>
+
+    @if (activeTab() === 'nutrition') {
+      <div class="panel" role="tabpanel">
+        @if (d.macros; as m) {
+          <div class="panel-block">
+            <h2>Macros del día</h2>
+            <div class="macro-hero">
+              <div class="macro-hero__ring">
+                <span class="macro-hero__value">{{ m.calories }}</span>
+                <span class="macro-hero__sub">/ {{ m.target }} kcal</span>
+              </div>
+              <div class="macro-bars">
+                @for (item of m.items; track item.key) {
+                  <div class="macro-bar" [class]="macroToneClass(item.tone)">
+                    <div class="macro-bar__head">
+                      <span>{{ item.label }}</span>
+                      <span>{{ item.grams }}/{{ item.target }} g</span>
+                    </div>
+                    <div class="macro-bar__track">
+                      <span [style.width.%]="macroPct(item)"></span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (d.meal; as meal) {
+          <div class="panel-block">
+            <h2>Plan de comidas</h2>
+            <div class="meal-timeline">
+              @for (slot of meal.slots; track slot.label) {
+                <article class="meal-slot">
+                  <div class="meal-slot__time">
+                    <span class="meal-slot__dot"></span>
+                  </div>
+                  <div class="meal-slot__card">
+                    <h3>{{ slot.label }}</h3>
+                    <div class="meal-options">
+                      @for (opt of slot.options; track opt.name) {
+                        <div class="meal-option">
+                          <span class="meal-option__name">{{ opt.name }}</span>
+                          @if (opt.description) {
+                            <span class="meal-option__desc">{{ opt.description }}</span>
+                          }
+                          <span class="meal-option__kcal">{{ opt.kcal }} kcal</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </article>
+              }
+            </div>
+          </div>
+        }
+
+        @if (d.supplements && d.supplements.elements.length > 0) {
+          <div class="panel-block">
+            <h2>Suplementación</h2>
+            <div class="supp-grid">
+              @for (s of d.supplements.elements; track s.name) {
+                <div class="supp-card">
+                  <span class="supp-card__icon" aria-hidden="true">💊</span>
+                  <h3>{{ s.name }}</h3>
+                  <p>{{ s.dose }}</p>
+                  <span class="supp-card__when">{{ s.when }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (activeTab() === 'training') {
+      <div class="panel" role="tabpanel">
+        <div class="panel-block">
+          <h2>Rutina semanal</h2>
+          <div class="routine-rail">
+            @for (day of d.routineDays; track day._id) {
+              <article class="routine-card" [class.is-done]="day.done">
+                <div class="routine-card__top">
+                  <span class="routine-card__day">{{ day.day }}</span>
+                  @if (day.done) {
+                    <span class="routine-card__badge">✓ Hecho</span>
+                  }
+                </div>
+                <h3>{{ day.focus }}</h3>
+                <p class="routine-card__duration">{{ day.duration }}</p>
+                <ul class="routine-card__exercises">
+                  @for (ex of day.exercises; track ex.exerciseId) {
+                    <li>
+                      <span>{{ ex.name }}</span>
+                      <span>{{ ex.sets }}</span>
+                    </li>
+                  }
+                </ul>
+              </article>
+            }
+          </div>
+        </div>
+
+        @if (d.workoutHistory.length > 0) {
+          <div class="panel-block">
+            <h2>Histórico reciente</h2>
+            <div class="workout-stack">
+              @for (w of d.workoutHistory; track w._id) {
+                <article class="workout-card">
+                  <div class="workout-card__head">
+                    <div>
+                      <span class="workout-card__date">{{ formatDate(w.date) }} · Sem. {{ w.week }}</span>
+                      <h3>{{ w.focus }}</h3>
+                    </div>
+                    <span class="workout-card__duration">{{ w.duration }}</span>
+                  </div>
+                  <div class="workout-card__exercises">
+                    @for (ex of w.exercises; track ex.name) {
+                      <div class="exercise-log">
+                        <h4>{{ ex.name }}</h4>
+                        @if (ex.strengthSets) {
+                          <div class="set-pills">
+                            @for (s of ex.strengthSets; track s.set) {
+                              <span class="set-pill">
+                                S{{ s.set }} · {{ s.weightKg }}kg × {{ s.reps }}
+                              </span>
+                            }
+                          </div>
+                        }
+                        @if (ex.cardio) {
+                          <p class="cardio-meta">
+                            {{ ex.cardio.km }} km · {{ ex.cardio.speedKmh }} km/h · {{ ex.cardio.avgHr }} ppm
+                          </p>
+                        }
+                      </div>
+                    }
+                  </div>
+                </article>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="empty-panel">Aún no hay entrenos registrados esta semana.</div>
+        }
+      </div>
+    }
+
+    @if (activeTab() === 'progress') {
+      <div class="panel" role="tabpanel">
+        @if (d.weight; as w) {
+          @let chart = buildWeightChart(w);
+          <div class="panel-block">
+            <h2>Evolución del peso</h2>
+            <div class="weight-chart">
+              <svg
+                class="weight-chart__svg"
+                [attr.viewBox]="'0 0 ' + chart.width + ' ' + chart.height"
+                role="img"
+                aria-label="Gráfico lineal de evolución del peso">
+                <defs>
+                  <linearGradient id="weightAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--blue-light)" stop-opacity="0.35" />
+                    <stop offset="100%" stop-color="var(--blue-light)" stop-opacity="0.02" />
+                  </linearGradient>
+                </defs>
+
+                @for (tick of chart.yTicks; track tick.label) {
+                  <line
+                    [attr.x1]="44"
+                    [attr.x2]="chart.width - 20"
+                    [attr.y1]="tick.y"
+                    [attr.y2]="tick.y"
+                    class="weight-chart__grid"
+                  />
+                  <text [attr.x]="38" [attr.y]="tick.y + 4" class="weight-chart__ylabel">
+                    {{ tick.label }}
+                  </text>
+                }
+
+                <line
+                  [attr.x1]="44"
+                  [attr.x2]="chart.width - 20"
+                  [attr.y1]="chart.targetY"
+                  [attr.y2]="chart.targetY"
+                  class="weight-chart__target"
+                />
+                <text
+                  [attr.x]="chart.width - 18"
+                  [attr.y]="chart.targetY - 6"
+                  class="weight-chart__target-label">
+                  Objetivo {{ w.target }}
+                </text>
+
+                @if (chart.areaPath) {
+                  <path [attr.d]="chart.areaPath" class="weight-chart__area" />
+                }
+                @if (chart.linePath) {
+                  <path [attr.d]="chart.linePath" class="weight-chart__line" />
+                }
+
+                @for (p of chart.points; track p.label) {
+                  <circle [attr.cx]="p.x" [attr.cy]="p.y" r="5" class="weight-chart__dot" />
+                  <circle [attr.cx]="p.x" [attr.cy]="p.y" r="9" class="weight-chart__dot-halo" />
+                  <text [attr.x]="p.x" [attr.y]="p.y - 12" class="weight-chart__value">
+                    {{ p.value }}
+                  </text>
+                  <text [attr.x]="p.x" [attr.y]="chart.height - 10" class="weight-chart__xlabel">
+                    {{ formatDate(p.label) }}
+                  </text>
+                }
+              </svg>
+              <div class="weight-chart__footer">
+                <span>Inicio: {{ w.start }} {{ w.unit }}</span>
+                <span>Actual: {{ w.current }} {{ w.unit }}</span>
+                <span>Objetivo: {{ w.target }} {{ w.unit }}</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (d.measurements.length > 0) {
+          <div class="panel-block">
+            <h2>Medidas corporales</h2>
+            <div class="measure-grid">
+              @for (m of d.measurements; track m._id) {
+                <div class="measure-card">
+                  <span class="measure-card__label">{{ m.label }}</span>
+                  <span class="measure-card__value">{{ m.value }}<small>{{ m.unit }}</small></span>
+                  <span class="measure-card__delta" [class]="deltaClass(m.delta)">
+                    {{ m.delta > 0 ? '+' : '' }}{{ m.delta }} {{ m.unit }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (d.wellness.length > 0) {
+          <div class="panel-block">
+            <h2>Sensaciones</h2>
+            <div class="wellness-grid">
+              @for (w of d.wellness; track w._id) {
+                <div class="wellness-card" [class]="macroToneClass(w.tone)">
+                  <span class="wellness-card__label">{{ w.label }}</span>
+                  <div class="wellness-card__ring">
+                    <svg viewBox="0 0 80 80">
+                      <circle cx="40" cy="40" r="34" class="wellness-ring__track" />
+                      <circle
+                        cx="40"
+                        cy="40"
+                        r="34"
+                        class="wellness-ring__fill"
+                        [style.strokeDasharray]="213.6"
+                        [style.strokeDashoffset]="213.6 - (213.6 * w.value) / 100"
+                      />
+                    </svg>
+                    <span class="wellness-card__value">{{ w.value }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (d.dailySteps; as steps) {
+          <div class="panel-block">
+            <h2>Pasos esta semana</h2>
+            <div class="steps-chart">
+              @for (day of steps.days; track day.date) {
+                <div class="steps-bar">
+                  <span
+                    class="steps-bar__fill"
+                    [class.steps-bar__fill--goal]="day.steps >= steps.goal"
+                    [style.height.%]="(day.steps / maxSteps()) * 100"></span>
+                  <span class="steps-bar__val">{{ (day.steps / 1000).toFixed(1) }}k</span>
+                  <span class="steps-bar__day">{{ formatDate(day.date) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (d.progressImages.length > 0) {
+          <div class="panel-block">
+            <h2>Fotos de progreso</h2>
+            <div class="photo-grid">
+              @for (img of d.progressImages; track img._id) {
+                <figure class="photo-card">
+                  <img [src]="img.image" [alt]="'Progreso ' + formatDate(img.createdAt)" />
+                  <figcaption>{{ formatDate(img.createdAt) }}</figcaption>
+                </figure>
+              }
+            </div>
+          </div>
+        }
+
+        @if (d.reviews.length > 0) {
+          <div class="panel-block">
+            <h2>Revisiones</h2>
+            <div class="review-list">
+              @for (r of d.reviews; track r._id) {
+                <article class="review-card" [class]="'status-' + r.status">
+                  <div class="review-card__head">
+                    <h3>{{ r.title }}</h3>
+                    <span class="review-card__status">{{ reviewStatusLabel(r.status) }}</span>
+                  </div>
+                  <p class="review-card__date">{{ r.date }}</p>
+                  <p class="review-card__note">{{ r.note }}</p>
+                </article>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+} @else {
+  <section class="page page--empty">
+    <p>Cliente no encontrado.</p>
+    <a routerLink="/">Volver al roster</a>
+  </section>
+}

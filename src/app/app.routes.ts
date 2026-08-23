@@ -8,5 +8,12 @@ export const routes: Routes = [
         (m) => m.ClientsPageComponent,
       ),
   },
+  {
+    path: 'clients/:id',
+    loadComponent: () =>
+      import('./pages/client-detail/client-detail-page.component').then(
+        (m) => m.ClientDetailPageComponent,
+      ),
+  },
   { path: '**', redirectTo: '' },
 ];
