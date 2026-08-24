@@ -1,0 +1,110 @@
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="exercise-dialog-title">
+  <button type="button" class="sheet__backdrop" (click)="close()" aria-label="Cerrar"></button>
+
+  <div class="board">
+    <div class="board__glow" aria-hidden="true"></div>
+
+    <header class="board__head">
+      <div>
+        <p class="eyebrow">Ficha técnica</p>
+        <h2 id="exercise-dialog-title">
+          {{ isEdit ? 'Editar ejercicio' : 'Nuevo ejercicio' }}
+        </h2>
+      </div>
+      <button type="button" class="board__close" (click)="close()" aria-label="Cerrar">×</button>
+    </header>
+
+    <div class="board__body">
+      <div class="preview" [class.is-cardio]="type() === 'cardio'">
+        @if (imageUrl()) {
+          <img [src]="imageUrl()" [alt]="name() || 'Ejercicio'" />
+        } @else {
+          <div class="preview__fallback">
+            <span>{{ type() === 'cardio' ? 'Cardio' : 'Fuerza' }}</span>
+            <strong>{{ name() || 'Sin nombre' }}</strong>
+          </div>
+        }
+      </div>
+
+      <div class="fields">
+        <label class="field">
+          <span>Nombre</span>
+          <input
+            type="text"
+            [ngModel]="name()"
+            (ngModelChange)="name.set($event)"
+            placeholder="Press banca, Sentadilla…"
+          />
+        </label>
+
+        <div class="type-toggle" role="group" aria-label="Tipo de ejercicio">
+          <button
+            type="button"
+            class="type-btn"
+            [class.is-on]="type() === 'strength'"
+            (click)="setType('strength')">
+            Fuerza
+          </button>
+          <button
+            type="button"
+            class="type-btn"
+            [class.is-on]="type() === 'cardio'"
+            (click)="setType('cardio')">
+            Cardio
+          </button>
+        </div>
+
+        <label class="field">
+          <span>URL de imagen</span>
+          <input
+            type="url"
+            [ngModel]="imageUrl()"
+            (ngModelChange)="imageUrl.set($event)"
+            placeholder="https://…"
+          />
+        </label>
+
+        <label class="field">
+          <span>Explicación técnica</span>
+          <textarea
+            rows="5"
+            [ngModel]="explanation()"
+            (ngModelChange)="explanation.set($event)"
+            placeholder="Cómo ejecutar el movimiento, postura, errores comunes…"></textarea>
+        </label>
+      </div>
+    </div>
+
+    @if (saveError()) {
+      <p class="board__error">{{ saveError() }}</p>
+    }
+
+    <footer class="board__foot">
+      @if (isEdit) {
+        <button
+          type="button"
+          class="danger-btn"
+          (click)="remove()"
+          [disabled]="saving() || deleting()">
+          {{ deleting() ? 'Eliminando…' : 'Eliminar' }}
+        </button>
+      }
+      <div class="board__foot-right">
+        <button
+          type="button"
+          class="ghost-btn"
+          (click)="close()"
+          [disabled]="saving() || deleting()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="save-btn"
+          (click)="save()"
+          [disabled]="saving() || deleting()">
+          {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear ejercicio' }}
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>

@@ -1,0 +1,112 @@
+<section class="page">
+  @if (loading()) {
+    <div class="state">Cargando ejercicios…</div>
+  } @else if (error()) {
+    <div class="state state--error">{{ error() }}</div>
+  } @else {
+    <div class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Sala de movimiento</p>
+        <h1>Maestro de<br />ejercicios</h1>
+        <p class="hero__sub">
+          Catálogo técnico de movimientos para armar rutinas con criterio.
+        </p>
+        <button type="button" class="hero__cta" (click)="openCreate()">
+          + Nuevo ejercicio
+        </button>
+      </div>
+
+      <div class="hero__metrics" aria-label="Resumen del catálogo">
+        <div class="metric">
+          <span class="metric__value">{{ stats().total }}</span>
+          <span class="metric__label">Total</span>
+        </div>
+        <div class="metric metric--gold">
+          <span class="metric__value">{{ stats().strength }}</span>
+          <span class="metric__label">Fuerza</span>
+        </div>
+        <div class="metric metric--teal">
+          <span class="metric__value">{{ stats().cardio }}</span>
+          <span class="metric__label">Cardio</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label class="search">
+        <span class="search__icon" aria-hidden="true">⌕</span>
+        <input
+          type="search"
+          placeholder="Buscar por nombre o explicación…"
+          [ngModel]="query()"
+          (ngModelChange)="onQuery($event)"
+        />
+      </label>
+
+      <div class="chips" role="tablist" aria-label="Filtrar ejercicios">
+        @for (item of filters; track item.key) {
+          <button
+            type="button"
+            role="tab"
+            class="chip"
+            [class.is-on]="filter() === item.key"
+            (click)="setFilter(item.key)">
+            {{ item.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="vault">
+      <div class="section-head">
+        <h2>Catálogo</h2>
+        <p>{{ filtered().length }} ejercicio{{ filtered().length === 1 ? '' : 's' }}</p>
+      </div>
+
+      @if (filtered().length === 0) {
+        <div class="empty">
+          <p>No hay ejercicios con ese filtro.</p>
+          <button type="button" class="hero__cta" (click)="openCreate()">Crear el primero</button>
+        </div>
+      } @else {
+        <div class="exercise-grid">
+          @for (ex of filtered(); track ex._id) {
+            <button
+              type="button"
+              class="ex-card"
+              [class.is-cardio]="ex.type === 'cardio'"
+              (click)="openEdit(ex)">
+              <div class="ex-card__media">
+                @if (ex.imageUrl) {
+                  <img [src]="ex.imageUrl" [alt]="ex.name" />
+                } @else {
+                  <div class="ex-card__fallback">
+                    <span>{{ typeLabel(ex.type) }}</span>
+                  </div>
+                }
+                <span class="ex-card__badge">{{ typeLabel(ex.type) }}</span>
+              </div>
+              <div class="ex-card__body">
+                <h3>{{ ex.name }}</h3>
+                @if (ex.explanation) {
+                  <p>{{ ex.explanation }}</p>
+                } @else {
+                  <p class="is-muted">Sin explicación técnica</p>
+                }
+              </div>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>
+
+@if (dialogOpen()) {
+  <app-exercise-dialog
+    [exercise]="editing()"
+    (saved)="onSaved($event)"
+    (deleted)="onDeleted($event)"
+    (closed)="closeDialog()"
+  />
+}

@@ -33,6 +33,14 @@ export class ApiService {
     );
   }
 
+  delete(path: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}${path}`).pipe(
+      catchError((err: HttpErrorResponse) =>
+        throwError(() => new Error(this.readErrorMessage(err))),
+      ),
+    );
+  }
+
   /** GET que devuelve null en 404 en lugar de error. */
   getOptional<T>(path: string): Observable<T | null> {
     return this.http.get<T>(`${this.baseUrl}${path}`).pipe(
