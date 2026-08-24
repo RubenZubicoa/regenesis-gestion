@@ -29,5 +29,12 @@ export const routes: Routes = [
         (m) => m.ExercisesPageComponent,
       ),
   },
+  {
+    path: 'revisiones',
+    loadComponent: () =>
+      import('./pages/reviews/reviews-page.component').then(
+        (m) => m.ReviewsPageComponent,
+      ),
+  },
   { path: '**', redirectTo: '' },
 ];

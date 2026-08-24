@@ -290,6 +290,9 @@
   border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
   transition: background 0.2s, transform 0.15s;
 
   &:hover {
@@ -299,6 +302,12 @@
   &:active {
     transform: translateY(1px);
   }
+}
+
+.empty-hint {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  padding: 0.5rem 0 0.25rem;
 }
 
 .macro-hero {

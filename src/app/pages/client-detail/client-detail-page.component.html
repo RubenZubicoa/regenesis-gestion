@@ -446,9 +446,16 @@
           </div>
         }
 
-        @if (d.reviews.length > 0) {
-          <div class="panel-block">
+        <div class="panel-block">
+          <div class="panel-block__head">
             <h2>Revisiones</h2>
+            <a class="action-btn" [routerLink]="['/revisiones']" [queryParams]="{ client: d.client._id }">
+              Gestionar revisiones
+            </a>
+          </div>
+          @if (d.reviews.length === 0) {
+            <p class="empty-hint">Aún no hay revisiones para este cliente.</p>
+          } @else {
             <div class="review-list">
               @for (r of d.reviews; track r._id) {
                 <article class="review-card" [class]="'status-' + r.status">
@@ -456,13 +463,13 @@
                     <h3>{{ r.title }}</h3>
                     <span class="review-card__status">{{ reviewStatusLabel(r.status) }}</span>
                   </div>
-                  <p class="review-card__date">{{ r.date }}</p>
+                  <p class="review-card__date">{{ formatReviewDate(r.date) }}</p>
                   <p class="review-card__note">{{ r.note }}</p>
                 </article>
               }
             </div>
-          </div>
-        }
+          }
+        </div>
       </div>
     }
   </section>

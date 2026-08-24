@@ -1,0 +1,188 @@
+<section class="page">
+  @if (loading()) {
+    <div class="state">Cargando revisiones…</div>
+  } @else if (error()) {
+    <div class="state state--error">{{ error() }}</div>
+  } @else {
+    <div class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Calendario del roster</p>
+        <h1>Revisiones</h1>
+        <p class="hero__sub">
+          Pendientes y pasadas de todo el roster. Programa citas y marca el seguimiento.
+        </p>
+        <button type="button" class="hero__cta" (click)="openCreate()">
+          + Programar revisión
+        </button>
+      </div>
+
+      <div class="hero__metrics" aria-label="Resumen de revisiones">
+        <div class="metric">
+          <span class="metric__value">{{ stats().total }}</span>
+          <span class="metric__label">Total</span>
+        </div>
+        <div class="metric metric--gold">
+          <span class="metric__value">{{ stats().upcoming }}</span>
+          <span class="metric__label">Pendientes</span>
+        </div>
+        <div class="metric metric--teal">
+          <span class="metric__value">{{ stats().done }}</span>
+          <span class="metric__label">Hechas</span>
+        </div>
+        <div class="metric metric--coral">
+          <span class="metric__value">{{ stats().canceled }}</span>
+          <span class="metric__label">Canceladas</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label class="search">
+        <span class="search__icon" aria-hidden="true">⌕</span>
+        <input
+          type="search"
+          placeholder="Buscar por cliente, título o nota…"
+          [ngModel]="query()"
+          (ngModelChange)="onQuery($event)"
+        />
+      </label>
+
+      <div class="chips" role="tablist" aria-label="Filtrar revisiones">
+        @for (item of filters; track item.key) {
+          <button
+            type="button"
+            role="tab"
+            class="chip"
+            [class.is-on]="filter() === item.key"
+            (click)="setFilter(item.key)">
+            {{ item.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (actionError()) {
+      <p class="banner-error">{{ actionError() }}</p>
+    }
+
+    <div class="columns">
+      @if (showPending()) {
+        <section class="lane lane--pending">
+          <div class="lane__head">
+            <div>
+              <h2>Pendientes</h2>
+              <p>{{ filteredPending().length }} revisión{{ filteredPending().length === 1 ? '' : 'es' }}</p>
+            </div>
+            <button type="button" class="lane__add" (click)="openCreate()">Programar</button>
+          </div>
+
+          @if (filteredPending().length === 0) {
+            <div class="empty">
+              <p>No hay revisiones pendientes.</p>
+              <button type="button" class="hero__cta" (click)="openCreate()">
+                Programar la primera
+              </button>
+            </div>
+          } @else {
+            <div class="review-stack">
+              @for (r of filteredPending(); track r._id) {
+                <article class="review-card status-upcoming">
+                  <div class="review-card__top">
+                    <div>
+                      <a class="review-card__client" [routerLink]="['/clients', r.clientId]">
+                        {{ clientName(r.clientId) }}
+                      </a>
+                      <h3>{{ r.title }}</h3>
+                    </div>
+                    <span class="badge">{{ statusLabel(r.status) }}</span>
+                  </div>
+                  <p class="review-card__date">{{ formatDate(r.date) }}</p>
+                  @if (r.note) {
+                    <p class="review-card__note">{{ r.note }}</p>
+                  }
+                  <div class="review-card__actions">
+                    <button type="button" class="text-btn" (click)="openEdit(r)">Editar</button>
+                    <button
+                      type="button"
+                      class="ok-btn"
+                      (click)="markDone(r)"
+                      [disabled]="busyId() === r._id">
+                      Completar
+                    </button>
+                    <button
+                      type="button"
+                      class="warn-btn"
+                      (click)="markCanceled(r)"
+                      [disabled]="busyId() === r._id">
+                      Cancelar
+                    </button>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      @if (showPast()) {
+        <section class="lane lane--past">
+          <div class="lane__head">
+            <div>
+              <h2>Pasadas</h2>
+              <p>{{ filteredPast().length }} revisión{{ filteredPast().length === 1 ? '' : 'es' }}</p>
+            </div>
+          </div>
+
+          @if (filteredPast().length === 0) {
+            <div class="empty">
+              <p>Aún no hay revisiones pasadas.</p>
+            </div>
+          } @else {
+            <div class="review-stack">
+              @for (r of filteredPast(); track r._id) {
+                <article class="review-card" [class]="'status-' + r.status">
+                  <div class="review-card__top">
+                    <div>
+                      <a class="review-card__client" [routerLink]="['/clients', r.clientId]">
+                        {{ clientName(r.clientId) }}
+                      </a>
+                      <h3>{{ r.title }}</h3>
+                    </div>
+                    <span class="badge">{{ statusLabel(r.status) }}</span>
+                  </div>
+                  <p class="review-card__date">{{ formatDate(r.date) }}</p>
+                  @if (r.note) {
+                    <p class="review-card__note">{{ r.note }}</p>
+                  }
+                  <div class="review-card__actions">
+                    <button type="button" class="text-btn" (click)="openEdit(r)">Editar</button>
+                    @if (r.status !== 'upcoming') {
+                      <button
+                        type="button"
+                        class="ghost-btn"
+                        (click)="reopen(r)"
+                        [disabled]="busyId() === r._id">
+                        Reabrir
+                      </button>
+                    }
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        </section>
+      }
+    </div>
+  }
+</section>
+
+@if (dialogOpen()) {
+  <app-review-dialog
+    [review]="editing()"
+    [clients]="clients()"
+    [presetClientId]="presetClientId()"
+    (saved)="onSaved($event)"
+    (deleted)="onDeleted($event)"
+    (closed)="closeDialog()"
+  />
+}

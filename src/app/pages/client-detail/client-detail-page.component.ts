@@ -245,16 +245,26 @@ export class ClientDetailPageComponent {
 
 
   formatDate(iso: string): string {
-
     const d = new Date(iso.includes('T') ? iso : `${iso}T12:00:00`);
-
     if (Number.isNaN(d.getTime())) return iso;
-
     return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-
   }
 
-
+  formatReviewDate(raw: string): string {
+    if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+      const d = new Date(raw);
+      if (!Number.isNaN(d.getTime())) {
+        return d.toLocaleString('es-ES', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      }
+    }
+    return raw;
+  }
 
   reviewStatusLabel(status: string): string {
 
