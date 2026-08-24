@@ -1,11 +1,12 @@
 export interface DaySteps {
-  date: string;
-  steps: number;
+  label: string;
+  value: number;
 }
 
 export interface DailySteps {
   _id: string;
   clientId: string;
+  week: number;
   goal: number;
   days: DaySteps[];
 }

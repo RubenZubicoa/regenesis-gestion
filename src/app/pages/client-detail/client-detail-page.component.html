@@ -1,4 +1,14 @@
-@if (detail(); as d) {
+@if (loading()) {
+  <section class="page page--empty">
+    <p>Cargando ficha del cliente…</p>
+  </section>
+} @else if (error() && !detail()) {
+  <section class="page page--empty">
+    <p>{{ error() }}</p>
+    <a routerLink="/">Volver al roster</a>
+  </section>
+} @else {
+  @if (detail(); as d) {
   <section class="page">
     <button type="button" class="back" (click)="goBack()">← Volver al roster</button>
 
@@ -53,9 +63,9 @@
         }
         @if (d.macros; as m) {
           <div class="stat-card">
-            <span class="stat-card__label">Calorías hoy</span>
-            <span class="stat-card__value">{{ m.calories }} <small>kcal</small></span>
-            <span class="stat-card__meta">Objetivo {{ m.target }} kcal</span>
+            <span class="stat-card__label">Calorías objetivo</span>
+            <span class="stat-card__value">{{ m.target }} <small>kcal</small></span>
+            <span class="stat-card__meta">Hoy {{ m.calories }} kcal</span>
           </div>
         }
         <div class="stat-card">
@@ -104,13 +114,18 @@
 
     @if (activeTab() === 'nutrition') {
       <div class="panel" role="tabpanel">
-        @if (d.macros; as m) {
-          <div class="panel-block">
+        <div class="panel-block">
+          <div class="panel-block__head">
             <h2>Macros del día</h2>
+            <button type="button" class="action-btn" (click)="openMacrosDialog()">
+              Agregar o cambiar macros
+            </button>
+          </div>
+          @if (d.macros; as m) {
             <div class="macro-hero">
               <div class="macro-hero__ring">
-                <span class="macro-hero__value">{{ m.calories }}</span>
-                <span class="macro-hero__sub">/ {{ m.target }} kcal</span>
+                <span class="macro-hero__value">{{ m.target }}</span>
+                <span class="macro-hero__sub">kcal objetivo</span>
               </div>
               <div class="macro-bars">
                 @for (item of m.items; track item.key) {
@@ -126,8 +141,10 @@
                 }
               </div>
             </div>
-          </div>
-        }
+          } @else {
+            <p class="empty-panel">Aún no hay macros asignados a este cliente.</p>
+          }
+        </div>
 
         @if (d.meal; as meal) {
           <div class="panel-block">
@@ -369,14 +386,14 @@
           <div class="panel-block">
             <h2>Pasos esta semana</h2>
             <div class="steps-chart">
-              @for (day of steps.days; track day.date) {
+              @for (day of steps.days; track day.label) {
                 <div class="steps-bar">
                   <span
                     class="steps-bar__fill"
-                    [class.steps-bar__fill--goal]="day.steps >= steps.goal"
-                    [style.height.%]="(day.steps / maxSteps()) * 100"></span>
-                  <span class="steps-bar__val">{{ (day.steps / 1000).toFixed(1) }}k</span>
-                  <span class="steps-bar__day">{{ formatDate(day.date) }}</span>
+                    [class.steps-bar__fill--goal]="day.value >= steps.goal"
+                    [style.height.%]="(day.value / maxSteps()) * 100"></span>
+                  <span class="steps-bar__val">{{ (day.value / 1000).toFixed(1) }}k</span>
+                  <span class="steps-bar__day">{{ day.label }}</span>
                 </div>
               }
             </div>
@@ -417,9 +434,17 @@
       </div>
     }
   </section>
-} @else {
-  <section class="page page--empty">
-    <p>Cliente no encontrado.</p>
-    <a routerLink="/">Volver al roster</a>
-  </section>
+  }
+
+  @if (macrosDialogOpen()) {
+    @if (detail(); as d) {
+      <app-macros-dialog
+        [clientId]="d.client._id"
+        [clientName]="d.client.fullName"
+        [macros]="d.macros"
+        (saved)="onMacrosSaved($event)"
+        (closed)="closeMacrosDialog()"
+      />
+    }
+  }
 }

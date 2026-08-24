@@ -267,6 +267,40 @@
   }
 }
 
+.panel-block__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+
+  h2 {
+    margin-bottom: 0;
+  }
+}
+
+.action-btn {
+  border: 0;
+  background: var(--navy);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.15s;
+
+  &:hover {
+    background: var(--navy-mid);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
 .macro-hero {
   display: grid;
   grid-template-columns: 180px 1fr;
@@ -983,6 +1017,11 @@
   .macro-hero__ring {
     max-width: 160px;
     margin: 0 auto;
+  }
+
+  .panel-block__head {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 

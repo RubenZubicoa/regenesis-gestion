@@ -11,6 +11,17 @@
   gap: 2rem;
 }
 
+.state {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.state--error {
+  color: var(--coral);
+}
+
 .hero {
   display: grid;
   grid-template-columns: 1.4fr 1fr;

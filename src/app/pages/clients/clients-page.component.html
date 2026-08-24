@@ -1,4 +1,9 @@
 <section class="page">
+  @if (loading()) {
+    <div class="state">Cargando clientes…</div>
+  } @else if (error()) {
+    <div class="state state--error">{{ error() }}</div>
+  } @else {
   <div class="hero">
     <div class="hero__copy">
       <p class="eyebrow">Panel del entrenador</p>
@@ -101,4 +106,5 @@
       </div>
     }
   </div>
+  }
 </section>

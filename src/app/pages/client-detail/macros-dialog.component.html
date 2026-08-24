@@ -1,0 +1,108 @@
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="macros-dialog-title">
+  <button type="button" class="sheet__backdrop" (click)="close()" aria-label="Cerrar"></button>
+
+  <div class="board">
+    <div class="board__glow" aria-hidden="true"></div>
+
+    <header class="board__head">
+      <div>
+        <p class="eyebrow">Plan de combustible</p>
+        <h2 id="macros-dialog-title">{{ isEdit ? 'Ajustar macros' : 'Asignar macros' }}</h2>
+        <p class="board__client">{{ clientName() }}</p>
+      </div>
+      <button type="button" class="board__close" (click)="close()" aria-label="Cerrar">×</button>
+    </header>
+
+    <div class="board__body">
+      <div class="mix">
+        <div class="mix__ring" [style.background]="mixGradient">
+          <div class="mix__core">
+            <strong>{{ calories() }}</strong>
+            <span>kcal / día</span>
+          </div>
+        </div>
+        <ul class="mix__legend">
+          <li><i class="swatch swatch--prot"></i> Proteínas {{ protein() }} g</li>
+          <li><i class="swatch swatch--carbs"></i> Carbs {{ carbs() }} g</li>
+          <li><i class="swatch swatch--fats"></i> Grasas {{ fats() }} g</li>
+        </ul>
+        <p class="mix__hint">Desde macros: {{ estimatedKcal }} kcal</p>
+      </div>
+
+      <div class="fields">
+        <label class="kcal-tile">
+          <span class="kcal-tile__label">Objetivo calórico</span>
+          <div class="stepper">
+            <button type="button" (click)="nudge('calories', -50)" aria-label="Bajar calorías">−</button>
+            <input
+              type="number"
+              min="0"
+              [ngModel]="calories()"
+              (ngModelChange)="setField('calories', $event)"
+            />
+            <button type="button" (click)="nudge('calories', 50)" aria-label="Subir calorías">+</button>
+            <em>kcal</em>
+          </div>
+        </label>
+
+        <div class="macro-tiles">
+          <label class="macro-tile tone-prot">
+            <span>Proteínas</span>
+            <div class="stepper stepper--compact">
+              <button type="button" (click)="nudge('protein', -5)" aria-label="Bajar proteínas">−</button>
+              <input
+                type="number"
+                min="0"
+                [ngModel]="protein()"
+                (ngModelChange)="setField('protein', $event)"
+              />
+              <button type="button" (click)="nudge('protein', 5)" aria-label="Subir proteínas">+</button>
+            </div>
+            <em>g · 4 kcal/g</em>
+          </label>
+
+          <label class="macro-tile tone-carbs">
+            <span>Carbohidratos</span>
+            <div class="stepper stepper--compact">
+              <button type="button" (click)="nudge('carbs', -5)" aria-label="Bajar carbohidratos">−</button>
+              <input
+                type="number"
+                min="0"
+                [ngModel]="carbs()"
+                (ngModelChange)="setField('carbs', $event)"
+              />
+              <button type="button" (click)="nudge('carbs', 5)" aria-label="Subir carbohidratos">+</button>
+            </div>
+            <em>g · 4 kcal/g</em>
+          </label>
+
+          <label class="macro-tile tone-fats">
+            <span>Grasas</span>
+            <div class="stepper stepper--compact">
+              <button type="button" (click)="nudge('fats', -5)" aria-label="Bajar grasas">−</button>
+              <input
+                type="number"
+                min="0"
+                [ngModel]="fats()"
+                (ngModelChange)="setField('fats', $event)"
+              />
+              <button type="button" (click)="nudge('fats', 5)" aria-label="Subir grasas">+</button>
+            </div>
+            <em>g · 9 kcal/g</em>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    @if (saveError()) {
+      <p class="board__error">{{ saveError() }}</p>
+    }
+
+    <footer class="board__foot">
+      <button type="button" class="ghost-btn" (click)="close()" [disabled]="saving()">Cancelar</button>
+      <button type="button" class="gold-btn" (click)="save()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Asignar macros' }}
+      </button>
+    </footer>
+  </div>
+</div>
