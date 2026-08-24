@@ -16,6 +16,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'clients/:id/rutina',
+    loadComponent: () =>
+      import('./pages/routine/manage-routine-page.component').then(
+        (m) => m.ManageRoutinePageComponent,
+      ),
+  },
+  {
     path: 'ejercicios',
     loadComponent: () =>
       import('./pages/exercises/exercises-page.component').then(

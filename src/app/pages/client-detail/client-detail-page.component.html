@@ -219,29 +219,38 @@
     @if (activeTab() === 'training') {
       <div class="panel" role="tabpanel">
         <div class="panel-block">
-          <h2>Rutina semanal</h2>
-          <div class="routine-rail">
-            @for (day of d.routineDays; track day._id) {
-              <article class="routine-card" [class.is-done]="day.done">
-                <div class="routine-card__top">
-                  <span class="routine-card__day">{{ day.day }}</span>
-                  @if (day.done) {
-                    <span class="routine-card__badge">✓ Hecho</span>
-                  }
-                </div>
-                <h3>{{ day.focus }}</h3>
-                <p class="routine-card__duration">{{ day.duration }}</p>
-                <ul class="routine-card__exercises">
-                  @for (ex of day.exercises; track ex.exerciseId) {
-                    <li>
-                      <span>{{ ex.name }}</span>
-                      <span>{{ ex.sets }}</span>
-                    </li>
-                  }
-                </ul>
-              </article>
-            }
+          <div class="panel-block__head">
+            <h2>Rutina semanal</h2>
+            <button type="button" class="action-btn" (click)="openRoutineManager()">
+              Gestionar rutina semanal
+            </button>
           </div>
+          @if (d.routineDays.length > 0) {
+            <div class="routine-rail">
+              @for (day of d.routineDays; track day._id) {
+                <article class="routine-card" [class.is-done]="day.done">
+                  <div class="routine-card__top">
+                    <span class="routine-card__day">{{ day.day }}</span>
+                    @if (day.done) {
+                      <span class="routine-card__badge">✓ Hecho</span>
+                    }
+                  </div>
+                  <h3>{{ day.focus }}</h3>
+                  <p class="routine-card__duration">{{ day.duration }}</p>
+                  <ul class="routine-card__exercises">
+                    @for (ex of day.exercises; track ex.exerciseId) {
+                      <li>
+                        <span>{{ ex.name }}</span>
+                        <span>{{ ex.sets }}</span>
+                      </li>
+                    }
+                  </ul>
+                </article>
+              }
+            </div>
+          } @else {
+            <p class="empty-panel">Aún no hay rutina semanal asignada a este cliente.</p>
+          }
         </div>
 
         @if (d.workoutHistory.length > 0) {

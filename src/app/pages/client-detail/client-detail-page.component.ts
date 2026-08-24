@@ -438,5 +438,11 @@ export class ClientDetailPageComponent {
     this.supplementsDialogOpen.set(false);
   }
 
+  openRoutineManager(): void {
+    const id = this.detail()?.client._id;
+    if (!id) return;
+    void this.router.navigate(['/clients', id, 'rutina']);
+  }
+
 }
 

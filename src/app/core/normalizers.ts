@@ -183,13 +183,31 @@ export function normalizeRoutineDay(raw: unknown): RoutineDay {
     duration: str(r, 'duration'),
     exercises: exercisesRaw.map((entry) => {
       const ex = asApiRecord(entry);
+      const typeRaw = str(ex, 'type', 'strength');
+      const repRangeRaw =
+        ex['repRange'] && typeof ex['repRange'] === 'object'
+          ? asApiRecord(ex['repRange'])
+          : null;
       return {
         exerciseId: normalizeId(ex['exerciseId']),
         name: str(ex, 'name', 'Ejercicio'),
+        type: typeRaw === 'cardio' ? 'cardio' : 'strength',
         image: ex['imageUrl'] ? str(ex, 'imageUrl') : undefined,
         sets: str(ex, 'sets'),
         rest: str(ex, 'rest'),
         seriesCount: ex['seriesCount'] != null ? num(ex, 'seriesCount') : undefined,
+        ...(repRangeRaw
+          ? {
+              repRange: {
+                min: num(repRangeRaw, 'min'),
+                max: num(repRangeRaw, 'max'),
+              },
+            }
+          : {}),
+        ...(ex['repUnit'] === 'reps' || ex['repUnit'] === 's'
+          ? { repUnit: ex['repUnit'] as 'reps' | 's' }
+          : {}),
+        ...(ex['targetKm'] != null ? { targetKm: num(ex, 'targetKm') } : {}),
       };
     }),
   };

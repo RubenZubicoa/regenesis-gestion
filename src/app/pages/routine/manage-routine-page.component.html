@@ -1,0 +1,206 @@
+@if (loading()) {
+  <section class="page page--state">Cargando rutina…</section>
+} @else if (error()) {
+  <section class="page page--state page--error">
+    <p>{{ error() }}</p>
+    <a routerLink="/">Volver al roster</a>
+  </section>
+} @else {
+  <section class="page">
+    <button type="button" class="back" (click)="goBack()">← Volver a la ficha</button>
+
+    <header class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Tablero de sesión</p>
+        <h1>Gestionar rutina semanal</h1>
+        <p class="hero__sub">{{ clientName() }}</p>
+      </div>
+      <div class="hero__actions">
+        @if (saveOk()) {
+          <span class="save-ok">Rutina guardada</span>
+        }
+        <button type="button" class="ghost-btn" (click)="addDay()">+ Añadir día</button>
+        <button type="button" class="save-btn" (click)="save()" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar rutina' }}
+        </button>
+      </div>
+    </header>
+
+    @if (saveError()) {
+      <p class="banner-error">{{ saveError() }}</p>
+    }
+
+    <div class="board">
+      <aside class="library">
+        <div class="library__head">
+          <h2>Biblioteca</h2>
+          <p>Arrastra ejercicios a un día</p>
+        </div>
+
+        <label class="search">
+          <span aria-hidden="true">⌕</span>
+          <input
+            type="search"
+            placeholder="Buscar ejercicio…"
+            [ngModel]="masterQuery()"
+            (ngModelChange)="masterQuery.set($event)"
+          />
+        </label>
+
+        <div class="chips">
+          <button type="button" class="chip" [class.is-on]="masterFilter() === 'all'" (click)="setMasterFilter('all')">Todos</button>
+          <button type="button" class="chip" [class.is-on]="masterFilter() === 'strength'" (click)="setMasterFilter('strength')">Fuerza</button>
+          <button type="button" class="chip" [class.is-on]="masterFilter() === 'cardio'" (click)="setMasterFilter('cardio')">Cardio</button>
+        </div>
+
+        <div
+          class="library__list"
+          cdkDropList
+          id="exercise-library"
+          [cdkDropListData]="filteredMasters()"
+          [cdkDropListConnectedTo]="connectedLists()"
+          [cdkDropListSortingDisabled]="true"
+          (cdkDropListDropped)="onLibraryDrop($event)">
+          @for (master of filteredMasters(); track master._id) {
+            <div class="lib-card" cdkDrag [cdkDragData]="master">
+              <div class="lib-card__preview" *cdkDragPreview>
+                <strong>{{ master.name }}</strong>
+                <span>{{ master.type === 'cardio' ? 'Cardio' : 'Fuerza' }}</span>
+              </div>
+              <div class="lib-card__placeholder" *cdkDragPlaceholder></div>
+              @if (master.imageUrl) {
+                <img [src]="master.imageUrl" [alt]="master.name" />
+              } @else {
+                <div class="lib-card__fallback" [class.is-cardio]="master.type === 'cardio'">
+                  {{ master.type === 'cardio' ? 'C' : 'F' }}
+                </div>
+              }
+              <div class="lib-card__copy">
+                <strong>{{ master.name }}</strong>
+                <em>{{ master.type === 'cardio' ? 'Cardio' : 'Fuerza' }}</em>
+              </div>
+            </div>
+          } @empty {
+            <p class="library__empty">No hay ejercicios en el maestro.</p>
+          }
+        </div>
+      </aside>
+
+      <div class="planner">
+        <div class="day-tabs" role="tablist" aria-label="Días de rutina">
+          @for (day of days(); track day.uid) {
+            <button
+              type="button"
+              class="day-tab"
+              role="tab"
+              [class.is-active]="activeDay()?.uid === day.uid"
+              (click)="selectDay(day.uid)">
+              {{ day.day || 'Sin nombre' }}
+              <span>{{ day.exercises.length }}</span>
+            </button>
+          } @empty {
+            <p class="planner__empty-hint">Aún no hay días. Crea el primero.</p>
+          }
+        </div>
+
+        @if (activeDay(); as day) {
+          <article class="day-panel">
+            <div class="day-panel__meta">
+              <label class="field">
+                <span>Día</span>
+                <input
+                  type="text"
+                  [ngModel]="day.day"
+                  (ngModelChange)="updateDayField(day.uid, 'day', $event)"
+                />
+              </label>
+              <label class="field">
+                <span>Foco</span>
+                <input
+                  type="text"
+                  [ngModel]="day.focus"
+                  (ngModelChange)="updateDayField(day.uid, 'focus', $event)"
+                />
+              </label>
+              <label class="field field--short">
+                <span>Duración</span>
+                <input
+                  type="text"
+                  [ngModel]="day.duration"
+                  (ngModelChange)="updateDayField(day.uid, 'duration', $event)"
+                />
+              </label>
+              <button type="button" class="danger-link" (click)="removeDay(day.uid)">
+                Eliminar día
+              </button>
+            </div>
+
+            <div
+              class="dropzone"
+              cdkDropList
+              [id]="dayListId(day.uid)"
+              [cdkDropListData]="day.exercises"
+              [cdkDropListConnectedTo]="connectedLists()"
+              (cdkDropListDropped)="onDayDrop($event, day.uid)">
+              @for (ex of day.exercises; track ex.uid) {
+                <div class="slot" cdkDrag>
+                  <div class="slot__handle" cdkDragHandle aria-hidden="true">⋮⋮</div>
+                  <div class="slot__preview" *cdkDragPreview>
+                    <strong>{{ ex.name }}</strong>
+                  </div>
+                  @if (ex.image) {
+                    <img [src]="ex.image" [alt]="ex.name" />
+                  } @else {
+                    <div class="slot__fallback" [class.is-cardio]="ex.type === 'cardio'">
+                      {{ ex.type === 'cardio' ? 'C' : 'F' }}
+                    </div>
+                  }
+                  <div class="slot__main">
+                    <div class="slot__title">
+                      <strong>{{ ex.name }}</strong>
+                      <em>{{ ex.type === 'cardio' ? 'Cardio' : 'Fuerza' }}</em>
+                    </div>
+                    <div class="slot__fields">
+                      <label>
+                        <span>Series</span>
+                        <input
+                          type="text"
+                          [ngModel]="ex.sets"
+                          (ngModelChange)="updateExerciseField(day.uid, ex.uid, 'sets', $event)"
+                        />
+                      </label>
+                      <label>
+                        <span>Descanso</span>
+                        <input
+                          type="text"
+                          [ngModel]="ex.rest"
+                          (ngModelChange)="updateExerciseField(day.uid, ex.uid, 'rest', $event)"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="slot__remove"
+                    (click)="removeExercise(day.uid, ex.uid)"
+                    aria-label="Quitar ejercicio">
+                    ×
+                  </button>
+                </div>
+              } @empty {
+                <div class="dropzone__empty">
+                  Suelta aquí ejercicios desde la biblioteca
+                </div>
+              }
+            </div>
+          </article>
+        } @else {
+          <div class="planner__empty">
+            <p>Crea un día para empezar a montar la rutina.</p>
+            <button type="button" class="save-btn" (click)="addDay()">+ Añadir día</button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
