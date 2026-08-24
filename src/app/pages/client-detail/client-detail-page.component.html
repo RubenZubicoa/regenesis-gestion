@@ -146,9 +146,14 @@
           }
         </div>
 
-        @if (d.meal; as meal) {
-          <div class="panel-block">
+        <div class="panel-block">
+          <div class="panel-block__head">
             <h2>Plan de comidas</h2>
+            <button type="button" class="action-btn" (click)="openMealsDialog()">
+              Gestionar comidas
+            </button>
+          </div>
+          @if (d.meal; as meal) {
             <div class="meal-timeline">
               @for (slot of meal.slots; track slot.label) {
                 <article class="meal-slot">
@@ -172,12 +177,19 @@
                 </article>
               }
             </div>
-          </div>
-        }
+          } @else {
+            <p class="empty-panel">Aún no hay plan de comidas asignado a este cliente.</p>
+          }
+        </div>
 
-        @if (d.supplements && d.supplements.elements.length > 0) {
-          <div class="panel-block">
+        <div class="panel-block">
+          <div class="panel-block__head">
             <h2>Suplementación</h2>
+            <button type="button" class="action-btn" (click)="openSupplementsDialog()">
+              Gestionar suplementos
+            </button>
+          </div>
+          @if (d.supplements && d.supplements.elements.length > 0) {
             <div class="supp-grid">
               @for (s of d.supplements.elements; track s.name) {
                 <div class="supp-card">
@@ -185,11 +197,22 @@
                   <h3>{{ s.name }}</h3>
                   <p>{{ s.dose }}</p>
                   <span class="supp-card__when">{{ s.when }}</span>
+                  @if (s.purchaseLink) {
+                    <a
+                      class="supp-card__link"
+                      [href]="s.purchaseLink"
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      Ver producto
+                    </a>
+                  }
                 </div>
               }
             </div>
-          </div>
-        }
+          } @else {
+            <p class="empty-panel">Aún no hay suplementos asignados a este cliente.</p>
+          }
+        </div>
       </div>
     }
 
@@ -444,6 +467,30 @@
         [macros]="d.macros"
         (saved)="onMacrosSaved($event)"
         (closed)="closeMacrosDialog()"
+      />
+    }
+  }
+
+  @if (mealsDialogOpen()) {
+    @if (detail(); as d) {
+      <app-meals-dialog
+        [clientId]="d.client._id"
+        [clientName]="d.client.fullName"
+        [meal]="d.meal"
+        (saved)="onMealsSaved($event)"
+        (closed)="closeMealsDialog()"
+      />
+    }
+  }
+
+  @if (supplementsDialogOpen()) {
+    @if (detail(); as d) {
+      <app-supplements-dialog
+        [clientId]="d.client._id"
+        [clientName]="d.client.fullName"
+        [supplements]="d.supplements"
+        (saved)="onSupplementsSaved($event)"
+        (closed)="closeSupplementsDialog()"
       />
     }
   }

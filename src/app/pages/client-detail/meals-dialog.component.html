@@ -1,0 +1,122 @@
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="meals-dialog-title">
+  <button type="button" class="sheet__backdrop" (click)="close()" aria-label="Cerrar"></button>
+
+  <div class="board">
+    <div class="board__glow" aria-hidden="true"></div>
+
+    <header class="board__head">
+      <div>
+        <p class="eyebrow">Cocina del plan</p>
+        <h2 id="meals-dialog-title">{{ isEdit ? 'Gestionar comidas' : 'Crear plan de comidas' }}</h2>
+        <p class="board__client">{{ clientName() }} · {{ slots().length }} tomas · {{ totalOptions() }} opciones</p>
+      </div>
+      <button type="button" class="board__close" (click)="close()" aria-label="Cerrar">×</button>
+    </header>
+
+    <div class="board__body">
+      <aside class="rail">
+        <p class="rail__title">Tomas del día</p>
+        <div class="rail__list">
+          @for (slot of slots(); track $index; let i = $index) {
+            <button
+              type="button"
+              class="ticket"
+              [class.is-active]="activeIndex() === i"
+              (click)="selectSlot(i)">
+              <span class="ticket__num">{{ i + 1 }}</span>
+              <span class="ticket__copy">
+                <strong>{{ slot.label || 'Sin nombre' }}</strong>
+                <em>{{ slot.options.length }} opción{{ slot.options.length === 1 ? '' : 'es' }}</em>
+              </span>
+            </button>
+          }
+        </div>
+        <button type="button" class="rail__add" (click)="addSlot()">+ Añadir toma</button>
+      </aside>
+
+      @if (activeSlot(); as slot) {
+        <section class="workspace">
+          <div class="workspace__meta">
+            <label class="field">
+              <span>Nombre de la toma</span>
+              <input
+                type="text"
+                [ngModel]="slot.label"
+                (ngModelChange)="updateSlot('label', $event)"
+                placeholder="Desayuno, Comida…"
+              />
+            </label>
+            <button
+              type="button"
+              class="ghost-btn ghost-btn--danger"
+              (click)="removeSlot(activeIndex())"
+              [disabled]="slots().length <= 1">
+              Eliminar toma
+            </button>
+          </div>
+
+          <div class="plates-head">
+            <h3>Opciones alternativas</h3>
+            <button type="button" class="text-btn" (click)="addOption()">+ Añadir opción</button>
+          </div>
+
+          <div class="plates">
+            @for (opt of slot.options; track $index; let oi = $index) {
+              <article class="plate">
+                <div class="plate__badge">{{ oi + 1 }}</div>
+                <div class="plate__fields">
+                  <label class="field">
+                    <span>Plato</span>
+                    <input
+                      type="text"
+                      [ngModel]="opt.name"
+                      (ngModelChange)="updateOption(oi, 'name', $event)"
+                      placeholder="Nombre de la comida"
+                    />
+                  </label>
+                  <label class="field field--kcal">
+                    <span>Kcal</span>
+                    <input
+                      type="number"
+                      min="0"
+                      [ngModel]="opt.kcal"
+                      (ngModelChange)="updateOption(oi, 'kcal', $event)"
+                    />
+                  </label>
+                  <label class="field field--full">
+                    <span>Descripción</span>
+                    <input
+                      type="text"
+                      [ngModel]="opt.description"
+                      (ngModelChange)="updateOption(oi, 'description', $event)"
+                      placeholder="Ingredientes o notas"
+                    />
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  class="plate__remove"
+                  (click)="removeOption(oi)"
+                  [disabled]="slot.options.length <= 1"
+                  aria-label="Eliminar opción">
+                  ×
+                </button>
+              </article>
+            }
+          </div>
+        </section>
+      }
+    </div>
+
+    @if (saveError()) {
+      <p class="board__error">{{ saveError() }}</p>
+    }
+
+    <footer class="board__foot">
+      <button type="button" class="ghost-btn" (click)="close()" [disabled]="saving()">Cancelar</button>
+      <button type="button" class="gold-btn" (click)="save()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar plan' }}
+      </button>
+    </footer>
+  </div>
+</div>

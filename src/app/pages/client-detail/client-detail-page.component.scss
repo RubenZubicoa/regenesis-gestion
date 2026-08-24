@@ -494,6 +494,19 @@
   color: var(--teal);
 }
 
+.supp-card__link {
+  margin-top: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--blue);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    color: var(--navy);
+  }
+}
+
 .routine-rail {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

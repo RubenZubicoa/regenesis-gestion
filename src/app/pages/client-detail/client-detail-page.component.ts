@@ -5,9 +5,13 @@ import { of, switchMap } from 'rxjs';
 
 import type { ClientDetail } from '../../models/client-detail';
 import type { MacroItem, Macros } from '../../models/macros';
+import type { Meal } from '../../models/meal';
+import type { Supplements } from '../../models/supplements';
 import type { Weight } from '../../models/weight';
 import { ClientDetailService } from '../../services/client-detail.service';
 import { MacrosDialogComponent } from './macros-dialog.component';
+import { MealsDialogComponent } from './meals-dialog.component';
+import { SupplementsDialogComponent } from './supplements-dialog.component';
 
 
 
@@ -55,7 +59,7 @@ export interface WeightChartView {
 
   standalone: true,
 
-  imports: [RouterLink, MacrosDialogComponent],
+  imports: [RouterLink, MacrosDialogComponent, MealsDialogComponent, SupplementsDialogComponent],
 
   templateUrl: './client-detail-page.component.html',
 
@@ -82,6 +86,10 @@ export class ClientDetailPageComponent {
   readonly detail = signal<ClientDetail | null>(null);
 
   readonly macrosDialogOpen = signal(false);
+
+  readonly mealsDialogOpen = signal(false);
+
+  readonly supplementsDialogOpen = signal(false);
 
 
 
@@ -396,6 +404,38 @@ export class ClientDetailPageComponent {
       this.detail.set({ ...current, macros });
     }
     this.macrosDialogOpen.set(false);
+  }
+
+  openMealsDialog(): void {
+    this.mealsDialogOpen.set(true);
+  }
+
+  closeMealsDialog(): void {
+    this.mealsDialogOpen.set(false);
+  }
+
+  onMealsSaved(meal: Meal): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({ ...current, meal });
+    }
+    this.mealsDialogOpen.set(false);
+  }
+
+  openSupplementsDialog(): void {
+    this.supplementsDialogOpen.set(true);
+  }
+
+  closeSupplementsDialog(): void {
+    this.supplementsDialogOpen.set(false);
+  }
+
+  onSupplementsSaved(supplements: Supplements): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({ ...current, supplements });
+    }
+    this.supplementsDialogOpen.set(false);
   }
 
 }

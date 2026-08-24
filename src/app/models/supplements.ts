@@ -3,6 +3,8 @@ export interface SupplementElement {
   dose: string;
   when: string;
   icon: string;
+  /** Enlace opcional sugerido por el entrenador para comprar el producto. */
+  purchaseLink?: string;
 }
 
 export interface Supplements {

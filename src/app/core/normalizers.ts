@@ -163,6 +163,9 @@ export function normalizeSupplements(raw: unknown): Supplements {
         dose: str(el, 'dose'),
         when: str(el, 'when'),
         icon: str(el, 'icon'),
+        ...(str(el, 'purchaseLink')
+          ? { purchaseLink: str(el, 'purchaseLink') }
+          : {}),
       };
     }),
   };

@@ -1,0 +1,99 @@
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="supplements-dialog-title">
+  <button type="button" class="sheet__backdrop" (click)="close()" aria-label="Cerrar"></button>
+
+  <div class="board">
+    <div class="board__glow" aria-hidden="true"></div>
+
+    <header class="board__head">
+      <div>
+        <p class="eyebrow">Botiquín</p>
+        <h2 id="supplements-dialog-title">
+          {{ isEdit ? 'Gestionar suplementación' : 'Asignar suplementación' }}
+        </h2>
+        <p class="board__client">{{ clientName() }} · {{ elements().length }} suplemento{{ elements().length === 1 ? '' : 's' }}</p>
+      </div>
+      <button type="button" class="board__close" (click)="close()" aria-label="Cerrar">×</button>
+    </header>
+
+    <div class="board__body">
+      <div class="vial-grid">
+        @for (el of elements(); track $index; let i = $index) {
+          <article class="vial" [attr.data-tone]="i % 4">
+            <div class="vial__cap" aria-hidden="true"></div>
+            <div class="vial__body">
+              <div class="vial__top">
+                <span class="vial__num">{{ i + 1 }}</span>
+                <button
+                  type="button"
+                  class="vial__remove"
+                  (click)="removeElement(i)"
+                  aria-label="Eliminar suplemento">
+                  ×
+                </button>
+              </div>
+
+              <label class="field">
+                <span>Suplemento</span>
+                <input
+                  type="text"
+                  [ngModel]="el.name"
+                  (ngModelChange)="updateElement(i, 'name', $event)"
+                  placeholder="Creatina, Omega-3…"
+                />
+              </label>
+
+              <div class="field-row">
+                <label class="field">
+                  <span>Dosis</span>
+                  <input
+                    type="text"
+                    [ngModel]="el.dose"
+                    (ngModelChange)="updateElement(i, 'dose', $event)"
+                    placeholder="5 g"
+                  />
+                </label>
+              </div>
+
+              <label class="field field--when">
+                <span>Cuándo</span>
+                <select
+                  [ngModel]="el.when"
+                  (ngModelChange)="updateElement(i, 'when', $event)">
+                  <option value="" disabled>Elige momento</option>
+                  @for (preset of whenOptionsFor(el.when); track preset) {
+                    <option [value]="preset">{{ preset }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="field">
+                <span>Enlace de compra</span>
+                <input
+                  type="url"
+                  [ngModel]="el.purchaseLink"
+                  (ngModelChange)="updateElement(i, 'purchaseLink', $event)"
+                  placeholder="https://…"
+                />
+              </label>
+            </div>
+          </article>
+        }
+      </div>
+
+      <button type="button" class="add-vial" (click)="addElement()">
+        + Añadir suplemento
+      </button>
+    </div>
+
+    @if (saveError()) {
+      <p class="board__error">{{ saveError() }}</p>
+    }
+
+    <footer class="board__foot">
+      <button type="button" class="ghost-btn" (click)="close()" [disabled]="saving()">Cancelar</button>
+      <button type="button" class="save-btn" (click)="save()" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar suplementación' }}
+      </button>
+    </footer>
+  </div>
+</div>
