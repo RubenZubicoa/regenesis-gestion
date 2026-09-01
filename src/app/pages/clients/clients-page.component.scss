@@ -53,6 +53,23 @@
   line-height: 1.5;
 }
 
+.hero__cta {
+  margin-top: 1.15rem;
+  border: 0;
+  background: var(--gold);
+  color: var(--navy);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--gold-light);
+  }
+}
+
 .hero__metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -320,6 +337,14 @@
   border: 1px dashed var(--border);
   border-radius: var(--radius-md);
   color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+
+  .hero__cta {
+    margin-top: 0;
+  }
 }
 
 @media (max-width: 720px) {

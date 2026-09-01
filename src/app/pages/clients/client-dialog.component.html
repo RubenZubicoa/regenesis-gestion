@@ -1,0 +1,161 @@
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="client-dialog-title">
+  <button type="button" class="sheet__backdrop" (click)="close()" aria-label="Cerrar"></button>
+
+  <div class="board">
+    <div class="board__glow" aria-hidden="true"></div>
+
+    <header class="board__head">
+      <div>
+        <p class="eyebrow">Alta en el roster</p>
+        <h2 id="client-dialog-title">Nuevo cliente</h2>
+      </div>
+      <button type="button" class="board__close" (click)="close()" aria-label="Cerrar">×</button>
+    </header>
+
+    <p class="phase-note">Se asignará automáticamente a la fase 1.</p>
+
+    <form class="board__form" (submit)="$event.preventDefault(); save()">
+      <div class="board__body">
+        <label class="field field--full">
+          <span>Nombre completo</span>
+          <input
+            type="text"
+            [ngModel]="fullName()"
+            (ngModelChange)="fullName.set($event)"
+            name="fullName"
+            autocomplete="name"
+            placeholder="Ana García"
+          />
+        </label>
+
+        <label class="field">
+          <span>Email</span>
+          <input
+            type="email"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            name="email"
+            autocomplete="email"
+            placeholder="ana@email.com"
+          />
+        </label>
+
+        <label class="field">
+          <span>Teléfono</span>
+          <input
+            type="tel"
+            [ngModel]="telefono()"
+            (ngModelChange)="telefono.set($event)"
+            name="telefono"
+            autocomplete="tel"
+            placeholder="+34 600 000 000"
+          />
+        </label>
+
+        <label class="field field--full">
+          <span>Contraseña de acceso</span>
+          <input
+            type="password"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            name="password"
+            autocomplete="new-password"
+            placeholder="Mínimo 6 caracteres"
+          />
+        </label>
+
+        <label class="field field--full">
+          <span>Objetivo</span>
+          <input
+            type="text"
+            [ngModel]="goal()"
+            (ngModelChange)="goal.set($event)"
+            name="goal"
+            placeholder="Recomposición corporal"
+          />
+        </label>
+
+        <label class="field">
+          <span>Coach</span>
+          <input
+            type="text"
+            [ngModel]="coach()"
+            (ngModelChange)="coach.set($event)"
+            name="coach"
+          />
+        </label>
+
+        <label class="field">
+          <span>Plan</span>
+          <input
+            type="text"
+            [ngModel]="plan()"
+            (ngModelChange)="plan.set($event)"
+            name="plan"
+          />
+        </label>
+
+        <label class="field">
+          <span>Inicio</span>
+          <input
+            type="date"
+            [ngModel]="startDate()"
+            (ngModelChange)="onStartDate($event)"
+            name="startDate"
+          />
+        </label>
+
+        <label class="field">
+          <span>Fin</span>
+          <input
+            type="date"
+            [ngModel]="endDate()"
+            (ngModelChange)="onEndDate($event)"
+            name="endDate"
+          />
+        </label>
+
+        <label class="field">
+          <span>Semanas totales</span>
+          <input
+            type="number"
+            min="1"
+            [ngModel]="totalWeeks()"
+            (ngModelChange)="totalWeeks.set(+$event)"
+            name="totalWeeks"
+          />
+        </label>
+
+        <label class="field field--full">
+          <span>URL del avatar (opcional)</span>
+          <input
+            type="url"
+            [ngModel]="avatar()"
+            (ngModelChange)="avatar.set($event)"
+            name="avatar"
+            placeholder="https://…"
+          />
+        </label>
+      </div>
+
+      @if (saveError()) {
+        <p class="board__error">{{ saveError() }}</p>
+      }
+
+      <footer class="board__foot">
+        <div class="board__foot-right">
+          <button
+            type="button"
+            class="ghost-btn"
+            (click)="close()"
+            [disabled]="saving()">
+            Cancelar
+          </button>
+          <button type="submit" class="save-btn" [disabled]="saving()">
+            {{ saving() ? 'Creando…' : 'Crear cliente' }}
+          </button>
+        </div>
+      </footer>
+    </form>
+  </div>
+</div>

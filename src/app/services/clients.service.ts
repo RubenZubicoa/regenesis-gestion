@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { forkJoin, map, Observable } from 'rxjs';
+import { forkJoin, map, Observable, of, switchMap } from 'rxjs';
 
 import {
   asRecordArray,
@@ -15,9 +15,65 @@ import type { Review } from '../models/review';
 import type { Weight } from '../models/weight';
 import { ApiService } from './api.service';
 
+/** Alta de cliente: ficha administrativa, sin nutrición ni entrenamiento. */
+export interface ClientCreatePayload {
+  name: string;
+  fullName: string;
+  email: string;
+  telefono: string;
+  password: string;
+  goal: string;
+  coach: string;
+  plan: string;
+  /** ObjectId de Program; si no viene, se asigna uno por defecto. */
+  program?: string;
+  startDate: string;
+  endDate: string;
+  week: number;
+  totalWeeks: number;
+  phase: number;
+  totalPhases: number;
+  avatar: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ClientsService {
   private readonly api = inject(ApiService);
+
+  listPrograms(): Observable<Program[]> {
+    return this.api
+      .get<unknown[]>('/api/programs')
+      .pipe(map((raw) => asRecordArray(raw).map(normalizeProgram)));
+  }
+
+  create(payload: ClientCreatePayload): Observable<Client> {
+    return this.resolveProgramId(payload.program).pipe(
+      switchMap((program) => {
+        const { password, ...rest } = payload;
+        return this.api.post<unknown>('/api/clients', {
+          ...rest,
+          program,
+          contraseña: password,
+        });
+      }),
+      map(normalizeClient),
+    );
+  }
+
+  private resolveProgramId(program?: string): Observable<string> {
+    if (program) return of(program);
+    return this.listPrograms().pipe(
+      map((programs) => {
+        const preferred =
+          programs.find((item) => /nutrici[oó]n \+ entrenamiento/i.test(item.name)) ??
+          programs[0];
+        if (!preferred?._id) {
+          throw new Error('No hay programas disponibles para asignar al cliente.');
+        }
+        return preferred._id;
+      }),
+    );
+  }
 
   loadListItems(): Observable<ClientListItem[]> {
     return forkJoin({

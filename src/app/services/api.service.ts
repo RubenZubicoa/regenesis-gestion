@@ -55,10 +55,60 @@ export class ApiService {
     if (err.status === 0) {
       return 'No se pudo conectar con el servidor. ¿Está el API en marcha?';
     }
-    const body = err.error;
-    if (body && typeof body === 'object' && 'message' in body) {
-      return String((body as { message: string }).message);
-    }
+    const parsed = this.parseErrorBody(err.error);
+    if (parsed) return parsed;
     return `Error ${err.status}`;
+  }
+
+  private parseErrorBody(body: unknown): string | null {
+    if (typeof body === 'string' && body.trim()) {
+      const trimmed = body.trim();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          return this.parseErrorBody(JSON.parse(trimmed));
+        } catch {
+          return trimmed;
+        }
+      }
+      return trimmed;
+    }
+    if (!body || typeof body !== 'object') return null;
+
+    const rec = body as Record<string, unknown>;
+    const fromMessage = this.stringifyErrorValue(rec['message']);
+    if (fromMessage) return fromMessage;
+
+    if (Array.isArray(rec['errors'])) {
+      const parts = rec['errors']
+        .map((item) => this.stringifyErrorValue(item))
+        .filter((part): part is string => !!part);
+      if (parts.length) return parts.join('. ');
+    } else if (rec['errors'] && typeof rec['errors'] === 'object') {
+      const parts = Object.values(rec['errors'] as Record<string, unknown>)
+        .map((item) => this.stringifyErrorValue(item))
+        .filter((part): part is string => !!part);
+      if (parts.length) return parts.join('. ');
+    }
+
+    const fromError = this.stringifyErrorValue(rec['error']);
+    if (fromError && fromError !== 'Bad Request') return fromError;
+
+    return null;
+  }
+
+  private stringifyErrorValue(value: unknown): string | null {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (Array.isArray(value)) {
+      const parts = value
+        .map((item) => this.stringifyErrorValue(item))
+        .filter((part): part is string => !!part);
+      return parts.length ? parts.join('. ') : null;
+    }
+    if (value && typeof value === 'object') {
+      const rec = value as Record<string, unknown>;
+      return this.stringifyErrorValue(rec['msg'] ?? rec['message'] ?? rec['error']);
+    }
+    return null;
   }
 }

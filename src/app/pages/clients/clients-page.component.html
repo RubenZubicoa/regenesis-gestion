@@ -11,6 +11,9 @@
       <p class="hero__sub">
         Accede al progreso, revisiones y plan de cada persona de tu roster.
       </p>
+      <button type="button" class="hero__cta" (click)="openCreate()">
+        + Nuevo cliente
+      </button>
     </div>
 
     <div class="hero__metrics" aria-label="Resumen del roster">
@@ -67,6 +70,9 @@
     @if (filtered().length === 0) {
       <div class="empty">
         <p>No hay clientes con ese filtro.</p>
+        <button type="button" class="hero__cta" (click)="openCreate()">
+          Crear el primero
+        </button>
       </div>
     } @else {
       <div class="client-grid">
@@ -108,3 +114,7 @@
   </div>
   }
 </section>
+
+@if (dialogOpen()) {
+  <app-client-dialog (saved)="onSaved()" (closed)="closeDialog()" />
+}
