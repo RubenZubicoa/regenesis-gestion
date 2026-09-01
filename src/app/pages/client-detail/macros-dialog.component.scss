@@ -299,12 +299,20 @@
 .board__foot {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 0.65rem;
   margin-top: 1.25rem;
 }
 
+.board__foot-right {
+  display: flex;
+  gap: 0.65rem;
+  margin-left: auto;
+}
+
 .ghost-btn,
-.gold-btn {
+.gold-btn,
+.danger-btn {
   border: 0;
   border-radius: var(--radius-sm);
   padding: 0.7rem 1.1rem;
@@ -337,6 +345,15 @@
   }
 }
 
+.danger-btn {
+  background: rgba(255, 107, 107, 0.16);
+  color: #ffb4b4;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 107, 107, 0.28);
+  }
+}
+
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -357,5 +374,18 @@
   .board__body,
   .macro-tiles {
     grid-template-columns: 1fr;
+  }
+
+  .board__foot {
+    flex-wrap: wrap;
+  }
+
+  .board__foot-right {
+    width: 100%;
+  }
+
+  .ghost-btn,
+  .gold-btn {
+    flex: 1;
   }
 }

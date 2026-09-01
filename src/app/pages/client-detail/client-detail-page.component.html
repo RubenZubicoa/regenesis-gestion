@@ -493,6 +493,7 @@
         [clientName]="d.client.fullName"
         [macros]="d.macros"
         (saved)="onMacrosSaved($event)"
+        (deleted)="onMacrosDeleted()"
         (closed)="closeMacrosDialog()"
       />
     }

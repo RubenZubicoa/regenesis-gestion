@@ -99,10 +99,23 @@
     }
 
     <footer class="board__foot">
-      <button type="button" class="ghost-btn" (click)="close()" [disabled]="saving()">Cancelar</button>
-      <button type="button" class="gold-btn" (click)="save()" [disabled]="saving()">
-        {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Asignar macros' }}
-      </button>
+      @if (isEdit) {
+        <button
+          type="button"
+          class="danger-btn"
+          (click)="remove()"
+          [disabled]="saving() || deleting()">
+          {{ deleting() ? 'Eliminando…' : 'Eliminar macros' }}
+        </button>
+      }
+      <div class="board__foot-right">
+        <button type="button" class="ghost-btn" (click)="close()" [disabled]="saving() || deleting()">
+          Cancelar
+        </button>
+        <button type="button" class="gold-btn" (click)="save()" [disabled]="saving() || deleting()">
+          {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Asignar macros' }}
+        </button>
+      </div>
     </footer>
   </div>
 </div>

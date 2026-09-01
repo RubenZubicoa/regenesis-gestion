@@ -431,6 +431,14 @@ export class ClientDetailPageComponent {
     this.macrosDialogOpen.set(false);
   }
 
+  onMacrosDeleted(): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({ ...current, macros: null });
+    }
+    this.macrosDialogOpen.set(false);
+  }
+
   openMealsDialog(): void {
     this.mealsDialogOpen.set(true);
   }

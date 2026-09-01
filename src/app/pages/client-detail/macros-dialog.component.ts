@@ -19,6 +19,7 @@ export class MacrosDialogComponent implements OnInit {
   readonly macros = input<Macros | null>(null);
 
   readonly saved = output<Macros>();
+  readonly deleted = output<void>();
   readonly closed = output<void>();
 
   readonly calories = signal(0);
@@ -26,6 +27,7 @@ export class MacrosDialogComponent implements OnInit {
   readonly carbs = signal(0);
   readonly fats = signal(0);
   readonly saving = signal(false);
+  readonly deleting = signal(false);
   readonly saveError = signal<string | null>(null);
 
   ngOnInit(): void {
@@ -68,11 +70,12 @@ export class MacrosDialogComponent implements OnInit {
   }
 
   close(): void {
-    if (this.saving()) return;
+    if (this.saving() || this.deleting()) return;
     this.closed.emit();
   }
 
   save(): void {
+    if (this.deleting()) return;
     if (this.calories() <= 0 || this.protein() <= 0 || this.carbs() <= 0 || this.fats() <= 0) {
       this.saveError.set('Completa calorías, proteínas, carbohidratos y grasas.');
       return;
@@ -97,6 +100,24 @@ export class MacrosDialogComponent implements OnInit {
           this.saveError.set(err.message);
         },
       });
+  }
+
+  remove(): void {
+    const current = this.macros();
+    if (!current || this.saving() || this.deleting()) return;
+
+    this.deleting.set(true);
+    this.saveError.set(null);
+    this.macrosService.remove(current._id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleted.emit();
+      },
+      error: (err: Error) => {
+        this.deleting.set(false);
+        this.saveError.set(err.message);
+      },
+    });
   }
 
   @HostListener('document:keydown.escape')

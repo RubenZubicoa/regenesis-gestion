@@ -53,4 +53,8 @@ export class MacrosService {
 
     return request$.pipe(map((raw) => normalizeMacros(raw)));
   }
+
+  remove(id: string): Observable<void> {
+    return this.api.delete(`/api/macros/${encodeURIComponent(id)}`);
+  }
 }
