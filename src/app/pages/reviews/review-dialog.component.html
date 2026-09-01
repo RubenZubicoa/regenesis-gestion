@@ -37,12 +37,13 @@
         />
       </label>
 
-      <label class="field">
+      <label class="field field--datetime">
         <span>Fecha y hora</span>
         <input
           type="datetime-local"
           [ngModel]="dateLocal()"
           (ngModelChange)="dateLocal.set($event)"
+          (click)="openDatePicker($event)"
         />
       </label>
 

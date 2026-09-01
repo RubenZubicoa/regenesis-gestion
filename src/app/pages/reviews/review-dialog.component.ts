@@ -73,6 +73,16 @@ export class ReviewDialogComponent implements OnInit {
     this.status.set(status);
   }
 
+  openDatePicker(event: Event): void {
+    const input = event.currentTarget as HTMLInputElement;
+    if (typeof input.showPicker !== 'function') return;
+    try {
+      input.showPicker();
+    } catch {
+      // El picker ya está abierto o el navegador no lo permite en este gesto.
+    }
+  }
+
   close(): void {
     if (this.saving() || this.deleting()) return;
     this.closed.emit();

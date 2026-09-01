@@ -162,6 +162,27 @@
   }
 }
 
+.field--datetime {
+  position: relative;
+
+  input[type='datetime-local'] {
+    cursor: pointer;
+    color-scheme: dark;
+  }
+
+  /* El indicador nativo cubre todo el input para abrir el calendario al clic. */
+  input[type='datetime-local']::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+}
+
 .status-toggle {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
