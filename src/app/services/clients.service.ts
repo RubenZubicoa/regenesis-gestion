@@ -36,6 +36,8 @@ export interface ClientCreatePayload {
   avatar: string;
 }
 
+export type ClientUpdatePayload = Omit<ClientCreatePayload, 'password'>;
+
 @Injectable({ providedIn: 'root' })
 export class ClientsService {
   private readonly api = inject(ApiService);
@@ -58,6 +60,18 @@ export class ClientsService {
       }),
       map(normalizeClient),
     );
+  }
+
+  update(id: string, payload: ClientUpdatePayload): Observable<Client> {
+    return this.api
+      .put<unknown>(`/api/clients/${encodeURIComponent(id)}`, payload)
+      .pipe(map(normalizeClient));
+  }
+
+  changePassword(id: string, password: string): Observable<void> {
+    return this.api
+      .put<unknown>(`/api/clients/${encodeURIComponent(id)}`, { contraseña: password })
+      .pipe(map(() => undefined));
   }
 
   private resolveProgramId(program?: string): Observable<string> {

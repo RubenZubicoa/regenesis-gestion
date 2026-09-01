@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, output, signal } from '@angular/core';
+import { Component, HostListener, OnInit, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import type { Client } from '../../models/client';
@@ -16,8 +16,10 @@ const DEFAULT_TOTAL_PHASES = 3;
   templateUrl: './client-dialog.component.html',
   styleUrl: './client-dialog.component.scss',
 })
-export class ClientDialogComponent {
+export class ClientDialogComponent implements OnInit {
   private readonly clients = inject(ClientsService);
+
+  readonly client = input<Client | null>(null);
 
   readonly saved = output<Client>();
   readonly closed = output<void>();
@@ -36,6 +38,26 @@ export class ClientDialogComponent {
 
   readonly saving = signal(false);
   readonly saveError = signal<string | null>(null);
+
+  ngOnInit(): void {
+    const current = this.client();
+    if (!current) return;
+
+    this.fullName.set(current.fullName);
+    this.email.set(current.email);
+    this.telefono.set(current.telefono);
+    this.goal.set(current.goal);
+    this.coach.set(current.coach || DEFAULT_COACH);
+    this.plan.set(current.plan || DEFAULT_PLAN);
+    this.startDate.set(current.startDate.slice(0, 10));
+    this.endDate.set(current.endDate.slice(0, 10));
+    this.totalWeeks.set(current.totalWeeks || DEFAULT_TOTAL_WEEKS);
+    this.avatar.set(current.avatar);
+  }
+
+  get isEdit(): boolean {
+    return this.client() != null;
+  }
 
   close(): void {
     if (this.saving()) return;
@@ -81,13 +103,15 @@ export class ClientDialogComponent {
       this.saveError.set('El teléfono es obligatorio.');
       return;
     }
-    if (!password.trim()) {
-      this.saveError.set('La contraseña es obligatoria.');
-      return;
-    }
-    if (password.trim().length < 6) {
-      this.saveError.set('La contraseña debe tener al menos 6 caracteres.');
-      return;
+    if (!this.isEdit) {
+      if (!password.trim()) {
+        this.saveError.set('La contraseña es obligatoria.');
+        return;
+      }
+      if (password.trim().length < 6) {
+        this.saveError.set('La contraseña debe tener al menos 6 caracteres.');
+        return;
+      }
     }
     if (!goal) {
       this.saveError.set('El objetivo es obligatorio.');
@@ -117,34 +141,53 @@ export class ClientDialogComponent {
     this.saving.set(true);
     this.saveError.set(null);
 
-    this.clients
-      .create({
-        name: firstNameFrom(fullName),
-        fullName,
-        email,
-        telefono,
-        password: password.trim(),
-        goal,
-        coach,
-        plan,
-        startDate,
-        endDate,
-        week: 1,
-        totalWeeks,
-        phase: 1,
-        totalPhases: DEFAULT_TOTAL_PHASES,
-        avatar: avatar || defaultAvatar(fullName),
-      })
-      .subscribe({
-        next: (client) => {
-          this.saving.set(false);
-          this.saved.emit(client);
-        },
-        error: (err: Error) => {
-          this.saving.set(false);
-          this.saveError.set(err.message);
-        },
-      });
+    const current = this.client();
+    const request$ = current
+      ? this.clients.update(current._id, {
+          name: firstNameFrom(fullName),
+          fullName,
+          email,
+          telefono,
+          goal,
+          coach,
+          plan,
+          program: current.program,
+          startDate,
+          endDate,
+          week: current.week,
+          totalWeeks,
+          phase: current.phase,
+          totalPhases: current.totalPhases,
+          avatar: avatar || current.avatar || defaultAvatar(fullName),
+        })
+      : this.clients.create({
+          name: firstNameFrom(fullName),
+          fullName,
+          email,
+          telefono,
+          password: password.trim(),
+          goal,
+          coach,
+          plan,
+          startDate,
+          endDate,
+          week: 1,
+          totalWeeks,
+          phase: 1,
+          totalPhases: DEFAULT_TOTAL_PHASES,
+          avatar: avatar || defaultAvatar(fullName),
+        });
+
+    request$.subscribe({
+      next: (client) => {
+        this.saving.set(false);
+        this.saved.emit(client);
+      },
+      error: (err: Error) => {
+        this.saving.set(false);
+        this.saveError.set(err.message);
+      },
+    });
   }
 
   @HostListener('document:keydown.escape')

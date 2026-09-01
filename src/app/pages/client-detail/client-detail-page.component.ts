@@ -3,12 +3,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 
+import type { Client } from '../../models/client';
 import type { ClientDetail } from '../../models/client-detail';
 import type { MacroItem, Macros } from '../../models/macros';
 import type { Meal } from '../../models/meal';
 import type { Supplements } from '../../models/supplements';
 import type { Weight } from '../../models/weight';
 import { ClientDetailService } from '../../services/client-detail.service';
+import { ClientDialogComponent } from '../clients/client-dialog.component';
+import { PasswordDialogComponent } from '../clients/password-dialog.component';
 import { MacrosDialogComponent } from './macros-dialog.component';
 import { MealsDialogComponent } from './meals-dialog.component';
 import { SupplementsDialogComponent } from './supplements-dialog.component';
@@ -59,7 +62,14 @@ export interface WeightChartView {
 
   standalone: true,
 
-  imports: [RouterLink, MacrosDialogComponent, MealsDialogComponent, SupplementsDialogComponent],
+  imports: [
+    RouterLink,
+    MacrosDialogComponent,
+    MealsDialogComponent,
+    SupplementsDialogComponent,
+    ClientDialogComponent,
+    PasswordDialogComponent,
+  ],
 
   templateUrl: './client-detail-page.component.html',
 
@@ -90,6 +100,8 @@ export class ClientDetailPageComponent {
   readonly mealsDialogOpen = signal(false);
 
   readonly supplementsDialogOpen = signal(false);
+  readonly personalDialogOpen = signal(false);
+  readonly passwordDialogOpen = signal(false);
 
 
 
@@ -452,6 +464,37 @@ export class ClientDetailPageComponent {
     const id = this.detail()?.client._id;
     if (!id) return;
     void this.router.navigate(['/clients', id, 'rutina']);
+  }
+
+  openPersonalDialog(): void {
+    this.personalDialogOpen.set(true);
+  }
+
+  closePersonalDialog(): void {
+    this.personalDialogOpen.set(false);
+  }
+
+  onPersonalSaved(client: Client): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({
+        ...current,
+        client: { ...current.client, ...client },
+      });
+    }
+    this.personalDialogOpen.set(false);
+  }
+
+  openPasswordDialog(): void {
+    this.passwordDialogOpen.set(true);
+  }
+
+  closePasswordDialog(): void {
+    this.passwordDialogOpen.set(false);
+  }
+
+  onPasswordSaved(): void {
+    this.passwordDialogOpen.set(false);
   }
 
 }

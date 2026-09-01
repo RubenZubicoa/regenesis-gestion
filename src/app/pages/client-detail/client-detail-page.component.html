@@ -30,6 +30,14 @@
             <span class="chip">{{ d.client.telefono }}</span>
             <span class="chip">{{ formatDate(d.client.startDate) }} → {{ formatDate(d.client.endDate) }}</span>
           </div>
+          <div class="profile__actions">
+            <button type="button" class="profile__btn" (click)="openPersonalDialog()">
+              Editar datos personales
+            </button>
+            <button type="button" class="profile__btn profile__btn--ghost" (click)="openPasswordDialog()">
+              Cambiar contraseña
+            </button>
+          </div>
         </div>
         <div class="profile__ring">
           <svg viewBox="0 0 120 120" class="ring">
@@ -507,6 +515,27 @@
         [supplements]="d.supplements"
         (saved)="onSupplementsSaved($event)"
         (closed)="closeSupplementsDialog()"
+      />
+    }
+  }
+
+  @if (personalDialogOpen()) {
+    @if (detail(); as d) {
+      <app-client-dialog
+        [client]="d.client"
+        (saved)="onPersonalSaved($event)"
+        (closed)="closePersonalDialog()"
+      />
+    }
+  }
+
+  @if (passwordDialogOpen()) {
+    @if (detail(); as d) {
+      <app-password-dialog
+        [clientId]="d.client._id"
+        [clientName]="d.client.fullName"
+        (saved)="onPasswordSaved()"
+        (closed)="closePasswordDialog()"
       />
     }
   }

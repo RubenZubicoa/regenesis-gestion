@@ -6,13 +6,17 @@
 
     <header class="board__head">
       <div>
-        <p class="eyebrow">Alta en el roster</p>
-        <h2 id="client-dialog-title">Nuevo cliente</h2>
+        <p class="eyebrow">{{ isEdit ? 'Ficha del cliente' : 'Alta en el roster' }}</p>
+        <h2 id="client-dialog-title">
+          {{ isEdit ? 'Editar datos personales' : 'Nuevo cliente' }}
+        </h2>
       </div>
       <button type="button" class="board__close" (click)="close()" aria-label="Cerrar">×</button>
     </header>
 
-    <p class="phase-note">Se asignará automáticamente a la fase 1.</p>
+    @if (!isEdit) {
+      <p class="phase-note">Se asignará automáticamente a la fase 1.</p>
+    }
 
     <form class="board__form" (submit)="$event.preventDefault(); save()">
       <div class="board__body">
@@ -52,17 +56,19 @@
           />
         </label>
 
-        <label class="field field--full">
-          <span>Contraseña de acceso</span>
-          <input
-            type="password"
-            [ngModel]="password()"
-            (ngModelChange)="password.set($event)"
-            name="password"
-            autocomplete="new-password"
-            placeholder="Mínimo 6 caracteres"
-          />
-        </label>
+        @if (!isEdit) {
+          <label class="field field--full">
+            <span>Contraseña de acceso</span>
+            <input
+              type="password"
+              [ngModel]="password()"
+              (ngModelChange)="password.set($event)"
+              name="password"
+              autocomplete="new-password"
+              placeholder="Mínimo 6 caracteres"
+            />
+          </label>
+        }
 
         <label class="field field--full">
           <span>Objetivo</span>
@@ -152,7 +158,7 @@
             Cancelar
           </button>
           <button type="submit" class="save-btn" [disabled]="saving()">
-            {{ saving() ? 'Creando…' : 'Crear cliente' }}
+            {{ saving() ? (isEdit ? 'Guardando…' : 'Creando…') : isEdit ? 'Guardar cambios' : 'Crear cliente' }}
           </button>
         </div>
       </footer>
