@@ -12,6 +12,7 @@ import type { Weight } from '../../models/weight';
 import { ClientDetailService } from '../../services/client-detail.service';
 import { ClientDialogComponent } from '../clients/client-dialog.component';
 import { PasswordDialogComponent } from '../clients/password-dialog.component';
+import { PhaseDialogComponent } from '../clients/phase-dialog.component';
 import { MacrosDialogComponent } from './macros-dialog.component';
 import { MealsDialogComponent } from './meals-dialog.component';
 import { SupplementsDialogComponent } from './supplements-dialog.component';
@@ -69,6 +70,7 @@ export interface WeightChartView {
     SupplementsDialogComponent,
     ClientDialogComponent,
     PasswordDialogComponent,
+    PhaseDialogComponent,
   ],
 
   templateUrl: './client-detail-page.component.html',
@@ -102,6 +104,7 @@ export class ClientDetailPageComponent {
   readonly supplementsDialogOpen = signal(false);
   readonly personalDialogOpen = signal(false);
   readonly passwordDialogOpen = signal(false);
+  readonly phaseDialogOpen = signal(false);
 
 
 
@@ -495,6 +498,25 @@ export class ClientDetailPageComponent {
 
   onPasswordSaved(): void {
     this.passwordDialogOpen.set(false);
+  }
+
+  openPhaseDialog(): void {
+    this.phaseDialogOpen.set(true);
+  }
+
+  closePhaseDialog(): void {
+    this.phaseDialogOpen.set(false);
+  }
+
+  onPhaseSaved(client: Client): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({
+        ...current,
+        client: { ...current.client, ...client },
+      });
+    }
+    this.phaseDialogOpen.set(false);
   }
 
 }

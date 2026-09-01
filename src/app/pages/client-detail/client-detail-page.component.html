@@ -37,6 +37,9 @@
             <button type="button" class="profile__btn profile__btn--ghost" (click)="openPasswordDialog()">
               Cambiar contraseña
             </button>
+            <button type="button" class="profile__btn profile__btn--ghost" (click)="openPhaseDialog()">
+              Cambiar fase
+            </button>
           </div>
         </div>
         <div class="profile__ring">
@@ -536,6 +539,16 @@
         [clientName]="d.client.fullName"
         (saved)="onPasswordSaved()"
         (closed)="closePasswordDialog()"
+      />
+    }
+  }
+
+  @if (phaseDialogOpen()) {
+    @if (detail(); as d) {
+      <app-phase-dialog
+        [client]="d.client"
+        (saved)="onPhaseSaved($event)"
+        (closed)="closePhaseDialog()"
       />
     }
   }

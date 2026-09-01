@@ -74,6 +74,11 @@ export class ClientsService {
       .pipe(map(() => undefined));
   }
 
+  changePhase(client: Client, phase: number): Observable<Client> {
+    const { _id, ...fields } = client;
+    return this.update(_id, { ...fields, phase });
+  }
+
   private resolveProgramId(program?: string): Observable<string> {
     if (program) return of(program);
     return this.listPrograms().pipe(

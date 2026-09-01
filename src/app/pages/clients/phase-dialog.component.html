@@ -1,0 +1,55 @@
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="phase-dialog-title">
+  <button type="button" class="sheet__backdrop" (click)="close()" aria-label="Cerrar"></button>
+
+  <div class="board">
+    <div class="board__glow" aria-hidden="true"></div>
+
+    <header class="board__head">
+      <div>
+        <p class="eyebrow">Progreso del programa</p>
+        <h2 id="phase-dialog-title">Cambiar fase</h2>
+      </div>
+      <button type="button" class="board__close" (click)="close()" aria-label="Cerrar">×</button>
+    </header>
+
+    <p class="phase-note">{{ client().fullName }}</p>
+
+    <div class="board__body">
+      <p class="hint">Elige la fase en la que está el cliente ahora.</p>
+      <div class="phase-toggle" role="group" aria-label="Fase del cliente">
+        @for (item of phases; track item) {
+          <button
+            type="button"
+            class="phase-btn"
+            [class.is-on]="phase() === item"
+            (click)="setPhase(item)">
+            Fase {{ item }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (saveError()) {
+      <p class="board__error">{{ saveError() }}</p>
+    }
+
+    <footer class="board__foot">
+      <div class="board__foot-right">
+        <button
+          type="button"
+          class="ghost-btn"
+          (click)="close()"
+          [disabled]="saving()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="save-btn"
+          (click)="save()"
+          [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar fase' }}
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>
