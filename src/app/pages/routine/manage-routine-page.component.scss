@@ -180,6 +180,20 @@
   }
 }
 
+.search--select {
+  select {
+    border: 0;
+    background: transparent;
+    width: 100%;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--navy);
+    outline: none;
+    cursor: pointer;
+  }
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;

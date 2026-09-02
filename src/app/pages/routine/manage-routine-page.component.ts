@@ -3,10 +3,12 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { forkJoin, of, switchMap } from 'rxjs';
+import { catchError, forkJoin, of, switchMap } from 'rxjs';
 
-import type { ExerciseMaster } from '../../models/exercise-master';
+import type { ExerciseCategory, ExerciseMaster } from '../../models/exercise-master';
+import { categoryMatches } from '../../models/exercise-master';
 import type { RoutineExercise } from '../../models/routine-day';
+import { ExerciseCategoriesService } from '../../services/exercise-categories.service';
 import { ExerciseMastersService } from '../../services/exercise-masters.service';
 import { RoutineService } from '../../services/routine.service';
 
@@ -38,6 +40,7 @@ export class ManageRoutinePageComponent {
   private readonly router = inject(Router);
   private readonly routineService = inject(RoutineService);
   private readonly exerciseMasters = inject(ExerciseMastersService);
+  private readonly categoriesApi = inject(ExerciseCategoriesService);
 
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -48,18 +51,23 @@ export class ManageRoutinePageComponent {
   readonly clientId = signal('');
   readonly clientName = signal('');
   readonly masters = signal<ExerciseMaster[]>([]);
+  readonly categories = signal<ExerciseCategory[]>([]);
   readonly days = signal<EditableDay[]>([]);
   readonly originalIds = signal<string[]>([]);
 
   readonly masterQuery = signal('');
   readonly masterFilter = signal<MasterFilter>('all');
+  readonly masterCategoryFilter = signal('all');
   readonly activeDayUid = signal<string | null>(null);
 
   readonly filteredMasters = computed(() => {
     const q = this.masterQuery().trim().toLowerCase();
     const f = this.masterFilter();
+    const cat = this.masterCategoryFilter();
+    const selected = this.categories().find((item) => item._id === cat);
     return this.masters()
       .filter((m) => (f === 'all' ? true : m.type === f))
+      .filter((m) => (cat === 'all' ? true : selected ? categoryMatches(m.category, selected) : false))
       .filter((m) => !q || m.name.toLowerCase().includes(q));
   });
 
@@ -91,6 +99,7 @@ export class ManageRoutinePageComponent {
             client: this.routineService.loadClient(id),
             days: this.routineService.listByClient(id),
             masters: this.exerciseMasters.list(),
+            categories: this.categoriesApi.list().pipe(catchError(() => of([]))),
           });
         }),
         takeUntilDestroyed(),
@@ -104,6 +113,7 @@ export class ManageRoutinePageComponent {
           }
           this.clientName.set(payload.client.fullName);
           this.masters.set(payload.masters);
+          this.categories.set(payload.categories);
           const editable = payload.days.map((day) => this.toEditableDay(day));
           this.days.set(editable);
           this.originalIds.set(payload.days.map((d) => d._id));
@@ -123,6 +133,10 @@ export class ManageRoutinePageComponent {
 
   setMasterFilter(filter: MasterFilter): void {
     this.masterFilter.set(filter);
+  }
+
+  setMasterCategoryFilter(filter: string): void {
+    this.masterCategoryFilter.set(filter);
   }
 
   selectDay(uid: string): void {

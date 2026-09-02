@@ -53,6 +53,20 @@
           <button type="button" class="chip" [class.is-on]="masterFilter() === 'cardio'" (click)="setMasterFilter('cardio')">Cardio</button>
         </div>
 
+        @if (categories().length) {
+          <label class="search search--select">
+            <select
+              [ngModel]="masterCategoryFilter()"
+              (ngModelChange)="setMasterCategoryFilter($event)"
+              aria-label="Filtrar por categoría">
+              <option value="all">Todas las categorías</option>
+              @for (cat of categories(); track cat._id) {
+                <option [value]="cat._id">{{ cat.label }}</option>
+              }
+            </select>
+          </label>
+        }
+
         <div
           class="library__list"
           cdkDropList
@@ -81,7 +95,7 @@
               </div>
             </div>
           } @empty {
-            <p class="library__empty">No hay ejercicios en el maestro.</p>
+            <p class="library__empty">No hay ejercicios con ese filtro.</p>
           }
         </div>
       </aside>
