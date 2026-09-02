@@ -37,6 +37,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'videoteca',
+    loadComponent: () =>
+      import('./pages/video-library/video-library-page.component').then(
+        (m) => m.VideoLibraryPageComponent,
+      ),
+  },
+  {
     path: 'revisiones',
     loadComponent: () =>
       import('./pages/reviews/reviews-page.component').then(

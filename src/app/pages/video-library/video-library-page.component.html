@@ -1,0 +1,200 @@
+<section class="page">
+  @if (loading()) {
+    <div class="state">Cargando el archivo…</div>
+  } @else if (error()) {
+    <div class="state state--error">
+      <p>{{ error() }}</p>
+      <button type="button" class="hero__cta" (click)="reload()">Reintentar</button>
+    </div>
+  } @else {
+    <div class="hero">
+      <div class="hero__film" aria-hidden="true"></div>
+      <div class="hero__copy">
+        <p class="eyebrow">Archivo del método</p>
+        <h1>Videoteca<br />formativa</h1>
+        <p class="hero__sub">
+          Colecciones de vídeos y documentos que los clientes recorren según su fase.
+        </p>
+        <button type="button" class="hero__cta" (click)="openCreateCollection()">
+          + Nueva colección
+        </button>
+      </div>
+      <div class="hero__metrics" aria-label="Resumen del archivo">
+        <div class="metric">
+          <span class="metric__value">{{ stats().collections }}</span>
+          <span class="metric__label">Colecciones</span>
+        </div>
+        <div class="metric metric--gold">
+          <span class="metric__value">{{ stats().videos }}</span>
+          <span class="metric__label">Vídeos</span>
+        </div>
+        <div class="metric metric--purple">
+          <span class="metric__value">{{ stats().pdfs }}</span>
+          <span class="metric__label">PDFs</span>
+        </div>
+      </div>
+    </div>
+
+    @if (actionError()) {
+      <p class="banner-error">{{ actionError() }}</p>
+    }
+
+    @if (collections().length === 0) {
+      <div class="empty-archive">
+        <div class="empty-archive__reel" aria-hidden="true"></div>
+        <h2>El archivo está vacío</h2>
+        <p>Crea la primera colección y empieza a colgar piezas formativas.</p>
+        <button type="button" class="hero__cta" (click)="openCreateCollection()">
+          Abrir el archivo
+        </button>
+      </div>
+    } @else {
+      <div class="studio">
+        <aside class="rail">
+          <div class="rail__head">
+            <h2>Colecciones</h2>
+            <button type="button" class="rail__add" (click)="openCreateCollection()">+</button>
+          </div>
+          <div class="rail__list">
+            @for (col of collections(); track col.uuid) {
+              <button
+                type="button"
+                class="reel"
+                [class.is-on]="selected()!.uuid === col.uuid"
+                [attr.data-tone]="col.tone"
+                (click)="selectCollection(col.uuid)">
+                <span class="reel__icon">{{ iconGlyph(col.icon) }}</span>
+                <span class="reel__copy">
+                  <strong>{{ col.category }}</strong>
+                  <em>{{ col.items.length }} pieza{{ col.items.length === 1 ? '' : 's' }}</em>
+                </span>
+              </button>
+            }
+          </div>
+        </aside>
+
+        @if (selected(); as col) {
+          <div class="stage" [attr.data-tone]="col.tone">
+            <div class="stage__head">
+              <div class="stage__title">
+                <span class="stage__mark">{{ iconGlyph(col.icon) }}</span>
+                <div>
+                  <p class="eyebrow">Sala de proyección</p>
+                  <h2>{{ col.category }}</h2>
+                </div>
+              </div>
+              <div class="stage__actions">
+                <button type="button" class="ghost-btn" (click)="openEditCollection()">
+                  Editar colección
+                </button>
+                <button type="button" class="gold-btn" (click)="openCreatePiece()">
+                  + Añadir pieza
+                </button>
+              </div>
+            </div>
+
+            <div class="stage__toolbar">
+              <label class="search">
+                <span aria-hidden="true">⌕</span>
+                <input
+                  type="search"
+                  placeholder="Buscar en esta colección…"
+                  [ngModel]="query()"
+                  (ngModelChange)="query.set($event)"
+                />
+              </label>
+              <div class="chips">
+                @for (item of kindFilters; track item.key) {
+                  <button
+                    type="button"
+                    class="chip"
+                    [class.is-on]="kindFilter() === item.key"
+                    (click)="setKind(item.key)">
+                    {{ item.label }}
+                  </button>
+                }
+              </div>
+              <div class="chips">
+                @for (item of phaseFilters; track item.key) {
+                  <button
+                    type="button"
+                    class="chip"
+                    [class.is-on]="phaseFilter() === item.key"
+                    (click)="setPhase(item.key)">
+                    {{ item.label }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            @if (visiblePieces().length === 0) {
+              <div class="stage__empty">
+                <p>{{ col.items.length === 0 ? 'Esta colección aún no tiene piezas.' : 'Nada coincide con el filtro.' }}</p>
+                <button type="button" class="gold-btn" (click)="openCreatePiece()">Añadir la primera</button>
+              </div>
+            } @else {
+              <div class="posters">
+                @for (entry of visiblePieces(); track $index) {
+                  <article
+                    class="poster"
+                    role="button"
+                    tabindex="0"
+                    [class.is-pdf]="entry.item.type === 'PDF'"
+                    (click)="openEditPiece(entry.index)"
+                    (keydown.enter)="openEditPiece(entry.index)">
+                    <div class="poster__media">
+                      @if (poster(entry.item); as thumb) {
+                        <img [src]="thumb" [alt]="entry.item.title" />
+                      } @else if (entry.item.type === 'PDF') {
+                        <div class="poster__doc">
+                          <span>PDF</span>
+                          <strong>{{ entry.item.length }}</strong>
+                        </div>
+                      } @else {
+                        <div class="poster__fallback">
+                          <span>▶</span>
+                        </div>
+                      }
+                      <span class="poster__ticket">Fase {{ entry.item.phase }}</span>
+                      <button
+                        type="button"
+                        class="poster__open"
+                        (click)="openExternal($event, entry.item.url)"
+                        [attr.aria-label]="'Abrir ' + entry.item.title">
+                        {{ entry.item.type === 'PDF' ? 'Abrir' : 'Ver' }}
+                      </button>
+                    </div>
+                    <div class="poster__copy">
+                      <em>{{ entry.item.type }} · {{ entry.item.length }}</em>
+                      <h3>{{ entry.item.title }}</h3>
+                    </div>
+                  </article>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+</section>
+
+@if (collectionDialogOpen()) {
+  <app-video-collection-dialog
+    [collection]="editingCollection()"
+    (saved)="onCollectionSaved($event)"
+    (deleted)="onCollectionDeleted($event)"
+    (closed)="closeCollectionDialog()"
+  />
+}
+
+@if (pieceDialogOpen()) {
+  <app-video-piece-dialog
+    [piece]="editingPiece()"
+    [busy]="saving()"
+    [persistError]="actionError()"
+    (saved)="onPieceSaved($event)"
+    (deleted)="onPieceDeleted()"
+    (closed)="closePieceDialog()"
+  />
+}

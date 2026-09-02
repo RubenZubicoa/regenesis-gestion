@@ -1,0 +1,101 @@
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="piece-dialog-title">
+  <button type="button" class="sheet__backdrop" (click)="close()" aria-label="Cerrar"></button>
+
+  <div class="board">
+    <div class="board__glow" aria-hidden="true"></div>
+
+    <header class="board__head">
+      <div>
+        <p class="eyebrow">Pieza formativa</p>
+        <h2 id="piece-dialog-title">
+          {{ isEdit ? 'Editar pieza' : 'Nueva pieza' }}
+        </h2>
+      </div>
+      <button type="button" class="board__close" (click)="close()" aria-label="Cerrar">×</button>
+    </header>
+
+    <div class="board__body">
+      <div class="type-toggle" role="group" aria-label="Tipo">
+        <button
+          type="button"
+          class="type-btn"
+          [class.is-on]="type() === 'Vídeo'"
+          (click)="type.set('Vídeo')">
+          Vídeo
+        </button>
+        <button
+          type="button"
+          class="type-btn"
+          [class.is-on]="type() === 'PDF'"
+          (click)="type.set('PDF')">
+          PDF
+        </button>
+      </div>
+
+      <label class="field">
+        <span>Título</span>
+        <input
+          type="text"
+          [ngModel]="title()"
+          (ngModelChange)="title.set($event)"
+          placeholder="Cómo organizar la cocina…"
+        />
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span>{{ type() === 'PDF' ? 'Extensión' : 'Duración' }}</span>
+          <input
+            type="text"
+            [ngModel]="length()"
+            (ngModelChange)="length.set($event)"
+            [placeholder]="type() === 'PDF' ? '8 pág.' : '12 min'"
+          />
+        </label>
+
+        <div class="field">
+          <span>Fase</span>
+          <div class="phase-row" role="group" aria-label="Fase">
+            @for (item of phases; track item) {
+              <button
+                type="button"
+                class="phase-btn"
+                [class.is-on]="phase() === item"
+                (click)="phase.set(item)">
+                {{ item }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <label class="field">
+        <span>URL</span>
+        <input
+          type="url"
+          [ngModel]="url()"
+          (ngModelChange)="url.set($event)"
+          [placeholder]="type() === 'PDF' ? 'https://…/guia.pdf' : 'https://youtu.be/…'"
+        />
+      </label>
+    </div>
+
+    @if (saveError() || persistError()) {
+      <p class="board__error">{{ saveError() || persistError() }}</p>
+    }
+
+    <footer class="board__foot">
+      @if (isEdit) {
+        <button type="button" class="danger-btn" (click)="remove()" [disabled]="busy()">
+          {{ busy() ? 'Guardando…' : 'Eliminar pieza' }}
+        </button>
+      }
+      <div class="board__foot-right">
+        <button type="button" class="ghost-btn" (click)="close()" [disabled]="busy()">Cancelar</button>
+        <button type="button" class="save-btn" (click)="save()" [disabled]="busy()">
+          {{ busy() ? 'Guardando…' : isEdit ? 'Guardar' : 'Añadir al archivo' }}
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>
