@@ -133,23 +133,29 @@
             </button>
           </div>
           @if (d.macros; as m) {
-            <div class="macro-hero">
-              <div class="macro-hero__ring">
-                <span class="macro-hero__value">{{ m.target }}</span>
-                <span class="macro-hero__sub">kcal objetivo</span>
+            <div class="macro-mix">
+              <div class="macro-mix__ring" [style.background]="macrosMixGradient(m)">
+                <div class="macro-mix__core">
+                  <strong>{{ m.target }}</strong>
+                  <span>kcal / día</span>
+                </div>
               </div>
-              <div class="macro-bars">
-                @for (item of m.items; track item.key) {
-                  <div class="macro-bar" [class]="macroToneClass(item.tone)">
-                    <div class="macro-bar__head">
-                      <span>{{ item.label }}</span>
-                      <span>{{ item.grams }}/{{ item.target }} g</span>
-                    </div>
-                    <div class="macro-bar__track">
-                      <span [style.width.%]="macroPct(item)"></span>
-                    </div>
-                  </div>
-                }
+              <div class="macro-mix__side">
+                <ul class="macro-mix__legend">
+                  <li>
+                    <i class="macro-swatch macro-swatch--prot"></i>
+                    Proteínas {{ macroTarget(m, 'prot') }} g
+                  </li>
+                  <li>
+                    <i class="macro-swatch macro-swatch--carbs"></i>
+                    Carbs {{ macroTarget(m, 'carbs') }} g
+                  </li>
+                  <li>
+                    <i class="macro-swatch macro-swatch--fats"></i>
+                    Grasas {{ macroTarget(m, 'fats') }} g
+                  </li>
+                </ul>
+                <p class="macro-mix__hint">Desde macros: {{ macrosEstimatedKcal(m) }} kcal</p>
               </div>
             </div>
           } @else {

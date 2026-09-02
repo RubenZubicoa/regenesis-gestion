@@ -343,71 +343,86 @@
   padding: 0.5rem 0 0.25rem;
 }
 
-.macro-hero {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 1.5rem;
+.macro-mix {
+  display: flex;
   align-items: center;
+  gap: 1.75rem;
+  padding: 0.35rem 0;
 }
 
-.macro-hero__ring {
-  aspect-ratio: 1;
+.macro-mix__ring {
+  width: 176px;
+  height: 176px;
+  flex-shrink: 0;
   border-radius: 50%;
-  background: conic-gradient(var(--gold) 0deg, var(--gold-light) 180deg, var(--bg-element) 180deg);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 0 10px rgba(10, 27, 51, 0.06);
+}
+
+.macro-mix__core {
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  background: #081526;
+  color: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 0 0 12px var(--card);
-}
+  gap: 0.1rem;
 
-.macro-hero__value {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.75rem;
-  color: var(--navy);
-}
-
-.macro-hero__sub {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.macro-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.macro-bar__head {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.82rem;
-  font-weight: 600;
-  margin-bottom: 0.35rem;
-  color: var(--text-secondary);
-}
-
-.macro-bar__track {
-  height: 10px;
-  border-radius: 999px;
-  background: var(--track);
-  overflow: hidden;
+  strong {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    font-weight: 800;
+  }
 
   span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, var(--gold-light), var(--gold));
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.55);
   }
 }
 
-.macro-bar.tone-teal .macro-bar__track span {
-  background: linear-gradient(90deg, #3ad1c4, #0e9f92);
+.macro-mix__side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
 }
 
-.macro-bar.tone-coral .macro-bar__track span {
-  background: linear-gradient(90deg, #ff8c6b, #f0506e);
+.macro-mix__legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.macro-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+
+  &--prot { background: var(--gold-light); }
+  &--carbs { background: var(--blue-light); }
+  &--fats { background: var(--teal); }
+}
+
+.macro-mix__hint {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #c9921f;
 }
 
 .meal-timeline {
@@ -1069,13 +1084,13 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .macro-hero {
-    grid-template-columns: 1fr;
+  .macro-mix {
+    flex-direction: column;
+    text-align: center;
   }
 
-  .macro-hero__ring {
-    max-width: 160px;
-    margin: 0 auto;
+  .macro-mix__legend li {
+    justify-content: center;
   }
 
   .panel-block__head {

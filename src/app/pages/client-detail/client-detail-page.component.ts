@@ -5,7 +5,7 @@ import { of, switchMap } from 'rxjs';
 
 import type { Client } from '../../models/client';
 import type { ClientDetail } from '../../models/client-detail';
-import type { MacroItem, Macros } from '../../models/macros';
+import type { Macros } from '../../models/macros';
 import type { Meal } from '../../models/meal';
 import type { Supplements } from '../../models/supplements';
 import type { Weight } from '../../models/weight';
@@ -229,15 +229,30 @@ export class ClientDetailPageComponent {
 
   }
 
-
-
-  macroPct(item: MacroItem): number {
-
-    return Math.min(100, Math.round((item.grams / item.target) * 100));
-
+  macroTarget(macros: Macros, key: string): number {
+    return macros.items.find((item) => item.key === key)?.target ?? 0;
   }
 
+  macrosEstimatedKcal(macros: Macros): number {
+    return (
+      this.macroTarget(macros, 'prot') * 4 +
+      this.macroTarget(macros, 'carbs') * 4 +
+      this.macroTarget(macros, 'fats') * 9
+    );
+  }
 
+  macrosMixGradient(macros: Macros): string {
+    const protein = this.macroTarget(macros, 'prot') * 4;
+    const carbs = this.macroTarget(macros, 'carbs') * 4;
+    const fats = this.macroTarget(macros, 'fats') * 9;
+    const total = protein + carbs + fats;
+    if (total <= 0) {
+      return 'conic-gradient(#1c3358 0deg, #1c3358 360deg)';
+    }
+    const proteinEnd = (protein / total) * 360;
+    const carbsEnd = proteinEnd + (carbs / total) * 360;
+    return `conic-gradient(#f2c868 0deg ${proteinEnd}deg, #4c8df6 ${proteinEnd}deg ${carbsEnd}deg, #12b5a5 ${carbsEnd}deg 360deg)`;
+  }
 
   macroToneClass(tone: string): string {
 
