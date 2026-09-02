@@ -164,6 +164,7 @@
   }
 
   input,
+  select,
   textarea {
     width: 100%;
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -184,6 +185,45 @@
       border-color: rgba(242, 200, 104, 0.55);
       box-shadow: 0 0 0 3px rgba(242, 200, 104, 0.12);
     }
+  }
+
+  select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.6) 50%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.6) 50%, transparent 50%);
+    background-position:
+      calc(100% - 18px) calc(50% - 3px),
+      calc(100% - 12px) calc(50% - 3px);
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 2rem;
+  }
+
+  option {
+    color: var(--navy);
+  }
+}
+
+.cat-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cat-pick {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+
+  &.is-on {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--navy);
   }
 }
 

@@ -2,11 +2,20 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
-import type { ExerciseMaster, ExerciseType } from '../../models/exercise-master';
+import type {
+  ExerciseCategory,
+  ExerciseMaster,
+  ExerciseType,
+} from '../../models/exercise-master';
+import {
+  EXERCISE_CATEGORIES,
+  exerciseCategoryLabel,
+} from '../../models/exercise-master';
 import { ExerciseMastersService } from '../../services/exercise-masters.service';
 import { ExerciseDialogComponent } from './exercise-dialog.component';
 
-type FilterKey = 'all' | ExerciseType;
+type TypeFilter = 'all' | ExerciseType;
+type CategoryFilter = 'all' | ExerciseCategory;
 
 @Component({
   selector: 'app-exercises-page',
@@ -19,29 +28,39 @@ export class ExercisesPageComponent {
   private readonly exerciseMasters = inject(ExerciseMastersService);
 
   readonly query = signal('');
-  readonly filter = signal<FilterKey>('all');
+  readonly filter = signal<TypeFilter>('all');
+  readonly categoryFilter = signal<CategoryFilter>('all');
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly exercises = signal<ExerciseMaster[]>([]);
   readonly dialogOpen = signal(false);
   readonly editing = signal<ExerciseMaster | null>(null);
 
-  readonly filters: { key: FilterKey; label: string }[] = [
+  readonly filters: { key: TypeFilter; label: string }[] = [
     { key: 'all', label: 'Todos' },
     { key: 'strength', label: 'Fuerza' },
     { key: 'cardio', label: 'Cardio' },
   ];
 
+  readonly categoryFilters: { key: CategoryFilter; label: string }[] = [
+    { key: 'all', label: 'Todas' },
+    ...EXERCISE_CATEGORIES.map((item) => ({ key: item.key, label: item.label })),
+  ];
+
   readonly filtered = computed(() => {
     const q = this.query().trim().toLowerCase();
     const f = this.filter();
+    const cat = this.categoryFilter();
     return this.exercises()
       .filter((ex) => (f === 'all' ? true : ex.type === f))
+      .filter((ex) => (cat === 'all' ? true : ex.category === cat))
       .filter((ex) => {
         if (!q) return true;
+        const category = exerciseCategoryLabel(ex.category).toLowerCase();
         return (
           ex.name.toLowerCase().includes(q) ||
-          (ex.explanation ?? '').toLowerCase().includes(q)
+          (ex.explanation ?? '').toLowerCase().includes(q) ||
+          category.includes(q)
         );
       })
       .sort((a, b) => a.name.localeCompare(b.name, 'es'));
@@ -60,8 +79,12 @@ export class ExercisesPageComponent {
     this.reload();
   }
 
-  setFilter(key: FilterKey): void {
+  setFilter(key: TypeFilter): void {
     this.filter.set(key);
+  }
+
+  setCategoryFilter(key: CategoryFilter): void {
+    this.categoryFilter.set(key);
   }
 
   onQuery(value: string): void {
@@ -101,6 +124,10 @@ export class ExercisesPageComponent {
 
   typeLabel(type: ExerciseType): string {
     return type === 'cardio' ? 'Cardio' : 'Fuerza';
+  }
+
+  categoryLabel(category?: string): string {
+    return exerciseCategoryLabel(category);
   }
 
   private reload(): void {

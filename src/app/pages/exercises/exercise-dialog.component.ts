@@ -1,7 +1,8 @@
 import { Component, HostListener, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import type { ExerciseMaster, ExerciseType } from '../../models/exercise-master';
+import type { ExerciseCategory, ExerciseMaster, ExerciseType } from '../../models/exercise-master';
+import { EXERCISE_CATEGORIES } from '../../models/exercise-master';
 import { ExerciseMastersService } from '../../services/exercise-masters.service';
 
 @Component({
@@ -22,17 +23,21 @@ export class ExerciseDialogComponent implements OnInit {
 
   readonly name = signal('');
   readonly type = signal<ExerciseType>('strength');
+  readonly category = signal<ExerciseCategory | ''>('');
   readonly imageUrl = signal('');
   readonly explanation = signal('');
   readonly saving = signal(false);
   readonly deleting = signal(false);
   readonly saveError = signal<string | null>(null);
 
+  readonly categories = EXERCISE_CATEGORIES;
+
   ngOnInit(): void {
     const current = this.exercise();
     if (current) {
       this.name.set(current.name);
       this.type.set(current.type);
+      this.category.set(current.category ?? '');
       this.imageUrl.set(current.imageUrl ?? '');
       this.explanation.set(current.explanation ?? '');
     }
@@ -44,6 +49,10 @@ export class ExerciseDialogComponent implements OnInit {
 
   setType(type: ExerciseType): void {
     this.type.set(type);
+  }
+
+  setCategory(value: ExerciseCategory | ''): void {
+    this.category.set(value);
   }
 
   close(): void {
@@ -64,6 +73,7 @@ export class ExerciseDialogComponent implements OnInit {
     const payload = {
       name,
       type: this.type(),
+      category: this.category() || undefined,
       imageUrl: this.imageUrl().trim() || undefined,
       explanation: this.explanation().trim() || undefined,
     };

@@ -54,6 +54,28 @@
           </button>
         </div>
 
+        <div class="field">
+          <span>Categoría</span>
+          <div class="cat-picks" role="group" aria-label="Categoría">
+            <button
+              type="button"
+              class="cat-pick"
+              [class.is-on]="category() === ''"
+              (click)="setCategory('')">
+              Sin categoría
+            </button>
+            @for (item of categories; track item.key) {
+              <button
+                type="button"
+                class="cat-pick"
+                [class.is-on]="category() === item.key"
+                (click)="setCategory(item.key)">
+                {{ item.label }}
+              </button>
+            }
+          </div>
+        </div>
+
         <label class="field">
           <span>URL de imagen</span>
           <input

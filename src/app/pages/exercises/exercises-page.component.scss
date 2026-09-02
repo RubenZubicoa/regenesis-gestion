@@ -152,6 +152,10 @@
   gap: 0.45rem;
 }
 
+.chips--categories {
+  margin-top: -0.5rem;
+}
+
 .chip {
   border: 1px solid var(--border);
   background: var(--card);
@@ -297,6 +301,15 @@
   h3 {
     font-size: 1rem;
     color: var(--navy);
+  }
+
+  .ex-card__category {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin: 0;
+    display: block;
+    -webkit-line-clamp: unset;
   }
 
   p {

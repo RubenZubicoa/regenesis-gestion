@@ -37,7 +37,7 @@
         <span class="search__icon" aria-hidden="true">⌕</span>
         <input
           type="search"
-          placeholder="Buscar por nombre o explicación…"
+          placeholder="Buscar por nombre, categoría o explicación…"
           [ngModel]="query()"
           (ngModelChange)="onQuery($event)"
         />
@@ -55,6 +55,19 @@
           </button>
         }
       </div>
+    </div>
+
+    <div class="chips chips--categories" role="tablist" aria-label="Filtrar por categoría">
+      @for (item of categoryFilters; track item.key) {
+        <button
+          type="button"
+          role="tab"
+          class="chip"
+          [class.is-on]="categoryFilter() === item.key"
+          (click)="setCategoryFilter(item.key)">
+          {{ item.label }}
+        </button>
+      }
     </div>
 
     <div class="vault">
@@ -88,6 +101,7 @@
               </div>
               <div class="ex-card__body">
                 <h3>{{ ex.name }}</h3>
+                <p class="ex-card__category">{{ categoryLabel(ex.category) }}</p>
                 @if (ex.explanation) {
                   <p>{{ ex.explanation }}</p>
                 } @else {
