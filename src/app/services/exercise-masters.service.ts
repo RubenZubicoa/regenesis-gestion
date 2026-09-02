@@ -2,8 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 
 import { asRecordArray, normalizeId } from '../core/normalizers';
-import type { ExerciseCategory, ExerciseMaster, ExerciseType } from '../models/exercise-master';
-import { parseExerciseCategory } from '../models/exercise-master';
+import type { ExerciseMaster, ExerciseType } from '../models/exercise-master';
 import { ApiService } from './api.service';
 
 export interface ExerciseMasterInput {
@@ -16,13 +15,13 @@ export interface ExerciseMasterInput {
 
 const CATEGORY_STORE_KEY = 'regenesis.exercise-master.categories';
 
-function readStoredCategories(): Record<string, ExerciseCategory> {
+function readStoredCategories(): Record<string, string> {
   try {
     const parsed = JSON.parse(localStorage.getItem(CATEGORY_STORE_KEY) ?? '{}') as unknown;
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
-    const out: Record<string, ExerciseCategory> = {};
+    const out: Record<string, string> = {};
     for (const [id, value] of Object.entries(parsed as Record<string, unknown>)) {
-      const category = parseExerciseCategory(value);
+      const category = String(value ?? '').trim();
       if (id && category) out[id] = category;
     }
     return out;
@@ -31,7 +30,7 @@ function readStoredCategories(): Record<string, ExerciseCategory> {
   }
 }
 
-function writeStoredCategory(id: string, category?: ExerciseCategory): void {
+function writeStoredCategory(id: string, category?: string): void {
   if (!id) return;
   const map = readStoredCategories();
   if (category) map[id] = category;
@@ -39,7 +38,7 @@ function writeStoredCategory(id: string, category?: ExerciseCategory): void {
   localStorage.setItem(CATEGORY_STORE_KEY, JSON.stringify(map));
 }
 
-function withCategory(exercise: ExerciseMaster, category?: ExerciseCategory): ExerciseMaster {
+function withCategory(exercise: ExerciseMaster, category?: string): ExerciseMaster {
   const next: ExerciseMaster = { ...exercise };
   if (category) next.category = category;
   else delete next.category;
@@ -53,6 +52,23 @@ function applyStoredCategory(
   return exercise.category ? exercise : withCategory(exercise, stored[exercise._id]);
 }
 
+function readCategoryRef(raw: unknown): string | undefined {
+  if (raw == null || raw === '') return undefined;
+  if (typeof raw === 'string') {
+    const value = raw.trim();
+    return value || undefined;
+  }
+  if (typeof raw === 'object') {
+    const rec = raw as Record<string, unknown>;
+    return (
+      normalizeId(rec['_id']) ||
+      String(rec['key'] ?? rec['label'] ?? rec['name'] ?? '').trim() ||
+      undefined
+    );
+  }
+  return undefined;
+}
+
 function normalizeExerciseMaster(raw: unknown): ExerciseMaster {
   const r =
     raw && typeof raw === 'object' && !Array.isArray(raw)
@@ -62,9 +78,7 @@ function normalizeExerciseMaster(raw: unknown): ExerciseMaster {
   const type: ExerciseType = typeRaw === 'cardio' ? 'cardio' : 'strength';
   const imageUrl = String(r['imageUrl'] ?? '').trim();
   const explanation = String(r['explanation'] ?? '').trim();
-  const category = parseExerciseCategory(
-    r['category'] ?? r['categoria'] ?? r['muscleGroup'],
-  );
+  const category = readCategoryRef(r['category'] ?? r['categoria'] ?? r['categoryId']);
 
   return {
     _id: normalizeId(r['_id']),
@@ -110,7 +124,7 @@ export class ExerciseMastersService {
   }
 
   private persistCategory(exercise: ExerciseMaster, rawCategory?: string): ExerciseMaster {
-    const category = parseExerciseCategory(rawCategory) ?? exercise.category;
+    const category = rawCategory?.trim() || exercise.category;
     writeStoredCategory(exercise._id, category);
     return withCategory(exercise, category);
   }
@@ -119,7 +133,7 @@ export class ExerciseMastersService {
     return {
       name: input.name.trim(),
       type: input.type,
-      category: parseExerciseCategory(input.category) ?? '',
+      category: input.category?.trim() ?? '',
       imageUrl: input.imageUrl?.trim() ?? '',
       explanation: input.explanation?.trim() ?? '',
     };

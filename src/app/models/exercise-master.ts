@@ -1,43 +1,42 @@
 export type ExerciseType = 'strength' | 'cardio';
 
-export const EXERCISE_CATEGORIES = [
-  { key: 'chest', label: 'Pecho' },
-  { key: 'back', label: 'Espalda' },
-  { key: 'shoulders', label: 'Hombros' },
-  { key: 'arms', label: 'Brazos' },
-  { key: 'legs', label: 'Piernas' },
-  { key: 'glutes', label: 'Glúteos' },
-  { key: 'core', label: 'Core' },
-  { key: 'bands', label: 'Gomas' },
-  { key: 'bodyweight', label: 'Peso corporal' },
-  { key: 'cardio', label: 'Cardio' },
-  { key: 'full-body', label: 'Cuerpo completo' },
-] as const;
-
-export type ExerciseCategory = (typeof EXERCISE_CATEGORIES)[number]['key'];
+export interface ExerciseCategory {
+  _id: string;
+  key: string;
+  label: string;
+}
 
 export interface ExerciseMaster {
   _id: string;
   name: string;
   type: ExerciseType;
-  category?: ExerciseCategory;
+  category?: string;
   imageUrl?: string;
   explanation?: string;
 }
 
-export function isExerciseCategory(value: string): value is ExerciseCategory {
-  return EXERCISE_CATEGORIES.some((item) => item.key === value);
+export function slugifyCategoryKey(label: string): string {
+  return label
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48);
 }
 
-export function parseExerciseCategory(value: unknown): ExerciseCategory | undefined {
-  const raw = String(value ?? '').trim();
-  if (!raw) return undefined;
-  if (isExerciseCategory(raw)) return raw;
-  const lower = raw.toLowerCase();
-  return EXERCISE_CATEGORIES.find((item) => item.label.toLowerCase() === lower)?.key;
-}
-
-export function exerciseCategoryLabel(category?: string): string {
+export function exerciseCategoryLabel(
+  category: string | undefined,
+  categories: ExerciseCategory[],
+): string {
   if (!category) return 'Sin categoría';
-  return EXERCISE_CATEGORIES.find((item) => item.key === category)?.label ?? category;
+  const found = categories.find(
+    (item) => item._id === category || item.key === category || item.label === category,
+  );
+  return found?.label ?? category;
+}
+
+export function categoryMatches(category: string | undefined, item: ExerciseCategory): boolean {
+  if (!category) return false;
+  return category === item._id || category === item.key || category === item.label;
 }

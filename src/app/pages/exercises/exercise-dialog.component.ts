@@ -2,7 +2,7 @@ import { Component, HostListener, inject, input, OnInit, output, signal } from '
 import { FormsModule } from '@angular/forms';
 
 import type { ExerciseCategory, ExerciseMaster, ExerciseType } from '../../models/exercise-master';
-import { EXERCISE_CATEGORIES } from '../../models/exercise-master';
+import { categoryMatches } from '../../models/exercise-master';
 import { ExerciseMastersService } from '../../services/exercise-masters.service';
 
 @Component({
@@ -16,6 +16,7 @@ export class ExerciseDialogComponent implements OnInit {
   private readonly exerciseMasters = inject(ExerciseMastersService);
 
   readonly exercise = input<ExerciseMaster | null>(null);
+  readonly categories = input<ExerciseCategory[]>([]);
 
   readonly saved = output<ExerciseMaster>();
   readonly deleted = output<string>();
@@ -23,14 +24,12 @@ export class ExerciseDialogComponent implements OnInit {
 
   readonly name = signal('');
   readonly type = signal<ExerciseType>('strength');
-  readonly category = signal<ExerciseCategory | ''>('');
+  readonly category = signal('');
   readonly imageUrl = signal('');
   readonly explanation = signal('');
   readonly saving = signal(false);
   readonly deleting = signal(false);
   readonly saveError = signal<string | null>(null);
-
-  readonly categories = EXERCISE_CATEGORIES;
 
   ngOnInit(): void {
     const current = this.exercise();
@@ -51,8 +50,12 @@ export class ExerciseDialogComponent implements OnInit {
     this.type.set(type);
   }
 
-  setCategory(value: ExerciseCategory | ''): void {
+  setCategory(value: string): void {
     this.category.set(value);
+  }
+
+  isCategoryOn(item: ExerciseCategory): boolean {
+    return categoryMatches(this.category(), item);
   }
 
   close(): void {

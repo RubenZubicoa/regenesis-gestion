@@ -23,6 +23,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'ejercicios/categorias',
+    loadComponent: () =>
+      import('./pages/exercises/exercise-categories-page.component').then(
+        (m) => m.ExerciseCategoriesPageComponent,
+      ),
+  },
+  {
     path: 'ejercicios',
     loadComponent: () =>
       import('./pages/exercises/exercises-page.component').then(

@@ -1,0 +1,77 @@
+<section class="page">
+  @if (loading()) {
+    <div class="state">Cargando categorías…</div>
+  } @else if (error()) {
+    <div class="state state--error">
+      <p>{{ error() }}</p>
+      <button type="button" class="hero__cta" (click)="reload()">Reintentar</button>
+    </div>
+  } @else {
+    <div class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Sala de movimiento</p>
+        <h1>Categorías de<br />ejercicios</h1>
+        <p class="hero__sub">
+          Alta, edición y baja del catálogo que luego asignas a cada ejercicio.
+        </p>
+        <div class="hero__actions">
+          <a routerLink="/ejercicios" class="hero__cta hero__cta--ghost">← Volver a ejercicios</a>
+          <button type="button" class="hero__cta" (click)="openCreate()">
+            + Nueva categoría
+          </button>
+        </div>
+      </div>
+
+      <div class="hero__metrics" aria-label="Resumen de categorías">
+        <div class="metric metric--gold">
+          <span class="metric__value">{{ categories().length }}</span>
+          <span class="metric__label">Total</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label class="search">
+        <span class="search__icon" aria-hidden="true">⌕</span>
+        <input
+          type="search"
+          placeholder="Buscar por nombre…"
+          [ngModel]="query()"
+          (ngModelChange)="onQuery($event)"
+        />
+      </label>
+    </div>
+
+    <div class="vault">
+      <div class="section-head">
+        <h2>Catálogo</h2>
+        <p>{{ filtered().length }} categoría{{ filtered().length === 1 ? '' : 's' }}</p>
+      </div>
+
+      @if (filtered().length === 0) {
+        <div class="empty">
+          <p>{{ query() ? 'No hay categorías con esa búsqueda.' : 'Aún no hay categorías.' }}</p>
+          <button type="button" class="hero__cta" (click)="openCreate()">Crear la primera</button>
+        </div>
+      } @else {
+        <div class="cat-list">
+          @for (item of filtered(); track item._id) {
+            <button type="button" class="cat-row" (click)="openEdit(item)">
+              <h3>{{ item.label }}</h3>
+              <span>Editar</span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>
+
+@if (dialogOpen()) {
+  <app-exercise-category-dialog
+    [category]="editing()"
+    (saved)="onSaved($event)"
+    (deleted)="onDeleted($event)"
+    (closed)="closeDialog()"
+  />
+}

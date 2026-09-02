@@ -1,31 +1,32 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { catchError, of } from 'rxjs';
 
 import type {
   ExerciseCategory,
   ExerciseMaster,
   ExerciseType,
 } from '../../models/exercise-master';
-import {
-  EXERCISE_CATEGORIES,
-  exerciseCategoryLabel,
-} from '../../models/exercise-master';
+import { categoryMatches, exerciseCategoryLabel } from '../../models/exercise-master';
+import { ExerciseCategoriesService } from '../../services/exercise-categories.service';
 import { ExerciseMastersService } from '../../services/exercise-masters.service';
 import { ExerciseDialogComponent } from './exercise-dialog.component';
 
 type TypeFilter = 'all' | ExerciseType;
-type CategoryFilter = 'all' | ExerciseCategory;
+type CategoryFilter = 'all' | string;
 
 @Component({
   selector: 'app-exercises-page',
   standalone: true,
-  imports: [FormsModule, ExerciseDialogComponent],
+  imports: [FormsModule, RouterLink, ExerciseDialogComponent],
   templateUrl: './exercises-page.component.html',
   styleUrl: './exercises-page.component.scss',
 })
 export class ExercisesPageComponent {
   private readonly exerciseMasters = inject(ExerciseMastersService);
+  private readonly categoriesApi = inject(ExerciseCategoriesService);
 
   readonly query = signal('');
   readonly filter = signal<TypeFilter>('all');
@@ -33,6 +34,7 @@ export class ExercisesPageComponent {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly exercises = signal<ExerciseMaster[]>([]);
+  readonly categories = signal<ExerciseCategory[]>([]);
   readonly dialogOpen = signal(false);
   readonly editing = signal<ExerciseMaster | null>(null);
 
@@ -42,21 +44,23 @@ export class ExercisesPageComponent {
     { key: 'cardio', label: 'Cardio' },
   ];
 
-  readonly categoryFilters: { key: CategoryFilter; label: string }[] = [
-    { key: 'all', label: 'Todas' },
-    ...EXERCISE_CATEGORIES.map((item) => ({ key: item.key, label: item.label })),
-  ];
+  readonly categoryFilters = computed(() => [
+    { key: 'all' as const, label: 'Todas' },
+    ...this.categories().map((item) => ({ key: item._id, label: item.label })),
+  ]);
 
   readonly filtered = computed(() => {
     const q = this.query().trim().toLowerCase();
     const f = this.filter();
     const cat = this.categoryFilter();
+    const categories = this.categories();
+    const selected = categories.find((item) => item._id === cat);
     return this.exercises()
       .filter((ex) => (f === 'all' ? true : ex.type === f))
-      .filter((ex) => (cat === 'all' ? true : ex.category === cat))
+      .filter((ex) => (cat === 'all' ? true : selected ? categoryMatches(ex.category, selected) : false))
       .filter((ex) => {
         if (!q) return true;
-        const category = exerciseCategoryLabel(ex.category).toLowerCase();
+        const category = exerciseCategoryLabel(ex.category, categories).toLowerCase();
         return (
           ex.name.toLowerCase().includes(q) ||
           (ex.explanation ?? '').toLowerCase().includes(q) ||
@@ -127,7 +131,7 @@ export class ExercisesPageComponent {
   }
 
   categoryLabel(category?: string): string {
-    return exerciseCategoryLabel(category);
+    return exerciseCategoryLabel(category, this.categories());
   }
 
   private reload(): void {
@@ -146,5 +150,13 @@ export class ExercisesPageComponent {
           this.loading.set(false);
         },
       });
+
+    this.categoriesApi
+      .list()
+      .pipe(
+        takeUntilDestroyed(),
+        catchError(() => of([])),
+      )
+      .subscribe((list) => this.categories.set(list));
   }
 }

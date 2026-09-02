@@ -64,14 +64,16 @@
               (click)="setCategory('')">
               Sin categoría
             </button>
-            @for (item of categories; track item.key) {
+            @for (item of categories(); track item._id) {
               <button
                 type="button"
                 class="cat-pick"
-                [class.is-on]="category() === item.key"
-                (click)="setCategory(item.key)">
+                [class.is-on]="isCategoryOn(item)"
+                (click)="setCategory(item._id)">
                 {{ item.label }}
               </button>
+            } @empty {
+              <p class="cat-empty">Aún no hay categorías. Créalas en Gestionar categorías.</p>
             }
           </div>
         </div>

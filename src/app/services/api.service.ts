@@ -33,6 +33,14 @@ export class ApiService {
     );
   }
 
+  patch<T>(path: string, body: unknown): Observable<T> {
+    return this.http.patch<T>(`${this.baseUrl}${path}`, body).pipe(
+      catchError((err: HttpErrorResponse) =>
+        throwError(() => new Error(this.readErrorMessage(err))),
+      ),
+    );
+  }
+
   delete(path: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}${path}`).pipe(
       catchError((err: HttpErrorResponse) =>

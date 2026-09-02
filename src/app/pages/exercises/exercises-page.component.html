@@ -11,9 +11,14 @@
         <p class="hero__sub">
           Catálogo técnico de movimientos para armar rutinas con criterio.
         </p>
-        <button type="button" class="hero__cta" (click)="openCreate()">
-          + Nuevo ejercicio
-        </button>
+        <div class="hero__actions">
+          <button type="button" class="hero__cta" (click)="openCreate()">
+            + Nuevo ejercicio
+          </button>
+          <a routerLink="/ejercicios/categorias" class="hero__cta hero__cta--ghost">
+            Gestionar categorías
+          </a>
+        </div>
       </div>
 
       <div class="hero__metrics" aria-label="Resumen del catálogo">
@@ -58,7 +63,7 @@
     </div>
 
     <div class="chips chips--categories" role="tablist" aria-label="Filtrar por categoría">
-      @for (item of categoryFilters; track item.key) {
+      @for (item of categoryFilters(); track item.key) {
         <button
           type="button"
           role="tab"
@@ -119,6 +124,7 @@
 @if (dialogOpen()) {
   <app-exercise-dialog
     [exercise]="editing()"
+    [categories]="categories()"
     (saved)="onSaved($event)"
     (deleted)="onDeleted($event)"
     (closed)="closeDialog()"
