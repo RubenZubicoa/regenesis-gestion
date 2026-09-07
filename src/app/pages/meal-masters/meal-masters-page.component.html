@@ -1,0 +1,241 @@
+<section class="page">
+  @if (loading()) {
+    <div class="state">Cargando la carta de comidas…</div>
+  } @else if (error()) {
+    <div class="state state--error">
+      <p>{{ error() }}</p>
+      <button type="button" class="gold-btn" (click)="reload()">Reintentar</button>
+    </div>
+  } @else if (kitchenOpen()) {
+    @if (draft(); as plan) {
+      <button type="button" class="back" (click)="leaveKitchen()">← Volver a la carta</button>
+
+      <header class="hero hero--kitchen">
+        <div class="hero__copy">
+          <p class="eyebrow">Cocina del método</p>
+          <h1>{{ plan._id ? 'Editar plan' : 'Nuevo plan' }}</h1>
+          <p class="hero__sub">
+            {{ plan.slots.length }} tomas{{ plan.nombre ? ' · ' + plan.nombre : '' }}
+          </p>
+        </div>
+        <div class="hero__actions">
+          @if (saveOk()) {
+            <span class="save-ok">Plan guardado</span>
+          }
+          @if (plan._id) {
+            <button
+              type="button"
+              class="ghost-btn ghost-btn--danger"
+              (click)="remove()"
+              [disabled]="saving() || deleting()">
+              {{ deleting() ? 'Eliminando…' : 'Eliminar' }}
+            </button>
+          }
+          <button type="button" class="gold-btn" (click)="save()" [disabled]="saving() || deleting()">
+            {{ saving() ? 'Guardando…' : plan._id ? 'Guardar plan' : 'Crear plan' }}
+          </button>
+        </div>
+      </header>
+
+      @if (saveError()) {
+        <p class="banner-error">{{ saveError() }}</p>
+      }
+
+      <div class="identity">
+        <label class="field">
+          <span>Nombre del plan</span>
+          <input
+            type="text"
+            [ngModel]="plan.nombre"
+            (ngModelChange)="updatePlan('nombre', $event)"
+            placeholder="Definición, Volumen, Mantenimiento…"
+          />
+        </label>
+        <label class="field">
+          <span>Descripción</span>
+          <textarea
+            rows="2"
+            [ngModel]="plan.descripcion"
+            (ngModelChange)="updatePlan('descripcion', $event)"
+            placeholder="Para quién es este menú y cómo usarlo"
+          ></textarea>
+        </label>
+      </div>
+
+      <div class="kitchen">
+        <aside class="rail">
+          <p class="rail__title">Tomas del día</p>
+          <div class="rail__list">
+            @for (slot of plan.slots; track $index; let i = $index) {
+              <button
+                type="button"
+                class="ticket"
+                [class.is-active]="activeIndex() === i"
+                (click)="selectSlot(i)">
+                <span class="ticket__num">{{ i + 1 }}</span>
+                <span class="ticket__copy">
+                  <strong>{{ slot.label || 'Sin nombre' }}</strong>
+                  <em>{{ slot.options.length }} opción{{ slot.options.length === 1 ? '' : 'es' }}</em>
+                </span>
+              </button>
+            }
+          </div>
+          <button type="button" class="rail__add" (click)="addSlot()">+ Añadir toma</button>
+        </aside>
+
+        @if (activeSlot(); as slot) {
+          <section class="workspace">
+            <div class="workspace__meta">
+              <label class="field">
+                <span>Nombre de la toma</span>
+                <input
+                  type="text"
+                  [ngModel]="slot.label"
+                  (ngModelChange)="updateSlot('label', $event)"
+                  placeholder="Desayuno, Comida…"
+                />
+              </label>
+              <button
+                type="button"
+                class="ghost-btn ghost-btn--danger"
+                (click)="removeSlot(activeIndex())"
+                [disabled]="plan.slots.length <= 1">
+                Eliminar toma
+              </button>
+            </div>
+
+            <div class="plates-head">
+              <h3>Opciones alternativas</h3>
+              <button type="button" class="text-btn" (click)="addOption()">+ Añadir opción</button>
+            </div>
+
+            <div class="plates">
+              @for (opt of slot.options; track $index; let oi = $index) {
+                <article class="plate">
+                  <div class="plate__badge">{{ oi + 1 }}</div>
+                  <div class="plate__fields">
+                    <label class="field">
+                      <span>Plato</span>
+                      <input
+                        type="text"
+                        [ngModel]="opt.name"
+                        (ngModelChange)="updateOption(oi, 'name', $event)"
+                        placeholder="Nombre de la comida"
+                      />
+                    </label>
+                    <label class="field field--kcal">
+                      <span>Kcal</span>
+                      <input
+                        type="number"
+                        min="0"
+                        [ngModel]="opt.kcal"
+                        (ngModelChange)="updateOption(oi, 'kcal', $event)"
+                      />
+                    </label>
+                    <label class="field field--full">
+                      <span>Descripción</span>
+                      <input
+                        type="text"
+                        [ngModel]="opt.description"
+                        (ngModelChange)="updateOption(oi, 'description', $event)"
+                        placeholder="Ingredientes o notas"
+                      />
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    class="plate__remove"
+                    (click)="removeOption(oi)"
+                    [disabled]="slot.options.length <= 1"
+                    aria-label="Eliminar opción">
+                    ×
+                  </button>
+                </article>
+              }
+            </div>
+          </section>
+        }
+      </div>
+    }
+  } @else {
+    <div class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Carta de la casa</p>
+        <h1>Planes de<br />comidas</h1>
+        <p class="hero__sub">
+          Menús predefinidos con tomas y opciones alternativas, listos para reutilizar.
+        </p>
+        <button type="button" class="gold-btn" (click)="openCreate()">+ Nuevo plan</button>
+      </div>
+      <div class="hero__metrics" aria-label="Resumen de la carta">
+        <div class="metric">
+          <span class="metric__value">{{ stats().plans }}</span>
+          <span class="metric__label">Planes</span>
+        </div>
+        <div class="metric metric--gold">
+          <span class="metric__value">{{ stats().slots }}</span>
+          <span class="metric__label">Tomas</span>
+        </div>
+        <div class="metric metric--teal">
+          <span class="metric__value">{{ stats().options }}</span>
+          <span class="metric__label">Platos</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label class="search">
+        <span aria-hidden="true">⌕</span>
+        <input
+          type="search"
+          placeholder="Buscar por nombre, toma o plato…"
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+        />
+      </label>
+    </div>
+
+    @if (plans().length === 0) {
+      <div class="empty">
+        <div class="empty__plate" aria-hidden="true"></div>
+        <h2>La carta está vacía</h2>
+        <p>Crea el primer plan y empieza a componer tomas con opciones alternativas.</p>
+        <button type="button" class="gold-btn" (click)="openCreate()">Abrir la cocina</button>
+      </div>
+    } @else if (filtered().length === 0) {
+      <div class="empty">
+        <p>Ningún plan encaja con esa búsqueda.</p>
+      </div>
+    } @else {
+      <div class="menus">
+        @for (plan of filtered(); track plan._id) {
+          <button type="button" class="menu" (click)="openEdit(plan)">
+            <div class="menu__head">
+              <em>Menú del día</em>
+              <strong>{{ kcal(plan) }} kcal</strong>
+            </div>
+            <h3>{{ title(plan) }}</h3>
+            @if (plan.descripcion) {
+              <p class="menu__desc">{{ plan.descripcion }}</p>
+            }
+            <ol class="menu__slots">
+              @for (slot of plan.slots.slice(0, 5); track $index) {
+                <li>
+                  <span>{{ slot.label || 'Toma' }}</span>
+                  <small>{{ slot.options.length }} opc.</small>
+                </li>
+              }
+            </ol>
+            @if (plan.slots.length > 5) {
+              <p class="menu__more">+{{ plan.slots.length - 5 }} tomas más</p>
+            }
+            <div class="menu__foot">
+              <span>{{ optionsCount(plan) }} plato{{ optionsCount(plan) === 1 ? '' : 's' }}</span>
+              <span>Abrir cocina →</span>
+            </div>
+          </button>
+        }
+      </div>
+    }
+  }
+</section>

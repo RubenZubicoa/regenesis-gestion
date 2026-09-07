@@ -2,6 +2,7 @@ import type { Client } from '../models/client';
 import type { DailySteps, DaySteps } from '../models/daily-steps';
 import type { Macros } from '../models/macros';
 import type { Meal } from '../models/meal';
+import type { MealMaster } from '../models/meal-master';
 import type { Measurement } from '../models/measurement';
 import type { ProgressImage } from '../models/progress-image';
 import type { Program } from '../models/program';
@@ -148,6 +149,17 @@ export function normalizeMeal(raw: unknown): Meal {
         }),
       };
     }),
+  };
+}
+
+export function normalizeMealMaster(raw: unknown): MealMaster {
+  const meal = normalizeMeal(raw);
+  const r = asApiRecord(raw);
+  return {
+    _id: meal._id,
+    nombre: str(r, 'nombre') || str(r, 'name') || str(r, 'title'),
+    descripcion: str(r, 'descripcion') || str(r, 'description'),
+    slots: meal.slots,
   };
 }
 

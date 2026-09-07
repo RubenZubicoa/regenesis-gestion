@@ -44,6 +44,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'comidas',
+    loadComponent: () =>
+      import('./pages/meal-masters/meal-masters-page.component').then(
+        (m) => m.MealMastersPageComponent,
+      ),
+  },
+  {
     path: 'videoteca',
     loadComponent: () =>
       import('./pages/video-library/video-library-page.component').then(
