@@ -19,7 +19,7 @@
         @if (saveOk()) {
           <span class="save-ok">Rutina guardada</span>
         }
-        <button type="button" class="ghost-btn" (click)="addDay()">+ Añadir día</button>
+        <button type="button" class="ghost-btn" (click)="openAddDay()">+ Añadir día</button>
         <button type="button" class="save-btn" (click)="save()" [disabled]="saving()">
           {{ saving() ? 'Guardando…' : 'Guardar rutina' }}
         </button>
@@ -211,10 +211,19 @@
         } @else {
           <div class="planner__empty">
             <p>Crea un día para empezar a montar la rutina.</p>
-            <button type="button" class="save-btn" (click)="addDay()">+ Añadir día</button>
+            <button type="button" class="save-btn" (click)="openAddDay()">+ Añadir día</button>
           </div>
         }
       </div>
     </div>
   </section>
+}
+
+@if (addDayOpen()) {
+  <app-add-day-dialog
+    [templates]="templates()"
+    (blank)="addDay()"
+    (picked)="addDayFromTemplate($event)"
+    (closed)="closeAddDay()"
+  />
 }

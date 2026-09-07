@@ -8,9 +8,12 @@ import { catchError, forkJoin, of, switchMap } from 'rxjs';
 import type { ExerciseCategory, ExerciseMaster } from '../../models/exercise-master';
 import { categoryMatches } from '../../models/exercise-master';
 import type { RoutineExercise } from '../../models/routine-day';
+import type { RoutineMaster } from '../../models/routine-master';
 import { ExerciseCategoriesService } from '../../services/exercise-categories.service';
 import { ExerciseMastersService } from '../../services/exercise-masters.service';
+import { RoutineMastersService } from '../../services/routine-masters.service';
 import { RoutineService } from '../../services/routine.service';
+import { AddDayDialogComponent } from './add-day-dialog.component';
 
 type MasterFilter = 'all' | 'strength' | 'cardio';
 
@@ -31,7 +34,7 @@ interface EditableDay {
 @Component({
   selector: 'app-manage-routine-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, DragDropModule],
+  imports: [FormsModule, RouterLink, DragDropModule, AddDayDialogComponent],
   templateUrl: './manage-routine-page.component.html',
   styleUrl: './manage-routine-page.component.scss',
 })
@@ -39,6 +42,7 @@ export class ManageRoutinePageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly routineService = inject(RoutineService);
+  private readonly routineMastersApi = inject(RoutineMastersService);
   private readonly exerciseMasters = inject(ExerciseMastersService);
   private readonly categoriesApi = inject(ExerciseCategoriesService);
 
@@ -52,6 +56,7 @@ export class ManageRoutinePageComponent {
   readonly clientName = signal('');
   readonly masters = signal<ExerciseMaster[]>([]);
   readonly categories = signal<ExerciseCategory[]>([]);
+  readonly templates = signal<RoutineMaster[]>([]);
   readonly days = signal<EditableDay[]>([]);
   readonly originalIds = signal<string[]>([]);
 
@@ -59,6 +64,7 @@ export class ManageRoutinePageComponent {
   readonly masterFilter = signal<MasterFilter>('all');
   readonly masterCategoryFilter = signal('all');
   readonly activeDayUid = signal<string | null>(null);
+  readonly addDayOpen = signal(false);
 
   readonly filteredMasters = computed(() => {
     const q = this.masterQuery().trim().toLowerCase();
@@ -100,6 +106,7 @@ export class ManageRoutinePageComponent {
             days: this.routineService.listByClient(id),
             masters: this.exerciseMasters.list(),
             categories: this.categoriesApi.list().pipe(catchError(() => of([]))),
+            templates: this.routineMastersApi.list().pipe(catchError(() => of([]))),
           });
         }),
         takeUntilDestroyed(),
@@ -114,6 +121,9 @@ export class ManageRoutinePageComponent {
           this.clientName.set(payload.client.fullName);
           this.masters.set(payload.masters);
           this.categories.set(payload.categories);
+          this.templates.set(
+            payload.templates.map((item) => this.routineMastersApi.hydrate(item, payload.masters)),
+          );
           const editable = payload.days.map((day) => this.toEditableDay(day));
           this.days.set(editable);
           this.originalIds.set(payload.days.map((d) => d._id));
@@ -143,20 +153,39 @@ export class ManageRoutinePageComponent {
     this.activeDayUid.set(uid);
   }
 
+  openAddDay(): void {
+    this.addDayOpen.set(true);
+  }
+
+  closeAddDay(): void {
+    this.addDayOpen.set(false);
+  }
+
   addDay(): void {
-    const n = this.days().length + 1;
-    const day: EditableDay = {
+    this.appendDay({
       uid: this.uid(),
       _id: null,
-      day: `Día ${n}`,
+      day: `Día ${this.days().length + 1}`,
       focus: 'Nuevo foco',
       done: false,
       duration: '45 min',
       exercises: [],
-    };
-    this.days.update((list) => [...list, day]);
-    this.activeDayUid.set(day.uid);
-    this.saveOk.set(false);
+    });
+    this.closeAddDay();
+  }
+
+  addDayFromTemplate(template: RoutineMaster): void {
+    const hydrated = this.routineMastersApi.hydrate(template, this.masters());
+    this.appendDay({
+      uid: this.uid(),
+      _id: null,
+      day: hydrated.day.trim() || `Día ${this.days().length + 1}`,
+      focus: hydrated.focus.trim() || 'Nuevo foco',
+      done: false,
+      duration: hydrated.duration.trim() || '45 min',
+      exercises: hydrated.exercises.map((ex) => ({ ...ex, uid: this.uid() })),
+    });
+    this.closeAddDay();
   }
 
   removeDay(uid: string): void {
@@ -302,6 +331,12 @@ export class ManageRoutinePageComponent {
 
   goBack(): void {
     void this.router.navigate(['/clients', this.clientId()]);
+  }
+
+  private appendDay(day: EditableDay): void {
+    this.days.update((list) => [...list, day]);
+    this.activeDayUid.set(day.uid);
+    this.saveOk.set(false);
   }
 
   private patchDayExercises(dayIdx: number, exercises: EditableExercise[]): void {
