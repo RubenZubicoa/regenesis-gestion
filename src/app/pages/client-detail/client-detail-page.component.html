@@ -167,7 +167,7 @@
           <div class="panel-block__head">
             <h2>Plan de comidas</h2>
             <button type="button" class="action-btn" (click)="openMealsDialog()">
-              Gestionar comidas
+              {{ d.meal ? 'Gestionar comidas' : 'Crear o cargar plan' }}
             </button>
           </div>
           @if (d.meal; as meal) {
@@ -195,7 +195,12 @@
               }
             </div>
           } @else {
-            <p class="empty-panel">Aún no hay plan de comidas asignado a este cliente.</p>
+            <div class="empty-panel empty-panel--cta">
+              <p>Aún no hay plan de comidas asignado a este cliente.</p>
+              <button type="button" class="action-btn" (click)="openMealsDialog()">
+                Cargar un plan predefinido
+              </button>
+            </div>
           }
         </div>
 
@@ -505,12 +510,21 @@
     }
   }
 
+  @if (loadMealPlanOpen()) {
+    <app-load-meal-plan-dialog
+      (blank)="startBlankMealPlan()"
+      (picked)="useMealPlanTemplate($event)"
+      (closed)="closeLoadMealPlan()"
+    />
+  }
+
   @if (mealsDialogOpen()) {
     @if (detail(); as d) {
       <app-meals-dialog
         [clientId]="d.client._id"
         [clientName]="d.client.fullName"
         [meal]="d.meal"
+        [seed]="mealSeed()"
         (saved)="onMealsSaved($event)"
         (closed)="closeMealsDialog()"
       />

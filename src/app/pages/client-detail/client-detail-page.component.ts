@@ -6,7 +6,8 @@ import { of, switchMap } from 'rxjs';
 import type { Client } from '../../models/client';
 import type { ClientDetail } from '../../models/client-detail';
 import type { Macros } from '../../models/macros';
-import type { Meal } from '../../models/meal';
+import type { Meal, MealSlot } from '../../models/meal';
+import type { MealMaster } from '../../models/meal-master';
 import type { Supplements } from '../../models/supplements';
 import type { Weight } from '../../models/weight';
 import { ClientDetailService } from '../../services/client-detail.service';
@@ -15,6 +16,7 @@ import { PasswordDialogComponent } from '../clients/password-dialog.component';
 import { PhaseDialogComponent } from '../clients/phase-dialog.component';
 import { MacrosDialogComponent } from './macros-dialog.component';
 import { MealsDialogComponent } from './meals-dialog.component';
+import { LoadMealPlanDialogComponent } from './load-meal-plan-dialog.component';
 import { SupplementsDialogComponent } from './supplements-dialog.component';
 
 
@@ -67,6 +69,7 @@ export interface WeightChartView {
     RouterLink,
     MacrosDialogComponent,
     MealsDialogComponent,
+    LoadMealPlanDialogComponent,
     SupplementsDialogComponent,
     ClientDialogComponent,
     PasswordDialogComponent,
@@ -100,6 +103,8 @@ export class ClientDetailPageComponent {
   readonly macrosDialogOpen = signal(false);
 
   readonly mealsDialogOpen = signal(false);
+  readonly loadMealPlanOpen = signal(false);
+  readonly mealSeed = signal<MealSlot[] | null>(null);
 
   readonly supplementsDialogOpen = signal(false);
   readonly personalDialogOpen = signal(false);
@@ -455,11 +460,34 @@ export class ClientDetailPageComponent {
   }
 
   openMealsDialog(): void {
+    if (!this.detail()?.meal) {
+      this.mealSeed.set(null);
+      this.loadMealPlanOpen.set(true);
+      return;
+    }
+    this.mealSeed.set(null);
+    this.mealsDialogOpen.set(true);
+  }
+
+  closeLoadMealPlan(): void {
+    this.loadMealPlanOpen.set(false);
+  }
+
+  startBlankMealPlan(): void {
+    this.mealSeed.set(null);
+    this.loadMealPlanOpen.set(false);
+    this.mealsDialogOpen.set(true);
+  }
+
+  useMealPlanTemplate(plan: MealMaster): void {
+    this.mealSeed.set(plan.slots);
+    this.loadMealPlanOpen.set(false);
     this.mealsDialogOpen.set(true);
   }
 
   closeMealsDialog(): void {
     this.mealsDialogOpen.set(false);
+    this.mealSeed.set(null);
   }
 
   onMealsSaved(meal: Meal): void {
@@ -467,7 +495,7 @@ export class ClientDetailPageComponent {
     if (current) {
       this.detail.set({ ...current, meal });
     }
-    this.mealsDialogOpen.set(false);
+    this.closeMealsDialog();
   }
 
   openSupplementsDialog(): void {

@@ -38,6 +38,7 @@ export class MealsDialogComponent implements OnInit {
   readonly clientId = input.required<string>();
   readonly clientName = input.required<string>();
   readonly meal = input<Meal | null>(null);
+  readonly seed = input<MealSlot[] | null>(null);
 
   readonly saved = output<Meal>();
   readonly closed = output<void>();
@@ -59,8 +60,11 @@ export class MealsDialogComponent implements OnInit {
 
   ngOnInit(): void {
     const current = this.meal();
+    const seed = this.seed();
     if (current?.slots?.length) {
       this.slots.set(current.slots.map((slot) => this.toEditable(slot)));
+    } else if (seed?.length) {
+      this.slots.set(seed.map((slot) => this.toEditable(slot, true)));
     } else {
       this.slots.set(
         SLOT_PRESETS.map((preset) => ({
@@ -241,16 +245,20 @@ export class MealsDialogComponent implements OnInit {
     }));
   }
 
-  private toEditable(slot: MealSlot): EditableSlot {
+  private toEditable(slot: MealSlot, ensureOption = false): EditableSlot {
+    const options = slot.options.map((opt) => ({
+      name: opt.name,
+      kcal: opt.kcal,
+      description: opt.description ?? '',
+    }));
     return {
       label: slot.label,
       time: slot.time || '12:00',
       icon: slot.icon || 'restaurant-outline',
-      options: slot.options.map((opt) => ({
-        name: opt.name,
-        kcal: opt.kcal,
-        description: opt.description ?? '',
-      })),
+      options:
+        options.length || !ensureOption
+          ? options
+          : [{ name: '', kcal: 0, description: '' }],
     };
   }
 }

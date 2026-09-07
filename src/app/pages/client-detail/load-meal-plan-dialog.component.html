@@ -1,0 +1,67 @@
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="load-meal-plan-title">
+  <button type="button" class="sheet__backdrop" (click)="close()" aria-label="Cerrar"></button>
+
+  <div class="board">
+    <div class="board__glow" aria-hidden="true"></div>
+
+    <header class="board__head">
+      <div>
+        <p class="eyebrow">Nuevo plan</p>
+        <h2 id="load-meal-plan-title">¿Cómo lo montamos?</h2>
+      </div>
+      <button type="button" class="board__close" (click)="close()" aria-label="Cerrar">×</button>
+    </header>
+
+    <div class="board__body">
+      <button type="button" class="blank" (click)="startBlank()">
+        <span class="blank__mark" aria-hidden="true">+</span>
+        <span>
+          <strong>Empezar en blanco</strong>
+          <em>Un plan vacío para armarlo a mano</em>
+        </span>
+      </button>
+
+      <div class="templates">
+        <div class="templates__head">
+          <p>Cargar plan predefinido</p>
+          <label class="search">
+            <span aria-hidden="true">⌕</span>
+            <input
+              type="search"
+              placeholder="Buscar plan…"
+              [ngModel]="query()"
+              (ngModelChange)="query.set($event)"
+            />
+          </label>
+        </div>
+
+        <div class="templates__list">
+          @if (loading()) {
+            <p class="templates__empty">Cargando la carta…</p>
+          } @else {
+            @for (item of filtered(); track item._id) {
+              <button type="button" class="tpl" (click)="pick(item)">
+                <span class="tpl__copy">
+                  <strong>{{ title(item) }}</strong>
+                  <em>
+                    {{ item.descripcion || (item.slots.length + ' tomas') }}
+                  </em>
+                </span>
+                <span class="tpl__count">
+                  {{ optionsCount(item) }}
+                  <small>pl.</small>
+                </span>
+              </button>
+            } @empty {
+              <p class="templates__empty">
+                {{ templates().length === 0
+                  ? 'Aún no hay planes en la carta de comidas.'
+                  : 'Ningún plan encaja con esa búsqueda.' }}
+              </p>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

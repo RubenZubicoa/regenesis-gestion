@@ -1050,6 +1050,13 @@
   border-radius: var(--radius-md);
 }
 
+.empty-panel--cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
 .down {
   color: var(--success) !important;
 }
