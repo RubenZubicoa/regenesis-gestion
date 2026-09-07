@@ -526,6 +526,7 @@
         [meal]="d.meal"
         [seed]="mealSeed()"
         (saved)="onMealsSaved($event)"
+        (deleted)="onMealsDeleted()"
         (closed)="closeMealsDialog()"
       />
     }

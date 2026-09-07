@@ -363,13 +363,21 @@
 .board__foot {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 0.65rem;
   padding: 1rem 1.5rem 1.25rem;
   border-top: 1px solid var(--border);
 }
 
+.board__foot-right {
+  display: flex;
+  gap: 0.65rem;
+  margin-left: auto;
+}
+
 .ghost-btn,
-.gold-btn {
+.gold-btn,
+.danger-btn {
   border: 0;
   border-radius: var(--radius-sm);
   padding: 0.7rem 1.1rem;
@@ -408,6 +416,15 @@
 
   &:hover:not(:disabled) {
     background: var(--navy-mid);
+  }
+}
+
+.danger-btn {
+  background: transparent;
+  color: var(--coral);
+
+  &:hover:not(:disabled) {
+    color: #c62828;
   }
 }
 

@@ -41,11 +41,13 @@ export class MealsDialogComponent implements OnInit {
   readonly seed = input<MealSlot[] | null>(null);
 
   readonly saved = output<Meal>();
+  readonly deleted = output<void>();
   readonly closed = output<void>();
 
   readonly slots = signal<EditableSlot[]>([]);
   readonly activeIndex = signal(0);
   readonly saving = signal(false);
+  readonly deleting = signal(false);
   readonly saveError = signal<string | null>(null);
 
   readonly activeSlot = computed(() => {
@@ -173,11 +175,12 @@ export class MealsDialogComponent implements OnInit {
   }
 
   close(): void {
-    if (this.saving()) return;
+    if (this.saving() || this.deleting()) return;
     this.closed.emit();
   }
 
   save(): void {
+    if (this.deleting()) return;
     const payload = this.buildPayload();
     if (!payload) return;
 
@@ -190,6 +193,24 @@ export class MealsDialogComponent implements OnInit {
       },
       error: (err: Error) => {
         this.saving.set(false);
+        this.saveError.set(err.message);
+      },
+    });
+  }
+
+  remove(): void {
+    const current = this.meal();
+    if (!current || this.saving() || this.deleting()) return;
+
+    this.deleting.set(true);
+    this.saveError.set(null);
+    this.mealsService.remove(current._id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.deleted.emit();
+      },
+      error: (err: Error) => {
+        this.deleting.set(false);
         this.saveError.set(err.message);
       },
     });

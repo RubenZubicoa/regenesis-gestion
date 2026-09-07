@@ -498,6 +498,14 @@ export class ClientDetailPageComponent {
     this.closeMealsDialog();
   }
 
+  onMealsDeleted(): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({ ...current, meal: null });
+    }
+    this.closeMealsDialog();
+  }
+
   openSupplementsDialog(): void {
     this.supplementsDialogOpen.set(true);
   }

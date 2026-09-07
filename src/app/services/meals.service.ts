@@ -18,4 +18,8 @@ export class MealsService {
 
     return request$.pipe(map((raw) => normalizeMeal(raw)));
   }
+
+  remove(id: string): Observable<void> {
+    return this.api.delete(`/api/meals/${encodeURIComponent(id)}`);
+  }
 }
