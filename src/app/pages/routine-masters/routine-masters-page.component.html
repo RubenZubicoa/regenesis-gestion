@@ -1,0 +1,318 @@
+<section class="page">
+  @if (loading()) {
+    <div class="state">Cargando el archivo de sesiones…</div>
+  } @else if (error()) {
+    <div class="state state--error">
+      <p>{{ error() }}</p>
+      <button type="button" class="gold-btn" (click)="reload()">Reintentar</button>
+    </div>
+  } @else if (workshopOpen()) {
+    @if (draft(); as session) {
+    <button type="button" class="back" (click)="leaveWorkshop()">← Volver al archivo</button>
+
+    <header class="hero hero--workshop">
+      <div class="hero__copy">
+        <p class="eyebrow">Taller de plantillas</p>
+        <h1>{{ session._id ? 'Editar sesión' : 'Nueva sesión' }}</h1>
+        <p class="hero__sub">
+          Arrastra ejercicios de la biblioteca o pulsa + para montar la plantilla.
+        </p>
+      </div>
+      <div class="hero__actions">
+        @if (saveOk()) {
+          <span class="save-ok">Plantilla guardada</span>
+        }
+        @if (session._id) {
+          <button
+            type="button"
+            class="ghost-btn ghost-btn--danger"
+            (click)="remove()"
+            [disabled]="saving() || deleting()">
+            {{ deleting() ? 'Eliminando…' : 'Eliminar' }}
+          </button>
+        }
+        <button type="button" class="gold-btn" (click)="save()" [disabled]="saving() || deleting()">
+          {{ saving() ? 'Guardando…' : session._id ? 'Guardar plantilla' : 'Crear plantilla' }}
+        </button>
+      </div>
+    </header>
+
+    @if (saveError()) {
+      <p class="banner-error">{{ saveError() }}</p>
+    }
+
+    <div class="workshop">
+      <aside class="library">
+        <div class="library__head">
+          <h2>Biblioteca</h2>
+          <p>Piezas para esta sesión</p>
+        </div>
+
+        <label class="search">
+          <span aria-hidden="true">⌕</span>
+          <input
+            type="search"
+            placeholder="Buscar ejercicio…"
+            [ngModel]="masterQuery()"
+            (ngModelChange)="masterQuery.set($event)"
+          />
+        </label>
+
+        <div class="chips">
+          @for (item of kindFilters; track item.key) {
+            <button
+              type="button"
+              class="chip"
+              [class.is-on]="masterFilter() === item.key"
+              (click)="setMasterFilter(item.key)">
+              {{ item.label }}
+            </button>
+          }
+        </div>
+
+        @if (categories().length) {
+          <label class="search search--select">
+            <select
+              [ngModel]="masterCategoryFilter()"
+              (ngModelChange)="setMasterCategoryFilter($event)"
+              aria-label="Filtrar por categoría">
+              <option value="all">Todas las categorías</option>
+              @for (cat of categories(); track cat._id) {
+                <option [value]="cat._id">{{ cat.label }}</option>
+              }
+            </select>
+          </label>
+        }
+
+        <div
+          class="library__list"
+          cdkDropList
+          id="exercise-library"
+          [cdkDropListData]="filteredMasters()"
+          [cdkDropListConnectedTo]="connectedLists()"
+          [cdkDropListSortingDisabled]="true"
+          (cdkDropListDropped)="onLibraryDrop($event)">
+          @for (master of filteredMasters(); track master._id) {
+            <div class="lib-card" cdkDrag [cdkDragData]="master">
+              <div class="lib-card__preview" *cdkDragPreview>
+                <strong>{{ master.name }}</strong>
+                <span>{{ master.type === 'cardio' ? 'Cardio' : 'Fuerza' }}</span>
+              </div>
+              <div class="lib-card__placeholder" *cdkDragPlaceholder></div>
+              @if (master.imageUrl) {
+                <img [src]="master.imageUrl" [alt]="master.name" />
+              } @else {
+                <div class="lib-card__fallback" [class.is-cardio]="master.type === 'cardio'">
+                  {{ master.type === 'cardio' ? 'C' : 'F' }}
+                </div>
+              }
+              <div class="lib-card__copy">
+                <strong>{{ master.name }}</strong>
+                <em>{{ master.type === 'cardio' ? 'Cardio' : 'Fuerza' }}</em>
+              </div>
+              <button
+                type="button"
+                class="lib-card__add"
+                (click)="addFromMaster(master)"
+                [attr.aria-label]="'Añadir ' + master.name">
+                +
+              </button>
+            </div>
+          } @empty {
+            <p class="library__empty">No hay ejercicios con ese filtro.</p>
+          }
+        </div>
+      </aside>
+
+      <div class="session">
+        <div class="session__meta">
+          <label class="field">
+            <span>Nombre de la sesión</span>
+            <input
+              type="text"
+              [ngModel]="session.day"
+              (ngModelChange)="updateDraft('day', $event)"
+              placeholder="Push A, Piernas, Full body…"
+            />
+          </label>
+          <label class="field">
+            <span>Foco</span>
+            <input
+              type="text"
+              [ngModel]="session.focus"
+              (ngModelChange)="updateDraft('focus', $event)"
+              placeholder="Fuerza, Hipertrofia, Condición…"
+            />
+          </label>
+          <label class="field field--short">
+            <span>Duración</span>
+            <input
+              type="text"
+              [ngModel]="session.duration"
+              (ngModelChange)="updateDraft('duration', $event)"
+              placeholder="45 min"
+            />
+          </label>
+        </div>
+
+        <div
+          class="dropzone"
+          cdkDropList
+          id="session-dropzone"
+          [cdkDropListData]="session.exercises"
+          [cdkDropListConnectedTo]="connectedLists()"
+          (cdkDropListDropped)="onSessionDrop($event)">
+          @for (ex of session.exercises; track ex.uid) {
+            <div class="slot" cdkDrag>
+              <div class="slot__handle" cdkDragHandle aria-hidden="true">⋮⋮</div>
+              <div class="slot__preview" *cdkDragPreview>
+                <strong>{{ ex.name }}</strong>
+              </div>
+              @if (ex.image) {
+                <img [src]="ex.image" [alt]="ex.name" />
+              } @else {
+                <div class="slot__fallback" [class.is-cardio]="ex.type === 'cardio'">
+                  {{ ex.type === 'cardio' ? 'C' : 'F' }}
+                </div>
+              }
+              <div class="slot__main">
+                <div class="slot__title">
+                  <strong>{{ ex.name }}</strong>
+                  <em>{{ ex.type === 'cardio' ? 'Cardio' : 'Fuerza' }}</em>
+                </div>
+                <div class="slot__fields">
+                  <label>
+                    <span>Series</span>
+                    <input
+                      type="text"
+                      [ngModel]="ex.sets"
+                      (ngModelChange)="updateExerciseField(ex.uid, 'sets', $event)"
+                    />
+                  </label>
+                  <label>
+                    <span>Descanso</span>
+                    <input
+                      type="text"
+                      [ngModel]="ex.rest"
+                      (ngModelChange)="updateExerciseField(ex.uid, 'rest', $event)"
+                    />
+                  </label>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="slot__remove"
+                (click)="removeExercise(ex.uid)"
+                aria-label="Quitar ejercicio">
+                ×
+              </button>
+            </div>
+          } @empty {
+            <div class="dropzone__empty">
+              <span class="dropzone__mark" aria-hidden="true">╋</span>
+              <p>Suelta aquí los movimientos de esta plantilla</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+    }
+  } @else {
+    <div class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Archivo de sesiones</p>
+        <h1>Rutinas de<br />entrenamiento</h1>
+        <p class="hero__sub">
+          Plantillas de sesión listas para reutilizar: nombre, foco y el orden de los ejercicios.
+        </p>
+        <button type="button" class="gold-btn" (click)="openCreate()">+ Nueva plantilla</button>
+      </div>
+      <div class="hero__metrics" aria-label="Resumen del archivo">
+        <div class="metric">
+          <span class="metric__value">{{ stats().templates }}</span>
+          <span class="metric__label">Plantillas</span>
+        </div>
+        <div class="metric metric--gold">
+          <span class="metric__value">{{ stats().exercises }}</span>
+          <span class="metric__label">Ejercicios</span>
+        </div>
+        <div class="metric metric--teal">
+          <span class="metric__value">{{ stats().cardio }}</span>
+          <span class="metric__label">Cardio</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label class="search search--wide">
+        <span aria-hidden="true">⌕</span>
+        <input
+          type="search"
+          placeholder="Buscar por nombre, foco o ejercicio…"
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+        />
+      </label>
+      <div class="chips" role="tablist" aria-label="Filtrar por foco">
+        @for (item of focusFilters(); track item.key) {
+          <button
+            type="button"
+            class="chip chip--light"
+            [class.is-on]="focusFilter() === item.key"
+            (click)="setFocusFilter(item.key)">
+            {{ item.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (routines().length === 0) {
+      <div class="empty">
+        <div class="empty__rack" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <h2>El rack está vacío</h2>
+        <p>Crea la primera plantilla y empieza a componer sesiones reutilizables.</p>
+        <button type="button" class="gold-btn" (click)="openCreate()">Abrir el taller</button>
+      </div>
+    } @else if (filtered().length === 0) {
+      <div class="empty">
+        <p>Ninguna plantilla encaja con ese filtro.</p>
+      </div>
+    } @else {
+      <div class="rack">
+        @for (routine of filtered(); track routine._id) {
+          <button type="button" class="sheet" (click)="openEdit(routine)">
+            <span class="sheet__spine" aria-hidden="true"></span>
+            <div class="sheet__top">
+              <em>{{ routine.focus || 'Sin foco' }}</em>
+              <strong>{{ routine.duration || '—' }}</strong>
+            </div>
+            <h3>{{ routine.day || 'Sin nombre' }}</h3>
+            <div class="sheet__thumbs">
+              @for (ex of previewThumbs(routine); track ex.exerciseId + $index) {
+                @if (ex.image) {
+                  <img [src]="ex.image" [alt]="ex.name" />
+                } @else {
+                  <span [class.is-cardio]="ex.type === 'cardio'">
+                    {{ ex.type === 'cardio' ? 'C' : 'F' }}
+                  </span>
+                }
+              }
+              @if (routine.exercises.length > 4) {
+                <span class="sheet__more">+{{ routine.exercises.length - 4 }}</span>
+              }
+              @if (routine.exercises.length === 0) {
+                <p>Sin ejercicios todavía</p>
+              }
+            </div>
+            <div class="sheet__foot">
+              <span>{{ routine.exercises.length }} movimiento{{ routine.exercises.length === 1 ? '' : 's' }}</span>
+              <span>Abrir taller →</span>
+            </div>
+          </button>
+        }
+      </div>
+    }
+  }
+</section>

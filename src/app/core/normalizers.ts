@@ -7,6 +7,7 @@ import type { ProgressImage } from '../models/progress-image';
 import type { Program } from '../models/program';
 import type { Review, ReviewStatus } from '../models/review';
 import type { RoutineDay } from '../models/routine-day';
+import type { RoutineMaster } from '../models/routine-master';
 import type { Supplements } from '../models/supplements';
 import type { Weight } from '../models/weight';
 import type { Wellness } from '../models/wellness';
@@ -188,11 +189,12 @@ export function normalizeRoutineDay(raw: unknown): RoutineDay {
         ex['repRange'] && typeof ex['repRange'] === 'object'
           ? asApiRecord(ex['repRange'])
           : null;
+      const image = str(ex, 'imageUrl') || str(ex, 'image');
       return {
         exerciseId: normalizeId(ex['exerciseId']),
         name: str(ex, 'name', 'Ejercicio'),
         type: typeRaw === 'cardio' ? 'cardio' : 'strength',
-        image: ex['imageUrl'] ? str(ex, 'imageUrl') : undefined,
+        ...(image ? { image } : {}),
         sets: str(ex, 'sets'),
         rest: str(ex, 'rest'),
         seriesCount: ex['seriesCount'] != null ? num(ex, 'seriesCount') : undefined,
@@ -210,6 +212,18 @@ export function normalizeRoutineDay(raw: unknown): RoutineDay {
         ...(ex['targetKm'] != null ? { targetKm: num(ex, 'targetKm') } : {}),
       };
     }),
+  };
+}
+
+export function normalizeRoutineMaster(raw: unknown): RoutineMaster {
+  const day = normalizeRoutineDay(raw);
+  return {
+    _id: day._id,
+    day: day.day,
+    focus: day.focus,
+    done: false,
+    duration: day.duration,
+    exercises: day.exercises,
   };
 }
 

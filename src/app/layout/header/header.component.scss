@@ -152,6 +152,12 @@
   font-size: 1rem;
 }
 
+@media (max-width: 1180px) {
+  .nav__soon {
+    display: none;
+  }
+}
+
 @media (max-width: 1080px) {
   .brand__tag {
     display: none;
