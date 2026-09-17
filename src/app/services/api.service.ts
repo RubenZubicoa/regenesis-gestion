@@ -1,7 +1,8 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, of, throwError } from 'rxjs';
 
+import { SKIP_AUTH } from '../core/http-context';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -17,12 +18,16 @@ export class ApiService {
     );
   }
 
-  post<T>(path: string, body: unknown): Observable<T> {
-    return this.http.post<T>(`${this.baseUrl}${path}`, body).pipe(
-      catchError((err: HttpErrorResponse) =>
-        throwError(() => new Error(this.readErrorMessage(err))),
-      ),
-    );
+  post<T>(path: string, body: unknown, options?: { skipAuth?: boolean }): Observable<T> {
+    return this.http
+      .post<T>(`${this.baseUrl}${path}`, body, {
+        context: new HttpContext().set(SKIP_AUTH, !!options?.skipAuth),
+      })
+      .pipe(
+        catchError((err: HttpErrorResponse) =>
+          throwError(() => new Error(this.readErrorMessage(err))),
+        ),
+      );
   }
 
   put<T>(path: string, body: unknown): Observable<T> {

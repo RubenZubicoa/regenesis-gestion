@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -9,6 +11,14 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
-  coachName = 'Onatz';
-  coachRole = 'Health Coach';
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+
+  readonly coachName = this.auth.trainerName;
+  readonly coachRole = 'Health Coach';
+
+  logout(): void {
+    this.auth.logout();
+    void this.router.navigate(['/login']);
+  }
 }

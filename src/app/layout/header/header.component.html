@@ -26,10 +26,13 @@
 
     <div class="coach">
       <div class="coach__meta">
-        <span class="coach__name">{{ coachName }}</span>
+        <span class="coach__name">{{ coachName() }}</span>
         <span class="coach__role">{{ coachRole }}</span>
       </div>
-      <div class="coach__avatar" aria-hidden="true">{{ coachName.charAt(0) }}</div>
+      <div class="coach__avatar" aria-hidden="true">{{ coachName().charAt(0) }}</div>
+      <button type="button" class="coach__logout" (click)="logout()">
+        Salir
+      </button>
     </div>
   </div>
 </header>

@@ -1,0 +1,55 @@
+<section class="login">
+  <div class="login__glow" aria-hidden="true"></div>
+
+  <form class="card" (submit)="$event.preventDefault(); submit()" novalidate>
+    <div class="card__brand">
+      <img
+        class="card__logo"
+        src="brand/logo-vertical.png"
+        alt="Onatz Health Coach · REGENESIS"
+        width="1024"
+        height="1024"
+      />
+    </div>
+
+    <p class="eyebrow">Área del entrenador</p>
+    <h1>Iniciar sesión</h1>
+    <p class="card__lead">
+      Accede a la gestión de clientes, planes y revisiones de REGENESIS.
+    </p>
+
+    <label class="field">
+      <span>Email</span>
+      <input
+        type="email"
+        name="email"
+        autocomplete="username"
+        [ngModel]="email()"
+        (ngModelChange)="email.set($event)"
+        [disabled]="submitting()"
+        placeholder="entrenador@email.com"
+      />
+    </label>
+
+    <label class="field">
+      <span>Contraseña</span>
+      <input
+        type="password"
+        name="password"
+        autocomplete="current-password"
+        [ngModel]="password()"
+        (ngModelChange)="password.set($event)"
+        [disabled]="submitting()"
+        placeholder="Tu contraseña"
+      />
+    </label>
+
+    @if (error()) {
+      <p class="card__error" role="alert">{{ error() }}</p>
+    }
+
+    <button type="submit" class="card__submit" [disabled]="submitting()">
+      {{ submitting() ? 'Entrando…' : 'Entrar' }}
+    </button>
+  </form>
+</section>

@@ -1,4 +1,6 @@
-<app-header />
-<main class="shell">
+@if (showChrome()) {
+  <app-header />
+}
+<main [class.shell]="showChrome()">
   <router-outlet />
 </main>
