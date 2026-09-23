@@ -916,26 +916,29 @@
 .steps-chart {
   display: flex;
   align-items: flex-end;
-  gap: 0.5rem;
-  height: 160px;
+  gap: 0.28rem;
+  height: 180px;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
 }
 
 .steps-bar {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 1.35rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
   height: 100%;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 
 .steps-bar__fill {
   width: 100%;
-  max-width: 36px;
+  max-width: 22px;
   border-radius: 6px 6px 2px 2px;
   background: linear-gradient(to top, var(--blue-light), var(--blue));
-  min-height: 6px;
+  min-height: 4px;
 
   &--goal {
     background: linear-gradient(to top, #3ad1c4, var(--teal));
@@ -943,14 +946,16 @@
 }
 
 .steps-bar__val {
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   font-weight: 700;
   color: var(--navy);
+  line-height: 1;
 }
 
 .steps-bar__day {
   font-size: 0.62rem;
   color: var(--text-muted);
+  line-height: 1;
 }
 
 .photo-grid {

@@ -1,5 +1,5 @@
 import type { Client } from '../models/client';
-import type { DailySteps, DaySteps } from '../models/daily-steps';
+import type { DailySteps, DailyStepsChartDay } from '../models/daily-steps';
 import type { Macros } from '../models/macros';
 import type { Meal } from '../models/meal';
 import type { MealMaster } from '../models/meal-master';
@@ -310,20 +310,17 @@ export function normalizeWellness(
 
 export function normalizeDailySteps(raw: unknown): DailySteps {
   const r = asApiRecord(raw);
-  const daysRaw = Array.isArray(r['days']) ? r['days'] : [];
-  const days: DaySteps[] = daysRaw.map((entry) => {
-    const day = asApiRecord(entry);
-    return {
-      label: str(day, 'label'),
-      value: num(day, 'value'),
-    };
-  });
+  const goalRaw = r['goal'];
+  const goal =
+    goalRaw == null || goalRaw === ''
+      ? undefined
+      : num(r, 'goal');
   return {
     _id: normalizeId(r['_id']),
     clientId: normalizeId(r['clientId']),
-    week: num(r, 'week'),
-    goal: num(r, 'goal'),
-    days,
+    date: normalizeDate(r['date']),
+    steps: num(r, 'steps'),
+    ...(goal != null && !Number.isNaN(goal) ? { goal } : {}),
   };
 }
 
@@ -427,16 +424,44 @@ export function latestWellness(records: Wellness[]): Wellness[] {
   return latest;
 }
 
-export function pickCurrentDailySteps(
+export function lastDailyStepsChartDays(
   records: DailySteps[],
-  week?: number,
-): DailySteps | null {
-  if (records.length === 0) return null;
-  if (week != null) {
-    const match = records.find((r) => r.week === week);
-    if (match) return match;
+  days = 15,
+): DailyStepsChartDay[] {
+  const byDate = new Map<string, DailySteps>();
+  for (const record of records) {
+    const key = record.date.slice(0, 10);
+    if (!key) continue;
+    byDate.set(key, record);
   }
-  return [...records].sort((a, b) => b.week - a.week)[0] ?? null;
+
+  const fallbackGoal =
+    [...records].reverse().find((record) => record.goal != null && record.goal > 0)
+      ?.goal ?? 0;
+
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+
+  return Array.from({ length: days }, (_, index) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - (days - 1 - index));
+    const iso = toIsoDate(date);
+    const record = byDate.get(iso);
+    return {
+      date: iso,
+      label:
+        index === 0 || date.getDate() === 1
+          ? date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+          : String(date.getDate()),
+      steps: record?.steps ?? 0,
+      goal: record?.goal && record.goal > 0 ? record.goal : fallbackGoal,
+    };
+  });
+}
+
+function toIsoDate(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export function asRecordArray(raw: unknown): ApiRecord[] {

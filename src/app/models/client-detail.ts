@@ -25,6 +25,6 @@ export interface ClientDetail {
   workoutHistory: WorkoutHistory[];
   measurements: Measurement[];
   wellness: Wellness[];
-  dailySteps: DailySteps | null;
+  dailySteps: DailySteps[];
   progressImages: ProgressImage[];
 }

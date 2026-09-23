@@ -38,6 +38,10 @@ export interface ClientCreatePayload {
 
 export type ClientUpdatePayload = Omit<ClientCreatePayload, 'password'>;
 
+/** Toda renovación de plan dura exactamente 90 días. */
+export const PLAN_RENEWAL_DAYS = 90;
+export const PLAN_RENEWAL_WEEKS = Math.round(PLAN_RENEWAL_DAYS / 7);
+
 @Injectable({ providedIn: 'root' })
 export class ClientsService {
   private readonly api = inject(ApiService);
@@ -77,6 +81,18 @@ export class ClientsService {
   changePhase(client: Client, phase: number): Observable<Client> {
     const { _id, ...fields } = client;
     return this.update(_id, { ...fields, phase });
+  }
+
+  renewPlan(client: Client): Observable<Client> {
+    const start = startOfToday();
+    const { _id, ...fields } = client;
+    return this.update(_id, {
+      ...fields,
+      startDate: toDateInput(start),
+      endDate: toDateInput(addDays(start, PLAN_RENEWAL_DAYS)),
+      week: 1,
+      totalWeeks: PLAN_RENEWAL_WEEKS,
+    });
   }
 
   private resolveProgramId(program?: string): Observable<string> {
@@ -168,4 +184,21 @@ export class ClientsService {
     if (today > end) return 'finished';
     return 'active';
   }
+}
+
+function startOfToday(): Date {
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+  return today;
+}
+
+function toDateInput(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function addDays(d: Date, days: number): Date {
+  const next = new Date(d);
+  next.setDate(next.getDate() + days);
+  return next;
 }

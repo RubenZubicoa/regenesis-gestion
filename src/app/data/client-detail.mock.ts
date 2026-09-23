@@ -228,21 +228,24 @@ const MOCK_WELLNESS: Record<string, Wellness[]> = {
   ],
 };
 
-const MOCK_STEPS: Record<string, DailySteps> = {
-  [RUBEN_ID]: {
-    _id: 'ds-ruben',
-    clientId: RUBEN_ID,
-    goal: 10000,
-    days: [
-      { date: '2026-08-14', steps: 8420 },
-      { date: '2026-08-15', steps: 10250 },
-      { date: '2026-08-16', steps: 6800 },
-      { date: '2026-08-17', steps: 11500 },
-      { date: '2026-08-18', steps: 9200 },
-      { date: '2026-08-19', steps: 10800 },
-      { date: '2026-08-20', steps: 7600 },
-    ],
-  },
+const MOCK_STEPS: Record<string, DailySteps[]> = {
+  [RUBEN_ID]: [
+    { _id: 'ds-1', clientId: RUBEN_ID, date: '2026-09-09', steps: 8420, goal: 10000 },
+    { _id: 'ds-2', clientId: RUBEN_ID, date: '2026-09-10', steps: 10250, goal: 10000 },
+    { _id: 'ds-3', clientId: RUBEN_ID, date: '2026-09-11', steps: 6800, goal: 10000 },
+    { _id: 'ds-4', clientId: RUBEN_ID, date: '2026-09-12', steps: 11500, goal: 10000 },
+    { _id: 'ds-5', clientId: RUBEN_ID, date: '2026-09-13', steps: 9200, goal: 10000 },
+    { _id: 'ds-6', clientId: RUBEN_ID, date: '2026-09-14', steps: 10800, goal: 10000 },
+    { _id: 'ds-7', clientId: RUBEN_ID, date: '2026-09-15', steps: 7600, goal: 10000 },
+    { _id: 'ds-8', clientId: RUBEN_ID, date: '2026-09-16', steps: 9900, goal: 10000 },
+    { _id: 'ds-9', clientId: RUBEN_ID, date: '2026-09-17', steps: 12100, goal: 10000 },
+    { _id: 'ds-10', clientId: RUBEN_ID, date: '2026-09-18', steps: 5400, goal: 10000 },
+    { _id: 'ds-11', clientId: RUBEN_ID, date: '2026-09-19', steps: 8800, goal: 10000 },
+    { _id: 'ds-12', clientId: RUBEN_ID, date: '2026-09-20', steps: 10300, goal: 10000 },
+    { _id: 'ds-13', clientId: RUBEN_ID, date: '2026-09-21', steps: 7100, goal: 10000 },
+    { _id: 'ds-14', clientId: RUBEN_ID, date: '2026-09-22', steps: 9600, goal: 10000 },
+    { _id: 'ds-15', clientId: RUBEN_ID, date: '2026-09-23', steps: 11200, goal: 10000 },
+  ],
 };
 
 const MOCK_IMAGES: Record<string, ProgressImage[]> = {
@@ -348,7 +351,7 @@ export function getClientDetail(clientId: string): ClientDetail | null {
     workoutHistory: MOCK_WORKOUTS[clientId] ?? [],
     measurements: MOCK_MEASUREMENTS[clientId] ?? [],
     wellness: MOCK_WELLNESS[clientId] ?? [],
-    dailySteps: MOCK_STEPS[clientId] ?? null,
+    dailySteps: MOCK_STEPS[clientId] ?? [],
     progressImages: MOCK_IMAGES[clientId] ?? [],
   };
 }

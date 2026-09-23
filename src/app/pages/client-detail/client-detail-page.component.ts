@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 
+import { lastDailyStepsChartDays } from '../../core/normalizers';
 import type { Client } from '../../models/client';
 import type { ClientDetail } from '../../models/client-detail';
 import type { Macros } from '../../models/macros';
@@ -17,6 +18,7 @@ import { PhaseDialogComponent } from '../clients/phase-dialog.component';
 import { MacrosDialogComponent } from './macros-dialog.component';
 import { MealsDialogComponent } from './meals-dialog.component';
 import { LoadMealPlanDialogComponent } from './load-meal-plan-dialog.component';
+import { RenewPlanDialogComponent } from './renew-plan-dialog.component';
 import { SupplementsDialogComponent } from './supplements-dialog.component';
 
 
@@ -74,6 +76,7 @@ export interface WeightChartView {
     ClientDialogComponent,
     PasswordDialogComponent,
     PhaseDialogComponent,
+    RenewPlanDialogComponent,
   ],
 
   templateUrl: './client-detail-page.component.html',
@@ -110,6 +113,7 @@ export class ClientDetailPageComponent {
   readonly personalDialogOpen = signal(false);
   readonly passwordDialogOpen = signal(false);
   readonly phaseDialogOpen = signal(false);
+  readonly renewPlanDialogOpen = signal(false);
 
 
 
@@ -137,12 +141,17 @@ export class ClientDetailPageComponent {
 
 
 
+  readonly stepsChartDays = computed(() =>
+    lastDailyStepsChartDays(this.detail()?.dailySteps ?? [], 15),
+  );
+
+  readonly hasRecentSteps = computed(() =>
+    this.stepsChartDays().some((day) => day.steps > 0),
+  );
+
   readonly maxSteps = computed(() => {
-
-    const days = this.detail()?.dailySteps?.days ?? [];
-
-    return Math.max(...days.map((d) => d.value), 1);
-
+    const days = this.stepsChartDays();
+    return Math.max(...days.map((d) => d.steps), 1);
   });
 
 
@@ -283,6 +292,11 @@ export class ClientDetailPageComponent {
     const d = new Date(iso.includes('T') ? iso : `${iso}T12:00:00`);
     if (Number.isNaN(d.getTime())) return iso;
     return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  }
+
+  formatSteps(value: number): string {
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
+    return String(value);
   }
 
   formatReviewDate(raw: string): string {
@@ -576,6 +590,25 @@ export class ClientDetailPageComponent {
       });
     }
     this.phaseDialogOpen.set(false);
+  }
+
+  openRenewPlanDialog(): void {
+    this.renewPlanDialogOpen.set(true);
+  }
+
+  closeRenewPlanDialog(): void {
+    this.renewPlanDialogOpen.set(false);
+  }
+
+  onPlanRenewed(client: Client): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({
+        ...current,
+        client: { ...current.client, ...client },
+      });
+    }
+    this.renewPlanDialogOpen.set(false);
   }
 
 }

@@ -40,6 +40,9 @@
             <button type="button" class="profile__btn profile__btn--ghost" (click)="openPhaseDialog()">
               Cambiar fase
             </button>
+            <button type="button" class="profile__btn profile__btn--ghost" (click)="openRenewPlanDialog()">
+              Renovar plan
+            </button>
           </div>
         </div>
         <div class="profile__ring">
@@ -436,23 +439,25 @@
           </div>
         }
 
-        @if (d.dailySteps; as steps) {
-          <div class="panel-block">
-            <h2>Pasos esta semana</h2>
+        <div class="panel-block">
+          <h2>Pasos de los últimos 15 días</h2>
+          @if (hasRecentSteps()) {
             <div class="steps-chart">
-              @for (day of steps.days; track day.label) {
+              @for (day of stepsChartDays(); track day.date) {
                 <div class="steps-bar">
                   <span
                     class="steps-bar__fill"
-                    [class.steps-bar__fill--goal]="day.value >= steps.goal"
-                    [style.height.%]="(day.value / maxSteps()) * 100"></span>
-                  <span class="steps-bar__val">{{ (day.value / 1000).toFixed(1) }}k</span>
+                    [class.steps-bar__fill--goal]="day.goal > 0 && day.steps >= day.goal"
+                    [style.height.%]="(day.steps / maxSteps()) * 100"></span>
+                  <span class="steps-bar__val">{{ formatSteps(day.steps) }}</span>
                   <span class="steps-bar__day">{{ day.label }}</span>
                 </div>
               }
             </div>
-          </div>
-        }
+          } @else {
+            <p class="empty-panel">Aún no hay pasos registrados en los últimos 15 días.</p>
+          }
+        </div>
 
         @if (d.progressImages.length > 0) {
           <div class="panel-block">
@@ -571,6 +576,16 @@
         [client]="d.client"
         (saved)="onPhaseSaved($event)"
         (closed)="closePhaseDialog()"
+      />
+    }
+  }
+
+  @if (renewPlanDialogOpen()) {
+    @if (detail(); as d) {
+      <app-renew-plan-dialog
+        [client]="d.client"
+        (saved)="onPlanRenewed($event)"
+        (closed)="closeRenewPlanDialog()"
       />
     }
   }

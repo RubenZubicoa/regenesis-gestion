@@ -22,7 +22,6 @@ import {
   normalizeWellness,
   normalizeWellnessMaster,
   normalizeWorkoutHistory,
-  pickCurrentDailySteps,
 } from '../core/normalizers';
 import type { ClientDetail } from '../models/client-detail';
 import { ApiService } from './api.service';
@@ -119,7 +118,7 @@ export class ClientDetailService {
           workoutHistory: asRecordArray(payload.workoutHistory).map(normalizeWorkoutHistory),
           measurements,
           wellness,
-          dailySteps: pickCurrentDailySteps(dailyStepsRecords, client.week),
+          dailySteps: dailyStepsRecords,
           progressImages: asRecordArray(payload.progressImages).map(normalizeProgressImage),
         } satisfies ClientDetail;
       }),
