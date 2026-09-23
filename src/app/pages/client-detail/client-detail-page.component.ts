@@ -156,15 +156,10 @@ export class ClientDetailPageComponent {
 
 
 
-  readonly routineDoneCount = computed(() => {
-
-    const days = this.detail()?.routineDays ?? [];
-
-    return days.filter((day) => day.done).length;
-
+  readonly workoutsThisWeekCount = computed(() => {
+    const items = this.detail()?.workoutHistory ?? [];
+    return items.filter((item) => isInCurrentIsoWeek(item.date)).length;
   });
-
-
 
   readonly routineTotalCount = computed(() => this.detail()?.routineDays.length ?? 0);
 
@@ -611,5 +606,24 @@ export class ClientDetailPageComponent {
     this.renewPlanDialogOpen.set(false);
   }
 
+}
+
+function isInCurrentIsoWeek(isoDate: string): boolean {
+  const date = new Date(isoDate.includes('T') ? isoDate : `${isoDate}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return false;
+
+  const start = startOfIsoWeek(new Date());
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+  return date >= start && date < end;
+}
+
+function startOfIsoWeek(value: Date): Date {
+  const date = new Date(value);
+  date.setHours(12, 0, 0, 0);
+  const weekday = date.getDay();
+  const offset = weekday === 0 ? 6 : weekday - 1;
+  date.setDate(date.getDate() - offset);
+  return date;
 }
 

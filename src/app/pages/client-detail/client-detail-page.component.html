@@ -79,14 +79,17 @@
           <div class="stat-card">
             <span class="stat-card__label">Calorías objetivo</span>
             <span class="stat-card__value">{{ m.target }} <small>kcal</small></span>
-            <span class="stat-card__meta">Hoy {{ m.calories }} kcal</span>
           </div>
         }
         <div class="stat-card">
           <span class="stat-card__label">Entrenos semana</span>
-          <span class="stat-card__value">{{ d.workoutHistory.length }}</span>
+          <span class="stat-card__value">{{ workoutsThisWeekCount() }}</span>
           <span class="stat-card__meta">
-            {{ routineDoneCount() }}/{{ routineTotalCount() }} días hechos
+            @if (routineTotalCount() > 0) {
+              {{ workoutsThisWeekCount() }}/{{ routineTotalCount() }} días hechos
+            } @else {
+              esta semana
+            }
           </span>
         </div>
         <div class="stat-card">
