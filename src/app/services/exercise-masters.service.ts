@@ -9,7 +9,7 @@ export interface ExerciseMasterInput {
   name: string;
   type: ExerciseType;
   category?: string;
-  imageUrl?: string;
+  image?: File;
   explanation?: string;
 }
 
@@ -76,7 +76,7 @@ function normalizeExerciseMaster(raw: unknown): ExerciseMaster {
       : {};
   const typeRaw = String(r['type'] ?? 'strength');
   const type: ExerciseType = typeRaw === 'cardio' ? 'cardio' : 'strength';
-  const imageUrl = String(r['imageUrl'] ?? '').trim();
+  const imageUrl = String(r['imageUrl'] ?? r['image'] ?? '').trim();
   const explanation = String(r['explanation'] ?? '').trim();
   const category = readCategoryRef(r['category'] ?? r['categoria'] ?? r['categoryId']);
 
@@ -107,13 +107,13 @@ export class ExerciseMastersService {
 
   create(input: ExerciseMasterInput): Observable<ExerciseMaster> {
     return this.api
-      .post<unknown>('/api/exercise-masters', this.toBody(input))
+      .post<unknown>('/api/exercise-masters', this.toFormData(input))
       .pipe(map((raw) => this.persistCategory(normalizeExerciseMaster(raw), input.category)));
   }
 
   update(id: string, input: ExerciseMasterInput): Observable<ExerciseMaster> {
     return this.api
-      .put<unknown>(`/api/exercise-masters/${encodeURIComponent(id)}`, this.toBody(input))
+      .put<unknown>(`/api/exercise-masters/${encodeURIComponent(id)}`, this.toFormData(input))
       .pipe(map((raw) => this.persistCategory(normalizeExerciseMaster(raw), input.category)));
   }
 
@@ -129,13 +129,15 @@ export class ExerciseMastersService {
     return withCategory(exercise, category);
   }
 
-  private toBody(input: ExerciseMasterInput): Record<string, unknown> {
-    return {
-      name: input.name.trim(),
-      type: input.type,
-      category: input.category?.trim() ?? '',
-      imageUrl: input.imageUrl?.trim() ?? '',
-      explanation: input.explanation?.trim() ?? '',
-    };
+  private toFormData(input: ExerciseMasterInput): FormData {
+    const body = new FormData();
+    body.append('name', input.name.trim());
+    body.append('type', input.type);
+    body.append('category', input.category?.trim() ?? '');
+    body.append('explanation', input.explanation?.trim() ?? '');
+    if (input.image) {
+      body.append('image', input.image, input.image.name);
+    }
+    return body;
   }
 }

@@ -78,15 +78,20 @@
           </div>
         </div>
 
-        <label class="field">
-          <span>URL de imagen</span>
-          <input
-            type="url"
-            [ngModel]="imageUrl()"
-            (ngModelChange)="imageUrl.set($event)"
-            placeholder="https://…"
-          />
-        </label>
+        <div class="field">
+          <span>Imagen</span>
+          <div class="file-row">
+            <input
+              id="exercise-image"
+              class="file-input"
+              type="file"
+              accept="image/*"
+              (change)="onImageSelected($event)"
+            />
+            <label class="file-btn" for="exercise-image">Elegir archivo</label>
+            <span class="file-name">{{ imageName() || 'Sin imagen' }}</span>
+          </div>
+        </div>
 
         <label class="field">
           <span>Explicación técnica</span>

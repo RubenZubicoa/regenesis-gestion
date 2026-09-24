@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, input, OnInit, output, signal } from '@angular/core';
+import { Component, HostListener, OnDestroy, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import type { ExerciseCategory, ExerciseMaster, ExerciseType } from '../../models/exercise-master';
@@ -12,7 +12,7 @@ import { ExerciseMastersService } from '../../services/exercise-masters.service'
   templateUrl: './exercise-dialog.component.html',
   styleUrl: './exercise-dialog.component.scss',
 })
-export class ExerciseDialogComponent implements OnInit {
+export class ExerciseDialogComponent implements OnInit, OnDestroy {
   private readonly exerciseMasters = inject(ExerciseMastersService);
 
   readonly exercise = input<ExerciseMaster | null>(null);
@@ -26,7 +26,10 @@ export class ExerciseDialogComponent implements OnInit {
   readonly type = signal<ExerciseType>('strength');
   readonly category = signal('');
   readonly imageUrl = signal('');
+  readonly imageFile = signal<File | null>(null);
+  readonly imageName = signal('');
   readonly explanation = signal('');
+  private objectUrl: string | null = null;
   readonly saving = signal(false);
   readonly deleting = signal(false);
   readonly saveError = signal<string | null>(null);
@@ -38,8 +41,31 @@ export class ExerciseDialogComponent implements OnInit {
       this.type.set(current.type);
       this.category.set(current.category ?? '');
       this.imageUrl.set(current.imageUrl ?? '');
+      this.imageName.set(current.imageUrl ? 'Imagen actual' : '');
       this.explanation.set(current.explanation ?? '');
     }
+  }
+
+  ngOnDestroy(): void {
+    this.revokePreview();
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.saveError.set('El archivo debe ser una imagen.');
+      input.value = '';
+      return;
+    }
+
+    this.revokePreview();
+    this.objectUrl = URL.createObjectURL(file);
+    this.imageFile.set(file);
+    this.imageName.set(file.name);
+    this.imageUrl.set(this.objectUrl);
+    this.saveError.set(null);
   }
 
   get isEdit(): boolean {
@@ -77,7 +103,7 @@ export class ExerciseDialogComponent implements OnInit {
       name,
       type: this.type(),
       category: this.category() || undefined,
-      imageUrl: this.imageUrl().trim() || undefined,
+      image: this.imageFile() ?? undefined,
       explanation: this.explanation().trim() || undefined,
     };
 
@@ -119,5 +145,12 @@ export class ExerciseDialogComponent implements OnInit {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.close();
+  }
+
+  private revokePreview(): void {
+    if (this.objectUrl) {
+      URL.revokeObjectURL(this.objectUrl);
+      this.objectUrl = null;
+    }
   }
 }
