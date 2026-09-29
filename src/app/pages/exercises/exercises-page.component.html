@@ -112,6 +112,16 @@
                 } @else {
                   <p class="is-muted">Sin explicación técnica</p>
                 }
+                @if (ex.explanationUrl) {
+                  <a
+                    class="ex-card__link"
+                    [href]="ex.explanationUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    (click)="$event.stopPropagation()">
+                    Ver vídeo o documento
+                  </a>
+                }
               </div>
             </button>
           }

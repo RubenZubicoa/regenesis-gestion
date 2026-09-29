@@ -595,15 +595,24 @@ export class ClientDetailPageComponent {
     this.renewPlanDialogOpen.set(false);
   }
 
-  onPlanRenewed(client: Client): void {
-    const current = this.detail();
-    if (current) {
-      this.detail.set({
-        ...current,
-        client: { ...current.client, ...client },
-      });
-    }
+  onPlanRenewed(): void {
     this.renewPlanDialogOpen.set(false);
+    this.reloadDetail();
+  }
+
+  private reloadDetail(): void {
+    const id = this.detail()?.client._id ?? this.route.snapshot.paramMap.get('id');
+    if (!id) return;
+
+    this.clientDetailService.loadDetail(id).subscribe({
+      next: (detail) => {
+        this.detail.set(detail);
+        this.error.set(detail ? null : 'Cliente no encontrado.');
+      },
+      error: (err: Error) => {
+        this.error.set(err.message);
+      },
+    });
   }
 
 }

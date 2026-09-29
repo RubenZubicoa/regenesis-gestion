@@ -29,6 +29,7 @@ export class ExerciseDialogComponent implements OnInit, OnDestroy {
   readonly imageFile = signal<File | null>(null);
   readonly imageName = signal('');
   readonly explanation = signal('');
+  readonly explanationUrl = signal('');
   private objectUrl: string | null = null;
   readonly saving = signal(false);
   readonly deleting = signal(false);
@@ -43,6 +44,7 @@ export class ExerciseDialogComponent implements OnInit, OnDestroy {
       this.imageUrl.set(current.imageUrl ?? '');
       this.imageName.set(current.imageUrl ? 'Imagen actual' : '');
       this.explanation.set(current.explanation ?? '');
+      this.explanationUrl.set(current.explanationUrl ?? '');
     }
   }
 
@@ -105,6 +107,7 @@ export class ExerciseDialogComponent implements OnInit, OnDestroy {
       category: this.category() || undefined,
       image: this.imageFile() ?? undefined,
       explanation: this.explanation().trim() || undefined,
+      explanationUrl: this.explanationUrl().trim() || undefined,
     };
 
     const current = this.exercise();

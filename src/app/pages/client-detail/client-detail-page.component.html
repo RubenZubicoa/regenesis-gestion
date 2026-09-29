@@ -587,7 +587,7 @@
     @if (detail(); as d) {
       <app-renew-plan-dialog
         [client]="d.client"
-        (saved)="onPlanRenewed($event)"
+        (saved)="onPlanRenewed()"
         (closed)="closeRenewPlanDialog()"
       />
     }

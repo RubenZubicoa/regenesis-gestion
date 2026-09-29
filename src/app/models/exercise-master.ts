@@ -13,6 +13,7 @@ export interface ExerciseMaster {
   category?: string;
   imageUrl?: string;
   explanation?: string;
+  explanationUrl?: string;
 }
 
 export function slugifyCategoryKey(label: string): string {

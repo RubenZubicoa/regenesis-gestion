@@ -83,16 +83,21 @@ export class ClientsService {
     return this.update(_id, { ...fields, phase });
   }
 
-  renewPlan(client: Client): Observable<Client> {
-    const start = startOfToday();
+  renewPlan(
+    client: Client,
+    dates: { startDate: string; endDate: string },
+  ): Observable<void> {
+    const weeks = weeksBetween(dates.startDate, dates.endDate) ?? PLAN_RENEWAL_WEEKS;
     const { _id, ...fields } = client;
-    return this.update(_id, {
-      ...fields,
-      startDate: toDateInput(start),
-      endDate: toDateInput(addDays(start, PLAN_RENEWAL_DAYS)),
-      week: 1,
-      totalWeeks: PLAN_RENEWAL_WEEKS,
-    });
+    return this.api
+      .post<unknown>(`/api/clients/${encodeURIComponent(_id)}/renew`, {
+        ...fields,
+        startDate: dates.startDate,
+        endDate: dates.endDate,
+        week: 1,
+        totalWeeks: weeks,
+      })
+      .pipe(map(() => undefined));
   }
 
   private resolveProgramId(program?: string): Observable<string> {
@@ -201,4 +206,15 @@ function addDays(d: Date, days: number): Date {
   const next = new Date(d);
   next.setDate(next.getDate() + days);
   return next;
+}
+
+function weeksBetween(start: string, end: string): number | null {
+  if (!start || !end) return null;
+  const from = new Date(`${start}T12:00:00`);
+  const to = new Date(`${end}T12:00:00`);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || to < from) {
+    return null;
+  }
+  const days = (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24);
+  return Math.max(1, Math.round(days / 7));
 }

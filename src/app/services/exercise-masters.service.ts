@@ -11,6 +11,7 @@ export interface ExerciseMasterInput {
   category?: string;
   image?: File;
   explanation?: string;
+  explanationUrl?: string;
 }
 
 const CATEGORY_STORE_KEY = 'regenesis.exercise-master.categories';
@@ -78,6 +79,7 @@ function normalizeExerciseMaster(raw: unknown): ExerciseMaster {
   const type: ExerciseType = typeRaw === 'cardio' ? 'cardio' : 'strength';
   const imageUrl = String(r['imageUrl'] ?? r['image'] ?? '').trim();
   const explanation = String(r['explanation'] ?? '').trim();
+  const explanationUrl = String(r['explanationUrl'] ?? '').trim();
   const category = readCategoryRef(r['category'] ?? r['categoria'] ?? r['categoryId']);
 
   return {
@@ -87,6 +89,7 @@ function normalizeExerciseMaster(raw: unknown): ExerciseMaster {
     ...(category ? { category } : {}),
     ...(imageUrl ? { imageUrl } : {}),
     ...(explanation ? { explanation } : {}),
+    ...(explanationUrl ? { explanationUrl } : {}),
   };
 }
 
@@ -135,6 +138,7 @@ export class ExerciseMastersService {
     body.append('type', input.type);
     body.append('category', input.category?.trim() ?? '');
     body.append('explanation', input.explanation?.trim() ?? '');
+    body.append('explanationUrl', input.explanationUrl?.trim() ?? '');
     if (input.image) {
       body.append('image', input.image, input.image.name);
     }

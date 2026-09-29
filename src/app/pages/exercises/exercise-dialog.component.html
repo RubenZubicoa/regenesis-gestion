@@ -94,6 +94,16 @@
         </div>
 
         <label class="field">
+          <span>Enlace de vídeo o documento</span>
+          <input
+            type="url"
+            [ngModel]="explanationUrl()"
+            (ngModelChange)="explanationUrl.set($event)"
+            placeholder="https://…"
+          />
+        </label>
+
+        <label class="field">
           <span>Explicación técnica</span>
           <textarea
             rows="5"

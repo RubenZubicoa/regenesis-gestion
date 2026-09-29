@@ -1,4 +1,5 @@
 import { Component, HostListener, computed, inject, input, output, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 import type { Client } from '../../models/client';
 import {
@@ -10,6 +11,7 @@ import {
 @Component({
   selector: 'app-renew-plan-dialog',
   standalone: true,
+  imports: [FormsModule],
   templateUrl: './renew-plan-dialog.component.html',
   styleUrl: './renew-plan-dialog.component.scss',
 })
@@ -18,33 +20,56 @@ export class RenewPlanDialogComponent {
 
   readonly client = input.required<Client>();
 
-  readonly saved = output<Client>();
+  readonly saved = output<void>();
   readonly closed = output<void>();
 
   readonly saving = signal(false);
   readonly saveError = signal<string | null>(null);
 
+  readonly startDate = signal(toDateInput(startOfToday()));
+  readonly endDate = signal(toDateInput(addDays(startOfToday(), PLAN_RENEWAL_DAYS)));
+
   readonly renewalDays = PLAN_RENEWAL_DAYS;
   readonly renewalWeeks = PLAN_RENEWAL_WEEKS;
   readonly planStillActive = computed(() => isBeforeEndDate(this.client().endDate));
-  readonly nextStart = computed(() => toDateInput(startOfToday()));
-  readonly nextEnd = computed(() =>
-    toDateInput(addDays(startOfToday(), PLAN_RENEWAL_DAYS)),
-  );
 
   close(): void {
     if (this.saving()) return;
     this.closed.emit();
   }
 
+  onStartDate(value: string): void {
+    const previousStart = this.startDate();
+    this.startDate.set(value);
+    const duration = daysBetween(previousStart, this.endDate()) ?? PLAN_RENEWAL_DAYS;
+    const nextStart = parseDate(value);
+    if (!nextStart) return;
+    this.endDate.set(toDateInput(addDays(nextStart, duration)));
+  }
+
+  onEndDate(value: string): void {
+    this.endDate.set(value);
+  }
+
   confirm(): void {
+    const startDate = this.startDate();
+    const endDate = this.endDate();
+    if (!startDate || !endDate) {
+      this.saveError.set('Indica la fecha de inicio y la de fin.');
+      return;
+    }
+    if ((daysBetween(startDate, endDate) ?? -1) < 0) {
+      this.saveError.set('La fecha de fin no puede ser anterior a la de inicio.');
+      return;
+    }
+
     this.saving.set(true);
     this.saveError.set(null);
 
-    this.clients.renewPlan(this.client()).subscribe({
-      next: (client) => {
+    this.clients.renewPlan(this.client(), { startDate, endDate }).subscribe({
+      next: () => {
         this.saving.set(false);
-        this.saved.emit(client);
+        this.saved.emit();
       },
       error: (err: Error) => {
         this.saving.set(false);
@@ -87,4 +112,16 @@ function addDays(d: Date, days: number): Date {
   const next = new Date(d);
   next.setDate(next.getDate() + days);
   return next;
+}
+
+function parseDate(value: string): Date | null {
+  const date = new Date(`${value}T12:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function daysBetween(start: string, end: string): number | null {
+  const from = parseDate(start);
+  const to = parseDate(end);
+  if (!from || !to) return null;
+  return Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
 }

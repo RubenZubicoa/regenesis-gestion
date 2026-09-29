@@ -23,13 +23,31 @@
       }
 
       <p class="hint">
-        El nuevo ciclo dura siempre {{ renewalDays }} días
-        ({{ renewalWeeks }} semanas). El contador volverá a la semana 1
-        (ahora va por la {{ client().week }}/{{ client().totalWeeks }}) y las fechas serán:
+        El contador volverá a la semana 1 (ahora va por la
+        {{ client().week }}/{{ client().totalWeeks }}). Por defecto el ciclo es de
+        {{ renewalDays }} días ({{ renewalWeeks }} semanas), pero puedes ajustar las fechas.
       </p>
-      <p class="period">
-        {{ formatDate(nextStart()) }} → {{ formatDate(nextEnd()) }}
-      </p>
+
+      <div class="dates">
+        <label class="field">
+          <span>Inicio</span>
+          <input
+            type="date"
+            [ngModel]="startDate()"
+            (ngModelChange)="onStartDate($event)"
+            [disabled]="saving()"
+          />
+        </label>
+        <label class="field">
+          <span>Fin</span>
+          <input
+            type="date"
+            [ngModel]="endDate()"
+            (ngModelChange)="onEndDate($event)"
+            [disabled]="saving()"
+          />
+        </label>
+      </div>
     </div>
 
     @if (saveError()) {

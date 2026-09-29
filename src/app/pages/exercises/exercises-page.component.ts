@@ -64,6 +64,7 @@ export class ExercisesPageComponent {
         return (
           ex.name.toLowerCase().includes(q) ||
           (ex.explanation ?? '').toLowerCase().includes(q) ||
+          (ex.explanationUrl ?? '').toLowerCase().includes(q) ||
           category.includes(q)
         );
       })

@@ -343,6 +343,19 @@
     color: var(--text-muted);
     font-style: italic;
   }
+
+  .ex-card__link {
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--blue);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--blue-dark);
+      text-decoration: underline;
+    }
+  }
 }
 
 @media (max-width: 800px) {
