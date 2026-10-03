@@ -33,7 +33,8 @@ export interface ClientCreatePayload {
   totalWeeks: number;
   phase: number;
   totalPhases: number;
-  avatar: string;
+  avatar?: string;
+  avatarFile?: File;
 }
 
 export type ClientUpdatePayload = Omit<ClientCreatePayload, 'password'>;
@@ -55,20 +56,28 @@ export class ClientsService {
   create(payload: ClientCreatePayload): Observable<Client> {
     return this.resolveProgramId(payload.program).pipe(
       switchMap((program) => {
-        const { password, ...rest } = payload;
-        return this.api.post<unknown>('/api/clients', {
-          ...rest,
-          program,
-          contraseña: password,
-        });
+        const { password, avatarFile, ...rest } = payload;
+        return this.api
+          .post<unknown>('/api/clients', {
+            ...rest,
+            program,
+            contraseña: password,
+          })
+          .pipe(
+            map(normalizeClient),
+            switchMap((client) => {
+              if (!avatarFile) return of(client);
+              const { _id, ...fields } = client;
+              return this.update(_id, { ...fields, avatarFile });
+            }),
+          );
       }),
-      map(normalizeClient),
     );
   }
 
   update(id: string, payload: ClientUpdatePayload): Observable<Client> {
     return this.api
-      .put<unknown>(`/api/clients/${encodeURIComponent(id)}`, payload)
+      .put<unknown>(`/api/clients/${encodeURIComponent(id)}`, this.toFormData(payload))
       .pipe(map(normalizeClient));
   }
 
@@ -81,6 +90,39 @@ export class ClientsService {
   changePhase(client: Client, phase: number): Observable<Client> {
     const { _id, ...fields } = client;
     return this.update(_id, { ...fields, phase });
+  }
+
+  private toFormData(
+    payload: ClientCreatePayload | ClientUpdatePayload,
+    program?: string,
+  ): FormData {
+    const body = new FormData();
+    body.append('name', payload.name);
+    body.append('fullName', payload.fullName);
+    body.append('email', payload.email);
+    body.append('telefono', payload.telefono);
+    body.append('goal', payload.goal);
+    body.append('coach', payload.coach);
+    body.append('plan', payload.plan);
+    body.append('program', program ?? payload.program ?? '');
+    body.append('startDate', payload.startDate);
+    body.append('endDate', payload.endDate);
+    body.append('week', String(payload.week));
+    body.append('totalWeeks', String(payload.totalWeeks));
+    body.append('phase', String(payload.phase));
+    body.append('totalPhases', String(payload.totalPhases));
+
+    if ('password' in payload && payload.password) {
+      body.append('contraseña', payload.password);
+    }
+
+    if (payload.avatarFile) {
+      body.append('avatar', payload.avatarFile, payload.avatarFile.name);
+    } else if (payload.avatar) {
+      body.append('avatar', payload.avatar);
+    }
+
+    return body;
   }
 
   renewPlan(

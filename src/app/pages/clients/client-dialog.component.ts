@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, inject, input, output, signal } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import type { Client } from '../../models/client';
@@ -16,7 +16,7 @@ const DEFAULT_TOTAL_PHASES = 3;
   templateUrl: './client-dialog.component.html',
   styleUrl: './client-dialog.component.scss',
 })
-export class ClientDialogComponent implements OnInit {
+export class ClientDialogComponent implements OnInit, OnDestroy {
   private readonly clients = inject(ClientsService);
 
   readonly client = input<Client | null>(null);
@@ -35,6 +35,9 @@ export class ClientDialogComponent implements OnInit {
   readonly endDate = signal(toDateInput(addWeeks(new Date(), DEFAULT_TOTAL_WEEKS)));
   readonly totalWeeks = signal(DEFAULT_TOTAL_WEEKS);
   readonly avatar = signal('');
+  readonly avatarFile = signal<File | null>(null);
+  readonly avatarName = signal('');
+  private objectUrl: string | null = null;
 
   readonly saving = signal(false);
   readonly saveError = signal<string | null>(null);
@@ -53,6 +56,29 @@ export class ClientDialogComponent implements OnInit {
     this.endDate.set(current.endDate.slice(0, 10));
     this.totalWeeks.set(current.totalWeeks || DEFAULT_TOTAL_WEEKS);
     this.avatar.set(current.avatar);
+    this.avatarName.set(current.avatar ? 'Imagen actual' : '');
+  }
+
+  ngOnDestroy(): void {
+    this.revokePreview();
+  }
+
+  onAvatarSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.saveError.set('El archivo debe ser una imagen.');
+      input.value = '';
+      return;
+    }
+
+    this.revokePreview();
+    this.objectUrl = URL.createObjectURL(file);
+    this.avatarFile.set(file);
+    this.avatarName.set(file.name);
+    this.avatar.set(this.objectUrl);
+    this.saveError.set(null);
   }
 
   get isEdit(): boolean {
@@ -86,6 +112,7 @@ export class ClientDialogComponent implements OnInit {
     const endDate = this.endDate().trim();
     const totalWeeks = Number(this.totalWeeks());
     const avatar = this.avatar().trim();
+    const avatarFile = this.avatarFile();
 
     if (!fullName) {
       this.saveError.set('El nombre completo es obligatorio.');
@@ -158,7 +185,8 @@ export class ClientDialogComponent implements OnInit {
           totalWeeks,
           phase: current.phase,
           totalPhases: current.totalPhases,
-          avatar: avatar || current.avatar || defaultAvatar(fullName),
+          avatar: avatarFile ? undefined : avatar || current.avatar || defaultAvatar(fullName),
+          avatarFile: avatarFile ?? undefined,
         })
       : this.clients.create({
           name: firstNameFrom(fullName),
@@ -175,7 +203,8 @@ export class ClientDialogComponent implements OnInit {
           totalWeeks,
           phase: 1,
           totalPhases: DEFAULT_TOTAL_PHASES,
-          avatar: avatar || defaultAvatar(fullName),
+          avatar: avatarFile ? undefined : defaultAvatar(fullName),
+          avatarFile: avatarFile ?? undefined,
         });
 
     request$.subscribe({
@@ -198,6 +227,13 @@ export class ClientDialogComponent implements OnInit {
   private syncTotalWeeks(): void {
     const weeks = weeksBetween(this.startDate(), this.endDate());
     if (weeks != null) this.totalWeeks.set(weeks);
+  }
+
+  private revokePreview(): void {
+    if (this.objectUrl) {
+      URL.revokeObjectURL(this.objectUrl);
+      this.objectUrl = null;
+    }
   }
 }
 

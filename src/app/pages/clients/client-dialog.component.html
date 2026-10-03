@@ -132,16 +132,23 @@
           />
         </label>
 
-        <label class="field field--full">
-          <span>URL del avatar (opcional)</span>
-          <input
-            type="url"
-            [ngModel]="avatar()"
-            (ngModelChange)="avatar.set($event)"
-            name="avatar"
-            placeholder="https://…"
-          />
-        </label>
+        <div class="field field--full">
+          <span>Imagen de perfil</span>
+          <div class="file-row">
+            <input
+              id="client-avatar"
+              class="file-input"
+              type="file"
+              accept="image/*"
+              (change)="onAvatarSelected($event)"
+            />
+            <label class="file-btn" for="client-avatar">Elegir archivo</label>
+            <span class="file-name">{{ avatarName() || 'Sin imagen' }}</span>
+          </div>
+          @if (avatar()) {
+            <img class="avatar-preview" [src]="avatar()" [alt]="fullName() || 'Cliente'" />
+          }
+        </div>
       </div>
 
       @if (saveError()) {
