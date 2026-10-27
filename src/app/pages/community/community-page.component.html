@@ -1,0 +1,198 @@
+<section class="page">
+  @if (loading()) {
+    <div class="state">Cargando comunidad…</div>
+  } @else if (error()) {
+    <div class="state state--error">
+      <p>{{ error() }}</p>
+      <button type="button" class="retry" (click)="load()">Reintentar</button>
+    </div>
+  } @else {
+    <header class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Red del roster</p>
+        <h1>Comunidad</h1>
+        <p class="hero__sub">
+          Ranking de pasos y logros que van publicando los clientes.
+        </p>
+      </div>
+
+      <div class="hero__metrics" aria-label="Resumen de la comunidad">
+        <div class="metric">
+          <span class="metric__value">{{ stats().activeMembers }}</span>
+          <span class="metric__label">Miembros</span>
+        </div>
+        <div class="metric metric--gold">
+          <span class="metric__value">{{ stats().weeklyWorkouts }}</span>
+          <span class="metric__label">Entrenos semana</span>
+        </div>
+        <div class="metric metric--teal">
+          <span class="metric__value">{{ formatSteps(stats().weeklySteps) }}</span>
+          <span class="metric__label">Pasos semana</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="rankings">
+      <article class="panel">
+        <header class="panel__head">
+          <div>
+            <h2>Ranking semanal</h2>
+            <p>Pasos de la semana en curso</p>
+          </div>
+          <a
+            class="panel__history"
+            routerLink="/comunidad/historico"
+            [queryParams]="{ period: 'week' }">
+            Ver histórico
+          </a>
+        </header>
+        <ng-container
+          *ngTemplateOutlet="
+            rankingTpl;
+            context: {
+              entries: weekRanking(),
+              leader: weekLeader(),
+              empty: 'Aún no hay pasos registrados esta semana.',
+            }
+          "
+        />
+      </article>
+
+      <article class="panel">
+        <header class="panel__head">
+          <div>
+            <h2>Ranking mensual</h2>
+            <p>Pasos del mes en curso</p>
+          </div>
+          <a
+            class="panel__history"
+            routerLink="/comunidad/historico"
+            [queryParams]="{ period: 'month' }">
+            Ver histórico
+          </a>
+        </header>
+        <ng-container
+          *ngTemplateOutlet="
+            rankingTpl;
+            context: {
+              entries: monthRanking(),
+              leader: monthLeader(),
+              empty: 'Aún no hay pasos registrados este mes.',
+            }
+          "
+        />
+      </article>
+    </div>
+
+    <section class="feed-panel">
+      <div class="section-head">
+        <div>
+          <h2>Feed de logros</h2>
+          <p>{{ filteredFeed().length }} publicación{{ filteredFeed().length === 1 ? '' : 'es' }}</p>
+        </div>
+        <div class="chips" role="tablist" aria-label="Filtrar publicaciones">
+          @for (item of filters; track item.key) {
+            <button
+              type="button"
+              role="tab"
+              class="chip"
+              [class.is-on]="filter() === item.key"
+              (click)="setFilter(item.key)">
+              {{ item.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (filteredFeed().length === 0) {
+        <div class="empty">
+          <p>No hay publicaciones en esta categoría todavía.</p>
+        </div>
+      } @else {
+        <div class="feed">
+          @for (post of filteredFeed(); track post._id) {
+            <article class="post">
+              <div class="post__top">
+                <a class="post__avatar" [routerLink]="['/clients', post.author.clientId]">
+                  <img
+                    [src]="avatarUrl(post.author.fullName, post.author.avatar)"
+                    [alt]="post.author.fullName"
+                    (error)="onAvatarError($event, post.author.fullName)" />
+                </a>
+                <div class="post__meta">
+                  <div class="post__title">
+                    <a [routerLink]="['/clients', post.author.clientId]">{{ post.author.fullName }}</a>
+                    <span
+                      class="kind kind--{{ kindTone(post.kind) }}">{{ kindLabel(post.kind) }}</span>
+                  </div>
+                  <p class="post__action">{{ action(post) }}</p>
+                  <time [attr.title]="fullDate(post.createdAt)">{{ relativeTime(post.createdAt) }}</time>
+                </div>
+                @if (metric(post); as value) {
+                  <span class="post__metric">{{ value }}</span>
+                }
+              </div>
+
+              @if (detail(post)) {
+                <p class="post__detail">{{ detail(post) }}</p>
+              }
+
+              @if (isWorkout(post) && post.media?.length) {
+                <div class="media">
+                  @for (item of post.media; track item.uri) {
+                    @if (item.type === 'image') {
+                      <img [src]="item.uri" alt="Foto del entreno" />
+                    } @else {
+                      <a class="media__video" [href]="item.uri" target="_blank" rel="noreferrer">
+                        Ver vídeo
+                      </a>
+                    }
+                  }
+                </div>
+              }
+
+              <footer class="post__foot">
+                <span>{{ post.likes }} me gusta</span>
+                <span>{{ post.comments }} comentario{{ post.comments === 1 ? '' : 's' }}</span>
+              </footer>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  }
+</section>
+
+<ng-template
+  #rankingTpl
+  let-entries="entries"
+  let-leader="leader"
+  let-empty="empty">
+  @if (!entries.length) {
+    <p class="empty-inline">{{ empty }}</p>
+  } @else {
+    <ol class="rank-list">
+      @for (entry of entries; track entry.clientId; let i = $index) {
+        <li class="rank" [class.rank--gold]="i === 0" [class.rank--silver]="i === 1">
+          <span class="rank__pos">{{ i + 1 }}</span>
+          <a class="rank__avatar" [routerLink]="['/clients', entry.clientId]">
+            <img
+              [src]="avatarUrl(entry.fullName, entry.avatar)"
+              [alt]="entry.fullName"
+              (error)="onAvatarError($event, entry.fullName)" />
+          </a>
+          <div class="rank__info">
+            <a class="rank__name" [routerLink]="['/clients', entry.clientId]">{{ entry.fullName }}</a>
+            @if (entry.avgDaily != null) {
+              <p class="rank__avg">~{{ formatSteps(entry.avgDaily) }} pasos/día</p>
+            }
+            <div class="bar" aria-hidden="true">
+              <span class="bar__fill" [style.width.%]="progress(entry.steps, leader)"></span>
+            </div>
+          </div>
+          <span class="rank__steps">{{ formatSteps(entry.steps) }}</span>
+        </li>
+      }
+    </ol>
+  }
+</ng-template>

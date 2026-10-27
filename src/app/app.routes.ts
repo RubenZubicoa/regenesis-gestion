@@ -76,6 +76,20 @@ export const routes: Routes = [
             (m) => m.ReviewsPageComponent,
           ),
       },
+      {
+        path: 'comunidad/historico',
+        loadComponent: () =>
+          import('./pages/community/community-ranking-history-page.component').then(
+            (m) => m.CommunityRankingHistoryPageComponent,
+          ),
+      },
+      {
+        path: 'comunidad',
+        loadComponent: () =>
+          import('./pages/community/community-page.component').then(
+            (m) => m.CommunityPageComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

@@ -1,0 +1,92 @@
+<section class="page">
+  <a class="back" routerLink="/comunidad">← Volver a comunidad</a>
+
+  @if (loading()) {
+    <div class="state">Cargando histórico de pasos…</div>
+  } @else if (error()) {
+    <div class="state state--error">
+      <p>{{ error() }}</p>
+      <button type="button" class="retry" (click)="load()">Reintentar</button>
+    </div>
+  } @else {
+    <header class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Archivo de pasos</p>
+        <h1>Histórico de ranking</h1>
+        <p class="hero__sub">
+          Consulta semanas y meses anteriores del ranking de pasos de los clientes.
+        </p>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="chips" role="tablist" aria-label="Tipo de periodo">
+        @for (item of views; track item.key) {
+          <button
+            type="button"
+            role="tab"
+            class="chip"
+            [class.is-on]="period() === item.key"
+            (click)="setPeriod(item.key)">
+            {{ item.label }}
+          </button>
+        }
+      </div>
+
+      <div class="period-nav" aria-label="Navegar periodos">
+        <button type="button" class="period-nav__btn" (click)="prev()" aria-label="Periodo anterior">
+          ←
+        </button>
+        <div class="period-nav__label">
+          <strong>{{ periodLabel() }}</strong>
+          @if (isCurrent()) {
+            <span class="badge">En curso</span>
+          }
+        </div>
+        <button
+          type="button"
+          class="period-nav__btn"
+          (click)="next()"
+          [disabled]="!canGoNext()"
+          aria-label="Periodo siguiente">
+          →
+        </button>
+      </div>
+    </div>
+
+    <article class="panel">
+      <header class="panel__head">
+        <h2>Ranking de {{ period() === 'week' ? 'la semana' : 'el mes' }}</h2>
+        <p>{{ ranking().length }} cliente{{ ranking().length === 1 ? '' : 's' }} con pasos</p>
+      </header>
+
+      @if (ranking().length === 0) {
+        <p class="empty-inline">{{ emptyLabel() }}</p>
+      } @else {
+        <ol class="rank-list">
+          @for (entry of ranking(); track entry.clientId; let i = $index) {
+            <li class="rank" [class.rank--gold]="i === 0" [class.rank--silver]="i === 1">
+              <span class="rank__pos">{{ i + 1 }}</span>
+              <a class="rank__avatar" [routerLink]="['/clients', entry.clientId]">
+                <img
+                  [src]="avatarUrl(entry.fullName, entry.avatar)"
+                  [alt]="entry.fullName"
+                  (error)="onAvatarError($event, entry.fullName)" />
+              </a>
+              <div class="rank__info">
+                <a class="rank__name" [routerLink]="['/clients', entry.clientId]">{{ entry.fullName }}</a>
+                @if (entry.avgDaily != null) {
+                  <p class="rank__avg">~{{ formatSteps(entry.avgDaily) }} pasos/día</p>
+                }
+                <div class="bar" aria-hidden="true">
+                  <span class="bar__fill" [style.width.%]="progress(entry.steps, leader())"></span>
+                </div>
+              </div>
+              <span class="rank__steps">{{ formatSteps(entry.steps) }}</span>
+            </li>
+          }
+        </ol>
+      }
+    </article>
+  }
+</section>
