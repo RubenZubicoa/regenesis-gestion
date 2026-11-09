@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, throwError } from 'rxjs';
 
 import { asRecordArray, normalizeMealMaster } from '../core/normalizers';
-import type { MealSlot } from '../models/meal';
+import { serializeMealOption, type MealSlot } from '../models/meal';
 import type { MealMaster } from '../models/meal-master';
 import { mealPlanTitle } from '../models/meal-master';
 import { ApiService } from './api.service';
@@ -101,15 +101,8 @@ export class MealMastersService {
       time: slot.time.trim(),
       icon: slot.icon.trim(),
       options: slot.options
-        .map((opt) => {
-          const description = opt.description?.trim();
-          return {
-            name: opt.name.trim(),
-            kcal: opt.kcal,
-            ...(description ? { description } : {}),
-          };
-        })
-        .filter((opt) => opt.name.length > 0),
+        .map((opt) => serializeMealOption(opt))
+        .filter((opt) => String(opt['name'] ?? '').length > 0),
     };
   }
 }

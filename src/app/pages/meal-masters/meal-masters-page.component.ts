@@ -2,7 +2,12 @@ import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
-import type { MealOption, MealSlot } from '../../models/meal';
+import type { MealOption, MealOptionDraft, MealSlot } from '../../models/meal';
+import {
+  emptyMealOptionDraft,
+  toMealOption,
+  toMealOptionDraft,
+} from '../../models/meal';
 import type { MealMaster } from '../../models/meal-master';
 import {
   MEAL_SLOT_PRESETS,
@@ -12,17 +17,11 @@ import {
 } from '../../models/meal-master';
 import { MealMastersService } from '../../services/meal-masters.service';
 
-interface EditableOption {
-  name: string;
-  kcal: number;
-  description: string;
-}
-
 interface EditableSlot {
   label: string;
   time: string;
   icon: string;
-  options: EditableOption[];
+  options: MealOptionDraft[];
 }
 
 interface EditablePlan {
@@ -75,7 +74,7 @@ export class MealMastersPageComponent {
         mealPlanTitle(plan),
         ...plan.slots.flatMap((slot) => [
           slot.label,
-          ...slot.options.map((opt) => opt.name),
+          ...slot.options.flatMap((opt) => [opt.name, ...(opt.ingredients ?? [])]),
         ]),
       ]
         .join(' ')
@@ -133,7 +132,7 @@ export class MealMastersPageComponent {
       descripcion: '',
       slots: MEAL_SLOT_PRESETS.map((preset) => ({
         ...preset,
-        options: [{ name: '', kcal: 0, description: '' }],
+        options: [emptyMealOptionDraft()],
       })),
     });
     this.activeIndex.set(0);
@@ -151,7 +150,7 @@ export class MealMastersPageComponent {
         ? plan.slots.map((slot) => this.toEditable(slot))
         : MEAL_SLOT_PRESETS.map((preset) => ({
             ...preset,
-            options: [{ name: '', kcal: 0, description: '' }],
+            options: [emptyMealOptionDraft()],
           })),
     });
     this.activeIndex.set(0);
@@ -189,7 +188,7 @@ export class MealMastersPageComponent {
       ...current,
       slots: [
         ...current.slots,
-        { ...nextPreset, options: [{ name: '', kcal: 0, description: '' }] },
+        { ...nextPreset, options: [emptyMealOptionDraft()] },
       ],
     });
     this.activeIndex.set(current.slots.length);
@@ -215,7 +214,7 @@ export class MealMastersPageComponent {
   addOption(): void {
     this.patchActiveSlot((slot) => ({
       ...slot,
-      options: [...slot.options, { name: '', kcal: 0, description: '' }],
+      options: [...slot.options, emptyMealOptionDraft()],
     }));
   }
 
@@ -231,7 +230,7 @@ export class MealMastersPageComponent {
     }));
   }
 
-  updateOption(optionIndex: number, field: keyof EditableOption, value: string | number): void {
+  updateOption(optionIndex: number, field: 'name' | 'kcal' | 'description', value: string | number): void {
     this.patchActiveSlot((slot) => ({
       ...slot,
       options: slot.options.map((opt, i) => {
@@ -245,6 +244,45 @@ export class MealMastersPageComponent {
         }
         return { ...opt, [field]: String(value) };
       }),
+    }));
+  }
+
+  addIngredient(optionIndex: number): void {
+    this.patchActiveSlot((slot) => ({
+      ...slot,
+      options: slot.options.map((opt, i) =>
+        i === optionIndex ? { ...opt, ingredients: [...opt.ingredients, ''] } : opt,
+      ),
+    }));
+  }
+
+  updateIngredient(optionIndex: number, ingredientIndex: number, value: string): void {
+    this.patchActiveSlot((slot) => ({
+      ...slot,
+      options: slot.options.map((opt, i) =>
+        i === optionIndex
+          ? {
+              ...opt,
+              ingredients: opt.ingredients.map((item, ii) =>
+                ii === ingredientIndex ? value : item,
+              ),
+            }
+          : opt,
+      ),
+    }));
+  }
+
+  removeIngredient(optionIndex: number, ingredientIndex: number): void {
+    this.patchActiveSlot((slot) => ({
+      ...slot,
+      options: slot.options.map((opt, i) =>
+        i === optionIndex
+          ? {
+              ...opt,
+              ingredients: opt.ingredients.filter((_, ii) => ii !== ingredientIndex),
+            }
+          : opt,
+      ),
     }));
   }
 
@@ -351,15 +389,8 @@ export class MealMastersPageComponent {
       time: slot.time.trim() || MEAL_SLOT_PRESETS[index]?.time || '12:00',
       icon: slot.icon || 'restaurant-outline',
       options: slot.options
-        .map((opt): MealOption => {
-          const description = opt.description.trim();
-          return {
-            name: opt.name.trim(),
-            kcal: opt.kcal,
-            ...(description ? { description } : {}),
-          };
-        })
-        .filter((opt) => opt.name.length > 0),
+        .map((opt) => toMealOption(opt))
+        .filter((opt): opt is MealOption => opt != null),
     }));
   }
 
@@ -368,11 +399,7 @@ export class MealMastersPageComponent {
       label: slot.label,
       time: slot.time || '12:00',
       icon: slot.icon || 'restaurant-outline',
-      options: slot.options.map((opt) => ({
-        name: opt.name,
-        kcal: opt.kcal,
-        description: opt.description ?? '',
-      })),
+      options: slot.options.map((opt) => toMealOptionDraft(opt)),
     };
   }
 }

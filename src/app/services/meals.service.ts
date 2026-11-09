@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
 import { normalizeMeal } from '../core/normalizers';
-import type { Meal, MealSlot } from '../models/meal';
+import { serializeMealOption, type Meal, type MealSlot } from '../models/meal';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -10,7 +10,10 @@ export class MealsService {
   private readonly api = inject(ApiService);
 
   save(clientId: string, current: Meal | null, slots: MealSlot[]): Observable<Meal> {
-    const body = { clientId, slots };
+    const body = {
+      clientId,
+      slots: slots.map((slot) => this.toSlotBody(slot)),
+    };
 
     const request$ = current
       ? this.api.put<unknown>(`/api/meals/${encodeURIComponent(current._id)}`, body)
@@ -21,5 +24,14 @@ export class MealsService {
 
   remove(id: string): Observable<void> {
     return this.api.delete(`/api/meals/${encodeURIComponent(id)}`);
+  }
+
+  private toSlotBody(slot: MealSlot): Record<string, unknown> {
+    return {
+      label: slot.label.trim(),
+      time: slot.time.trim(),
+      icon: slot.icon.trim(),
+      options: slot.options.map((opt) => serializeMealOption(opt)),
+    };
   }
 }

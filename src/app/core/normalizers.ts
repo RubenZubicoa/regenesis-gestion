@@ -1,7 +1,7 @@
 import type { Client } from '../models/client';
 import type { DailySteps, DailyStepsChartDay } from '../models/daily-steps';
 import type { Macros } from '../models/macros';
-import type { Meal } from '../models/meal';
+import { readMealIngredients, type Meal } from '../models/meal';
 import type { MealMaster } from '../models/meal-master';
 import type { Measurement } from '../models/measurement';
 import type { ProgressImage } from '../models/progress-image';
@@ -127,7 +127,7 @@ export function normalizeMacros(raw: unknown): Macros {
 }
 
 export function normalizeMeal(raw: unknown): Meal {
-  const r = asApiRecord(raw);
+  const r = asApiRecord(unwrapMealEntity(raw));
   const slotsRaw = Array.isArray(r['slots']) ? r['slots'] : [];
   return {
     _id: normalizeId(r['_id']),
@@ -141,15 +141,30 @@ export function normalizeMeal(raw: unknown): Meal {
         icon: str(slot, 'icon'),
         options: optionsRaw.map((opt) => {
           const option = asApiRecord(opt);
+          const ingredients = readMealIngredients(
+            option['ingredients'] ?? option['ingredientes'],
+          );
           return {
             name: str(option, 'name'),
             kcal: num(option, 'kcal'),
             description: option['description'] ? str(option, 'description') : undefined,
+            ingredients,
           };
         }),
       };
     }),
   };
+}
+
+function unwrapMealEntity(raw: unknown): unknown {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  const rec = raw as ApiRecord;
+  const nested = rec['data'] ?? rec['item'] ?? rec['meal'] ?? rec['plan'];
+  if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+    const inner = nested as ApiRecord;
+    if (Array.isArray(inner['slots'])) return nested;
+  }
+  return raw;
 }
 
 export function normalizeMealMaster(raw: unknown): MealMaster {

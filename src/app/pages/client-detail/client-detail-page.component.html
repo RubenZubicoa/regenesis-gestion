@@ -192,6 +192,13 @@
                           @if (opt.description) {
                             <span class="meal-option__desc">{{ opt.description }}</span>
                           }
+                          @if (opt.ingredients?.length) {
+                            <ul class="meal-option__ings">
+                              @for (ing of opt.ingredients; track ing) {
+                                <li>{{ ing }}</li>
+                              }
+                            </ul>
+                          }
                           <span class="meal-option__kcal">{{ opt.kcal }} kcal</span>
                         </div>
                       }

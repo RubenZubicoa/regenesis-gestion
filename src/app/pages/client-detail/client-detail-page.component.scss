@@ -505,8 +505,17 @@
   color: var(--text-muted);
 }
 
+.meal-option__ings {
+  grid-column: 1;
+  margin: 0.2rem 0 0;
+  padding-left: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
 .meal-option__kcal {
-  grid-row: 1 / span 2;
+  grid-row: 1 / -1;
   align-self: center;
   font-size: 0.78rem;
   font-weight: 700;

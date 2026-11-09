@@ -1,20 +1,19 @@
 import { Component, HostListener, computed, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import type { Meal, MealOption, MealSlot } from '../../models/meal';
+import type { Meal, MealOption, MealOptionDraft, MealSlot } from '../../models/meal';
+import {
+  emptyMealOptionDraft,
+  toMealOption,
+  toMealOptionDraft,
+} from '../../models/meal';
 import { MealsService } from '../../services/meals.service';
-
-export interface EditableOption {
-  name: string;
-  kcal: number;
-  description: string;
-}
 
 export interface EditableSlot {
   label: string;
   time: string;
   icon: string;
-  options: EditableOption[];
+  options: MealOptionDraft[];
 }
 
 const SLOT_PRESETS: EditableSlot[] = [
@@ -71,7 +70,7 @@ export class MealsDialogComponent implements OnInit {
       this.slots.set(
         SLOT_PRESETS.map((preset) => ({
           ...preset,
-          options: [{ name: '', kcal: 0, description: '' }],
+          options: [emptyMealOptionDraft()],
         })),
       );
     }
@@ -97,7 +96,7 @@ export class MealsDialogComponent implements OnInit {
       ...list,
       {
         ...nextPreset,
-        options: [{ name: '', kcal: 0, description: '' }],
+        options: [emptyMealOptionDraft()],
       },
     ]);
     this.activeIndex.set(this.slots().length - 1);
@@ -125,7 +124,7 @@ export class MealsDialogComponent implements OnInit {
     this.slots.update((list) =>
       list.map((slot, i) =>
         i === idx
-          ? { ...slot, options: [...slot.options, { name: '', kcal: 0, description: '' }] }
+          ? { ...slot, options: [...slot.options, emptyMealOptionDraft()] }
           : slot,
       ),
     );
@@ -149,7 +148,7 @@ export class MealsDialogComponent implements OnInit {
 
   updateOption(
     optionIndex: number,
-    field: keyof EditableOption,
+    field: 'name' | 'kcal' | 'description',
     value: string | number,
   ): void {
     const idx = this.activeIndex();
@@ -171,6 +170,68 @@ export class MealsDialogComponent implements OnInit {
           }),
         };
       }),
+    );
+  }
+
+  addIngredient(optionIndex: number): void {
+    const idx = this.activeIndex();
+    this.slots.update((list) =>
+      list.map((slot, i) =>
+        i === idx
+          ? {
+              ...slot,
+              options: slot.options.map((opt, oi) =>
+                oi === optionIndex
+                  ? { ...opt, ingredients: [...opt.ingredients, ''] }
+                  : opt,
+              ),
+            }
+          : slot,
+      ),
+    );
+  }
+
+  updateIngredient(optionIndex: number, ingredientIndex: number, value: string): void {
+    const idx = this.activeIndex();
+    this.slots.update((list) =>
+      list.map((slot, i) =>
+        i === idx
+          ? {
+              ...slot,
+              options: slot.options.map((opt, oi) =>
+                oi === optionIndex
+                  ? {
+                      ...opt,
+                      ingredients: opt.ingredients.map((item, ii) =>
+                        ii === ingredientIndex ? value : item,
+                      ),
+                    }
+                  : opt,
+              ),
+            }
+          : slot,
+      ),
+    );
+  }
+
+  removeIngredient(optionIndex: number, ingredientIndex: number): void {
+    const idx = this.activeIndex();
+    this.slots.update((list) =>
+      list.map((slot, i) =>
+        i === idx
+          ? {
+              ...slot,
+              options: slot.options.map((opt, oi) =>
+                oi === optionIndex
+                  ? {
+                      ...opt,
+                      ingredients: opt.ingredients.filter((_, ii) => ii !== ingredientIndex),
+                    }
+                  : opt,
+              ),
+            }
+          : slot,
+      ),
     );
   }
 
@@ -235,12 +296,8 @@ export class MealsDialogComponent implements OnInit {
         return null;
       }
       const options = slot.options
-        .map((opt) => ({
-          name: opt.name.trim(),
-          kcal: opt.kcal,
-          description: opt.description.trim(),
-        }))
-        .filter((opt) => opt.name.length > 0);
+        .map((opt) => toMealOption(opt))
+        .filter((opt): opt is MealOption => opt != null);
 
       if (options.length === 0) {
         this.saveError.set(`Añade al menos una opción en “${slot.label}”.`);
@@ -254,32 +311,18 @@ export class MealsDialogComponent implements OnInit {
       time: slot.time.trim() || SLOT_PRESETS[index]?.time || '12:00',
       icon: slot.icon || 'restaurant-outline',
       options: slot.options
-        .map((opt): MealOption => {
-          const base: MealOption = {
-            name: opt.name.trim(),
-            kcal: opt.kcal,
-          };
-          const description = opt.description.trim();
-          return description ? { ...base, description } : base;
-        })
-        .filter((opt) => opt.name.length > 0),
+        .map((opt) => toMealOption(opt))
+        .filter((opt): opt is MealOption => opt != null),
     }));
   }
 
   private toEditable(slot: MealSlot, ensureOption = false): EditableSlot {
-    const options = slot.options.map((opt) => ({
-      name: opt.name,
-      kcal: opt.kcal,
-      description: opt.description ?? '',
-    }));
+    const options = slot.options.map((opt) => toMealOptionDraft(opt));
     return {
       label: slot.label,
       time: slot.time || '12:00',
       icon: slot.icon || 'restaurant-outline',
-      options:
-        options.length || !ensureOption
-          ? options
-          : [{ name: '', kcal: 0, description: '' }],
+      options: options.length || !ensureOption ? options : [emptyMealOptionDraft()],
     };
   }
 }

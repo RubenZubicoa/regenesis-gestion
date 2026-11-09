@@ -605,6 +605,70 @@
   grid-column: 1 / -1;
 }
 
+.ings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ings__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+
+  span {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+}
+
+.ings__empty {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.ings__row {
+  display: grid;
+  grid-template-columns: 1fr 32px;
+  gap: 0.4rem;
+  align-items: center;
+
+  input {
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 10px;
+    padding: 0.55rem 0.75rem;
+    font: inherit;
+    color: var(--navy);
+    outline: none;
+
+    &:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(18, 181, 165, 0.15);
+    }
+  }
+}
+
+.ings__remove {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg-element);
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  cursor: pointer;
+
+  &:hover {
+    background: #ffe4e4;
+    color: var(--coral);
+  }
+}
+
 .plate__remove {
   width: 32px;
   height: 32px;
