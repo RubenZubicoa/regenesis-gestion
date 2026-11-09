@@ -247,6 +247,11 @@ export class MealMastersPageComponent {
     }));
   }
 
+  filledIngredients(list: string[]): string {
+    const count = list.filter((item) => item.trim()).length;
+    return count === 1 ? '1 ítem' : `${count} ítems`;
+  }
+
   addIngredient(optionIndex: number): void {
     this.patchActiveSlot((slot) => ({
       ...slot,

@@ -94,31 +94,36 @@
                   </label>
                   <div class="ings field--full">
                     <div class="ings__head">
-                      <span>Ingredientes</span>
-                      <button type="button" class="text-btn" (click)="addIngredient(oi)">
-                        + Añadir
-                      </button>
+                      <p class="ings__title">Ingredientes</p>
+                      <span class="ings__count">
+                        {{ filledIngredients(opt.ingredients) }}
+                      </span>
                     </div>
-                    @if (opt.ingredients.length === 0) {
-                      <p class="ings__empty">Sin ingredientes todavía.</p>
-                    }
-                    @for (ing of opt.ingredients; track $index; let ii = $index) {
-                      <div class="ings__row">
-                        <input
-                          type="text"
-                          [ngModel]="ing"
-                          (ngModelChange)="updateIngredient(oi, ii, $event)"
-                          placeholder="Ej. Avena 50 g"
-                        />
-                        <button
-                          type="button"
-                          class="ings__remove"
-                          (click)="removeIngredient(oi, ii)"
-                          aria-label="Quitar ingrediente">
-                          ×
-                        </button>
-                      </div>
-                    }
+                    <div class="ings__list">
+                      @if (opt.ingredients.length === 0) {
+                        <p class="ings__empty">Aún no hay alimentos en este plato.</p>
+                      }
+                      @for (ing of opt.ingredients; track $index; let ii = $index) {
+                        <label class="ings__row">
+                          <input
+                            type="text"
+                            [ngModel]="ing"
+                            (ngModelChange)="updateIngredient(oi, ii, $event)"
+                            placeholder="Alimento y cantidad"
+                          />
+                          <button
+                            type="button"
+                            class="ings__remove"
+                            (click)="removeIngredient(oi, ii)"
+                            aria-label="Quitar ingrediente">
+                            ×
+                          </button>
+                        </label>
+                      }
+                    </div>
+                    <button type="button" class="ings__add" (click)="addIngredient(oi)">
+                      Añadir ingrediente
+                    </button>
                   </div>
                 </div>
                 <button

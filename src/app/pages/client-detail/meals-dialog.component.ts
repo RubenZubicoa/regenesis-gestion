@@ -173,6 +173,11 @@ export class MealsDialogComponent implements OnInit {
     );
   }
 
+  filledIngredients(list: string[]): string {
+    const count = list.filter((item) => item.trim()).length;
+    return count === 1 ? '1 ítem' : `${count} ítems`;
+  }
+
   addIngredient(optionIndex: number): void {
     const idx = this.activeIndex();
     this.slots.update((list) =>
