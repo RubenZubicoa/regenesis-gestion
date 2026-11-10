@@ -3,8 +3,8 @@ import type { DailySteps, DailyStepsChartDay } from '../models/daily-steps';
 import type { Macros } from '../models/macros';
 import { readMealIngredients, type Meal } from '../models/meal';
 import type { MealMaster } from '../models/meal-master';
-import type { Measurement } from '../models/measurement';
-import type { ProgressImage } from '../models/progress-image';
+import type { Measurement, MeasurementMaster } from '../models/measurement';
+import { isProgressImagePose, type ProgressImage } from '../models/progress-image';
 import type { Program } from '../models/program';
 import type { Review, ReviewStatus } from '../models/review';
 import type { RoutineDay } from '../models/routine-day';
@@ -341,22 +341,18 @@ export function normalizeDailySteps(raw: unknown): DailySteps {
 
 export function normalizeProgressImage(raw: unknown): ProgressImage {
   const r = asApiRecord(raw);
+  const pose = r['pose'];
   return {
     _id: normalizeId(r['_id']),
     clientId: normalizeId(r['clientId']),
     image: str(r, 'image'),
+    ...(isProgressImagePose(pose) ? { pose } : {}),
     createdAt: str(r, 'createdAt') || str(r, 'updatedAt'),
     updatedAt: str(r, 'updatedAt') || str(r, 'createdAt'),
   };
 }
 
-export interface MeasurementMaster {
-  _id: string;
-  key: string;
-  label: string;
-  unit: string;
-  icon: string;
-}
+export type { MeasurementMaster };
 
 export interface WellnessMaster {
   _id: string;

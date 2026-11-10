@@ -1,16 +1,15 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import type { ClientFilterKey, ClientListItem } from '../../models/client-list-item';
 import { ClientsService } from '../../services/clients.service';
-import { ClientDialogComponent } from './client-dialog.component';
 
 @Component({
   selector: 'app-clients-page',
   standalone: true,
-  imports: [FormsModule, ClientDialogComponent],
+  imports: [FormsModule, RouterLink],
   templateUrl: './clients-page.component.html',
   styleUrl: './clients-page.component.scss',
 })
@@ -24,7 +23,6 @@ export class ClientsPageComponent {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly listItems = signal<ClientListItem[]>([]);
-  readonly dialogOpen = signal(false);
 
   readonly filters: { key: ClientFilterKey; label: string }[] = [
     { key: 'all', label: 'Todos' },
@@ -73,19 +71,6 @@ export class ClientsPageComponent {
 
   onQuery(value: string): void {
     this.query.set(value);
-  }
-
-  openCreate(): void {
-    this.dialogOpen.set(true);
-  }
-
-  closeDialog(): void {
-    this.dialogOpen.set(false);
-  }
-
-  onSaved(): void {
-    this.closeDialog();
-    this.reload(false);
   }
 
   selectClient(client: ClientListItem): void {

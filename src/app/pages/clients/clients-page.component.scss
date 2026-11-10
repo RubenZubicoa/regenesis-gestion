@@ -64,6 +64,9 @@
   padding: 0.7rem 1.1rem;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 
   &:hover {
     background: var(--gold-light);

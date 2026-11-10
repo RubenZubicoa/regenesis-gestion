@@ -1,0 +1,250 @@
+<section class="page">
+  <a class="back" routerLink="/">← Volver al roster</a>
+
+  <header class="hero">
+    <div class="hero__copy">
+      <p class="eyebrow">Alta en el roster</p>
+      <h1>Nuevo cliente</h1>
+      <p class="hero__sub">
+        Completa la ficha de acceso, el plan, las medidas y las fotos iniciales.
+        Se asignará automáticamente a la fase 1.
+      </p>
+    </div>
+  </header>
+
+  <form class="form" (submit)="$event.preventDefault(); save()">
+    <article class="card">
+      <header class="card__head">
+        <h2>Datos personales</h2>
+        <p>Identidad y contacto de la persona que entra al método.</p>
+      </header>
+      <div class="grid">
+        <label class="field field--full">
+          <span>Nombre completo</span>
+          <input
+            type="text"
+            [ngModel]="fullName()"
+            (ngModelChange)="fullName.set($event)"
+            name="fullName"
+            autocomplete="name"
+            placeholder="Ana García"
+          />
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input
+            type="email"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            name="email"
+            autocomplete="email"
+            placeholder="ana@email.com"
+          />
+        </label>
+        <label class="field">
+          <span>Teléfono</span>
+          <input
+            type="tel"
+            [ngModel]="telefono()"
+            (ngModelChange)="telefono.set($event)"
+            name="telefono"
+            autocomplete="tel"
+            placeholder="+34 600 000 000"
+          />
+        </label>
+        <div class="field field--full">
+          <span>Imagen de perfil</span>
+          <div class="file-row">
+            <input
+              id="new-client-avatar"
+              class="file-input"
+              type="file"
+              accept="image/*"
+              (change)="onAvatarSelected($event)"
+            />
+            <label class="file-btn" for="new-client-avatar">Elegir archivo</label>
+            <span class="file-name">{{ avatarName() || 'Sin imagen' }}</span>
+          </div>
+          @if (avatar()) {
+            <img class="avatar-preview" [src]="avatar()" [alt]="fullName() || 'Cliente'" />
+          }
+        </div>
+      </div>
+    </article>
+
+    <article class="card">
+      <header class="card__head">
+        <h2>Acceso a la app</h2>
+        <p>Credenciales con las que el cliente iniciará sesión.</p>
+      </header>
+      <div class="grid">
+        <label class="field field--full">
+          <span>Contraseña de acceso</span>
+          <input
+            type="password"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            name="password"
+            autocomplete="new-password"
+            placeholder="Mínimo 6 caracteres"
+          />
+        </label>
+      </div>
+    </article>
+
+    <article class="card">
+      <header class="card__head">
+        <h2>Plan de trabajo</h2>
+        <p>Objetivo, coach y calendario del ciclo actual.</p>
+      </header>
+      <div class="grid">
+        <label class="field field--full">
+          <span>Objetivo</span>
+          <input
+            type="text"
+            [ngModel]="goal()"
+            (ngModelChange)="goal.set($event)"
+            name="goal"
+            placeholder="Recomposición corporal"
+          />
+        </label>
+        <label class="field">
+          <span>Coach</span>
+          <input
+            type="text"
+            [ngModel]="coach()"
+            (ngModelChange)="coach.set($event)"
+            name="coach"
+          />
+        </label>
+        <label class="field">
+          <span>Plan</span>
+          <input
+            type="text"
+            [ngModel]="plan()"
+            (ngModelChange)="plan.set($event)"
+            name="plan"
+          />
+        </label>
+        <label class="field">
+          <span>Inicio</span>
+          <input
+            type="date"
+            [ngModel]="startDate()"
+            (ngModelChange)="onStartDate($event)"
+            name="startDate"
+          />
+        </label>
+        <label class="field">
+          <span>Fin</span>
+          <input
+            type="date"
+            [ngModel]="endDate()"
+            (ngModelChange)="onEndDate($event)"
+            name="endDate"
+          />
+        </label>
+        <label class="field">
+          <span>Semanas totales</span>
+          <input
+            type="number"
+            min="1"
+            [ngModel]="totalWeeks()"
+            (ngModelChange)="totalWeeks.set(+$event)"
+            name="totalWeeks"
+          />
+        </label>
+      </div>
+    </article>
+
+    <article class="card">
+      <header class="card__head">
+        <h2>Medidas corporales</h2>
+        <p>Toma inicial del cliente. Los tipos de medida vienen del catálogo del sistema.</p>
+      </header>
+
+      @if (mastersLoading()) {
+        <p class="measures-hint">Cargando tipos de medida…</p>
+      } @else if (mastersError()) {
+        <p class="measures-hint measures-hint--error">{{ mastersError() }}</p>
+      } @else if (masters().length === 0) {
+        <p class="measures-hint">No hay tipos de medida configurados en el sistema.</p>
+      } @else {
+        <div class="grid measures-grid">
+          @for (master of masters(); track master._id) {
+            <label class="field">
+              <span>{{ master.label }}</span>
+              <div class="measure-input">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  inputmode="decimal"
+                  [ngModel]="measureValue(master._id)"
+                  (ngModelChange)="updateMeasure(master._id, $event)"
+                  [name]="'measure-' + master._id"
+                />
+                <em class="measure-unit">{{ master.unit }}</em>
+              </div>
+            </label>
+          }
+        </div>
+      }
+    </article>
+
+    <article class="card">
+      <header class="card__head">
+        <h2>Imágenes de progreso</h2>
+        <p>Toma inicial de frente, de lado y de espaldas. Puedes dejar vacías las que no tengas ahora.</p>
+      </header>
+      <div class="progress-grid">
+        @for (pose of poses; track pose) {
+          <div class="progress-slot">
+            <span>{{ pose }}</span>
+            @if (progressDraft(pose).preview) {
+              <img
+                class="progress-preview"
+                [src]="progressDraft(pose).preview"
+                [alt]="pose"
+              />
+            } @else {
+              <div class="progress-placeholder">Sin foto</div>
+            }
+            <div class="file-row">
+              <input
+                #poseFileInput
+                class="file-input"
+                type="file"
+                accept="image/*"
+                [id]="poseInputId(pose)"
+                (change)="onProgressSelected(pose, $event)"
+              />
+              <label class="file-btn" [for]="poseInputId(pose)">Elegir archivo</label>
+              @if (progressDraft(pose).file) {
+                <button
+                  type="button"
+                  class="file-clear"
+                  (click)="clearProgress(pose, poseFileInput)"
+                >
+                  Quitar
+                </button>
+                <span class="file-name">{{ progressDraft(pose).name }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+
+    @if (saveError()) {
+      <p class="form__error">{{ saveError() }}</p>
+    }
+
+    <footer class="form__foot">
+      <a class="ghost-btn" routerLink="/">Cancelar</a>
+      <button type="submit" class="save-btn" [disabled]="saving()">
+        {{ saving() ? 'Creando…' : 'Crear cliente' }}
+      </button>
+    </footer>
+  </form>
+</section>

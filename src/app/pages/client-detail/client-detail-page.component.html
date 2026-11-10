@@ -475,8 +475,13 @@
             <div class="photo-grid">
               @for (img of d.progressImages; track img._id) {
                 <figure class="photo-card">
-                  <img [src]="img.image" [alt]="'Progreso ' + formatDate(img.createdAt)" />
-                  <figcaption>{{ formatDate(img.createdAt) }}</figcaption>
+                  <img [src]="img.image" [alt]="(img.pose ?? 'Progreso') + ' ' + formatDate(img.createdAt)" />
+                  <figcaption>
+                    @if (img.pose) {
+                      {{ img.pose }} ·
+                    }
+                    {{ formatDate(img.createdAt) }}
+                  </figcaption>
                 </figure>
               }
             </div>
