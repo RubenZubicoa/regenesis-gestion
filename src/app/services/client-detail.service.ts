@@ -18,6 +18,7 @@ import {
   normalizeReview,
   normalizeRoutineDay,
   normalizeSupplements,
+  normalizeTechnicalSpecifications,
   normalizeWeight,
   normalizeWellness,
   normalizeWellnessMaster,
@@ -71,6 +72,11 @@ export class ClientDetailService {
           `/api/progress-images?clientId=${encodeURIComponent(clientId)}`,
         )
         .pipe(catchError(() => of([]))),
+      technicalSpecifications: this.api
+        .getOptional<unknown>(
+          `/api/technical-specifications/client/${encodeURIComponent(clientId)}`,
+        )
+        .pipe(catchError(() => of(null))),
     }).pipe(
       map((payload) => {
         const client = normalizeClient(payload.client);
@@ -120,6 +126,9 @@ export class ClientDetailService {
           wellness,
           dailySteps: dailyStepsRecords,
           progressImages: asRecordArray(payload.progressImages).map(normalizeProgressImage),
+          technicalSpecifications: payload.technicalSpecifications
+            ? normalizeTechnicalSpecifications(payload.technicalSpecifications)
+            : null,
         } satisfies ClientDetail;
       }),
       catchError(() => of(null)),

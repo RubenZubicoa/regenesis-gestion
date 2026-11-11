@@ -31,9 +31,9 @@
             <span class="chip">{{ formatDate(d.client.startDate) }} → {{ formatDate(d.client.endDate) }}</span>
           </div>
           <div class="profile__actions">
-            <button type="button" class="profile__btn" (click)="openPersonalDialog()">
-              Editar datos personales
-            </button>
+            <a class="profile__btn" [routerLink]="['/clients', d.client._id, 'editar']">
+              Editar ficha
+            </a>
             <button type="button" class="profile__btn profile__btn--ghost" (click)="openPasswordDialog()">
               Cambiar contraseña
             </button>
@@ -189,8 +189,8 @@
                       @for (opt of slot.options; track opt.name) {
                         <div class="meal-option">
                           <span class="meal-option__name">{{ opt.name }}</span>
-                          @if (opt.description) {
-                            <span class="meal-option__desc">{{ opt.description }}</span>
+                          @if (opt.observations) {
+                            <span class="meal-option__desc">{{ opt.observations }}</span>
                           }
                           @if (opt.ingredients?.length) {
                             <div class="meal-option__ings">
@@ -475,17 +475,74 @@
             <div class="photo-grid">
               @for (img of d.progressImages; track img._id) {
                 <figure class="photo-card">
-                  <img [src]="img.image" [alt]="(img.pose ?? 'Progreso') + ' ' + formatDate(img.createdAt)" />
-                  <figcaption>
-                    @if (img.pose) {
-                      {{ img.pose }} ·
-                    }
-                    {{ formatDate(img.createdAt) }}
-                  </figcaption>
+                  <span class="photo-card__type">{{ img.pose || 'De frente' }}</span>
+                  <div class="photo-card__media">
+                    <img [src]="img.image" [alt]="(img.pose || 'De frente') + ' ' + formatDate(img.createdAt)" />
+                    <figcaption>{{ formatDate(img.createdAt) }}</figcaption>
+                  </div>
                 </figure>
               }
             </div>
           </div>
+        }
+
+        @if (d.technicalSpecifications; as spec) {
+          @if (specHasContent(spec)) {
+            <div class="panel-block">
+              <h2>Cuestionario inicial</h2>
+              @for (section of specSections; track section.group) {
+                @if (specRows(spec[section.group], section.fields); as rows) {
+                  @if (rows.length > 0) {
+                    <h3 class="spec-subtitle">{{ section.title }}</h3>
+                    <dl class="spec-list">
+                      @for (row of rows; track row.key) {
+                        <div class="spec-item">
+                          <dt>{{ row.label }}</dt>
+                          <dd>{{ row.value }}</dd>
+                        </div>
+                      }
+                    </dl>
+                  }
+                }
+              }
+              @if (recallRows(spec); as meals) {
+                @if (meals.length > 0) {
+                  <h3 class="spec-subtitle">Recordatorio 24h</h3>
+                  <div class="recall-view">
+                    @for (meal of meals; track meal.key) {
+                      <article class="recall-view__meal">
+                        <h4>{{ meal.label }}</h4>
+                        <dl class="spec-list">
+                          @if (meal.ingredients) {
+                            <div class="spec-item spec-item--full">
+                              <dt>Ingredientes</dt>
+                              <dd>{{ meal.ingredients }}</dd>
+                            </div>
+                          }
+                          @if (meal.quantities) {
+                            <div class="spec-item">
+                              <dt>Cantidades</dt>
+                              <dd>{{ meal.quantities }}</dd>
+                            </div>
+                          }
+                          @if (meal.timeAndPlace) {
+                            <div class="spec-item">
+                              <dt>Hora y lugar</dt>
+                              <dd>{{ meal.timeAndPlace }}</dd>
+                            </div>
+                          }
+                        </dl>
+                      </article>
+                    }
+                  </div>
+                }
+              }
+              @if (spec.observations) {
+                <h3 class="spec-subtitle">Expectativas y notas</h3>
+                <p class="spec-notes">{{ spec.observations }}</p>
+              }
+            </div>
+          }
         }
 
         <div class="panel-block">
@@ -560,16 +617,6 @@
         [supplements]="d.supplements"
         (saved)="onSupplementsSaved($event)"
         (closed)="closeSupplementsDialog()"
-      />
-    }
-  }
-
-  @if (personalDialogOpen()) {
-    @if (detail(); as d) {
-      <app-client-dialog
-        [client]="d.client"
-        (saved)="onPersonalSaved($event)"
-        (closed)="closePersonalDialog()"
       />
     }
   }

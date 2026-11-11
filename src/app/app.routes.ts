@@ -28,6 +28,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'clients/:id/editar',
+        loadComponent: () =>
+          import('./pages/clients/new-client-page.component').then(
+            (m) => m.NewClientPageComponent,
+          ),
+      },
+      {
         path: 'clients/:id',
         loadComponent: () =>
           import('./pages/client-detail/client-detail-page.component').then(

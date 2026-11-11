@@ -10,9 +10,22 @@ import type { Macros } from '../../models/macros';
 import type { Meal, MealSlot } from '../../models/meal';
 import type { MealMaster } from '../../models/meal-master';
 import type { Supplements } from '../../models/supplements';
+import {
+  EATING_HABITS_FIELDS,
+  EXERCISE_HABITS_FIELDS,
+  LIFESTYLE_FIELDS,
+  PERSONAL_HISTORY_FIELDS,
+  filledDailyRecall,
+  filledSpecFields,
+  hasFilledDailyRecall,
+  type EatingHabits,
+  type ExerciseHabits,
+  type Lifestyle,
+  type PersonalHistory,
+  type SpecField,
+} from '../../models/technical-specifications';
 import type { Weight } from '../../models/weight';
 import { ClientDetailService } from '../../services/client-detail.service';
-import { ClientDialogComponent } from '../clients/client-dialog.component';
 import { PasswordDialogComponent } from '../clients/password-dialog.component';
 import { PhaseDialogComponent } from '../clients/phase-dialog.component';
 import { MacrosDialogComponent } from './macros-dialog.component';
@@ -73,7 +86,6 @@ export interface WeightChartView {
     MealsDialogComponent,
     LoadMealPlanDialogComponent,
     SupplementsDialogComponent,
-    ClientDialogComponent,
     PasswordDialogComponent,
     PhaseDialogComponent,
     RenewPlanDialogComponent,
@@ -110,7 +122,6 @@ export class ClientDetailPageComponent {
   readonly mealSeed = signal<MealSlot[] | null>(null);
 
   readonly supplementsDialogOpen = signal(false);
-  readonly personalDialogOpen = signal(false);
   readonly passwordDialogOpen = signal(false);
   readonly phaseDialogOpen = signal(false);
   readonly renewPlanDialogOpen = signal(false);
@@ -236,6 +247,32 @@ export class ClientDetailPageComponent {
 
     this.activeTab.set(tab);
 
+  }
+
+  readonly specSections = [
+    { title: 'Antecedentes personales', group: 'personalHistory' as const, fields: PERSONAL_HISTORY_FIELDS },
+    { title: 'Hábitos alimentarios', group: 'eatingHabits' as const, fields: EATING_HABITS_FIELDS },
+    { title: 'Hábitos de vida', group: 'lifestyle' as const, fields: LIFESTYLE_FIELDS },
+    { title: 'Ejercicio físico', group: 'exerciseHabits' as const, fields: EXERCISE_HABITS_FIELDS },
+  ];
+
+  specRows(
+    group: PersonalHistory | EatingHabits | Lifestyle | ExerciseHabits,
+    fields: readonly SpecField<string>[],
+  ): { key: string; label: string; value: string }[] {
+    return filledSpecFields(group, fields);
+  }
+
+  specHasContent(
+    spec: NonNullable<ClientDetail['technicalSpecifications']>,
+  ): boolean {
+    return this.specSections.some((section) => this.specRows(spec[section.group], section.fields).length > 0)
+      || hasFilledDailyRecall(spec.dailyRecall)
+      || spec.observations.trim().length > 0;
+  }
+
+  recallRows(spec: NonNullable<ClientDetail['technicalSpecifications']>) {
+    return filledDailyRecall(spec.dailyRecall);
   }
 
   macroTarget(macros: Macros, key: string): number {
@@ -535,25 +572,6 @@ export class ClientDetailPageComponent {
     const id = this.detail()?.client._id;
     if (!id) return;
     void this.router.navigate(['/clients', id, 'rutina']);
-  }
-
-  openPersonalDialog(): void {
-    this.personalDialogOpen.set(true);
-  }
-
-  closePersonalDialog(): void {
-    this.personalDialogOpen.set(false);
-  }
-
-  onPersonalSaved(client: Client): void {
-    const current = this.detail();
-    if (current) {
-      this.detail.set({
-        ...current,
-        client: { ...current.client, ...client },
-      });
-    }
-    this.personalDialogOpen.set(false);
   }
 
   openPasswordDialog(): void {

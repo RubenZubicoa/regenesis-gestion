@@ -7,6 +7,7 @@ import type { ProgressImage } from './progress-image';
 import type { Review } from './review';
 import type { RoutineDay } from './routine-day';
 import type { Supplements } from './supplements';
+import type { TechnicalSpecifications } from './technical-specifications';
 import type { Weight } from './weight';
 import type { Wellness } from './wellness';
 import type { WorkoutHistory } from './workout-history';
@@ -27,4 +28,5 @@ export interface ClientDetail {
   wellness: Wellness[];
   dailySteps: DailySteps[];
   progressImages: ProgressImage[];
+  technicalSpecifications: TechnicalSpecifications | null;
 }

@@ -86,6 +86,25 @@
   }
 }
 
+.card__head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.optional-pill {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--navy);
+  background: rgba(228, 169, 60, 0.18);
+  border-radius: 999px;
+  padding: 0.28rem 0.6rem;
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -105,7 +124,9 @@
     color: var(--text-muted);
   }
 
-  input {
+  input,
+  textarea,
+  select {
     width: 100%;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -124,6 +145,25 @@
       color: var(--text-muted);
     }
   }
+
+  textarea {
+    min-height: 5.2rem;
+    resize: vertical;
+    line-height: 1.45;
+  }
+
+  select {
+    cursor: pointer;
+  }
+}
+
+.field__hint {
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-secondary);
+  margin-top: -0.1rem;
 }
 
 .field--full {
@@ -164,6 +204,25 @@
 
 .measures-hint--error {
   color: #b42318;
+}
+
+.recall-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.recall-meal {
+  padding: 0.9rem 1rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-element);
+
+  h3 {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    color: var(--navy);
+  }
 }
 
 .file-row {

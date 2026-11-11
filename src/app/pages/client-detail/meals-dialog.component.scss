@@ -239,7 +239,8 @@
     color: var(--text-muted);
   }
 
-  input {
+  input,
+  textarea {
     border: 1px solid var(--border);
     background: #fff;
     border-radius: 10px;
@@ -252,6 +253,12 @@
       border-color: var(--blue-light);
       box-shadow: 0 0 0 3px rgba(76, 141, 246, 0.15);
     }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 4.6rem;
+    line-height: 1.45;
   }
 }
 

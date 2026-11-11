@@ -1,7 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
-import { asRecordArray, normalizeMeasurement, normalizeMeasurementMaster } from '../core/normalizers';
+import {
+  asRecordArray,
+  latestMeasurements,
+  normalizeMeasurement,
+  normalizeMeasurementMaster,
+} from '../core/normalizers';
 import type { Measurement, MeasurementCreatePayload, MeasurementMaster } from '../models/measurement';
 import { ApiService } from './api.service';
 
@@ -30,8 +35,37 @@ export class MeasurementsService {
     );
   }
 
+  listByClient(clientId: string): Observable<Measurement[]> {
+    return this.api
+      .get<unknown>(`/api/clients/${encodeURIComponent(clientId)}/measurements`)
+      .pipe(
+        map((raw) =>
+          latestMeasurements(
+            asRecordArray(unwrapList(raw)).map((item) => ({
+              ...normalizeMeasurement(item),
+              label: '',
+              unit: '',
+            })),
+          ),
+        ),
+      );
+  }
+
   create(payload: MeasurementCreatePayload): Observable<Measurement> {
     return this.api.post<unknown>('/api/measurements', payload).pipe(
+      map((raw) => ({
+        ...normalizeMeasurement(raw),
+        label: '',
+        unit: '',
+      })),
+    );
+  }
+
+  update(
+    id: string,
+    payload: Pick<MeasurementCreatePayload, 'value' | 'delta' | 'date'>,
+  ): Observable<Measurement> {
+    return this.api.put<unknown>(`/api/measurements/${encodeURIComponent(id)}`, payload).pipe(
       map((raw) => ({
         ...normalizeMeasurement(raw),
         label: '',

@@ -230,7 +230,7 @@ export class MealMastersPageComponent {
     }));
   }
 
-  updateOption(optionIndex: number, field: 'name' | 'kcal' | 'description', value: string | number): void {
+  updateOption(optionIndex: number, field: 'name' | 'kcal' | 'observations', value: string | number): void {
     this.patchActiveSlot((slot) => ({
       ...slot,
       options: slot.options.map((opt, i) => {

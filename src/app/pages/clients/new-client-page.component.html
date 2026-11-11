@@ -1,17 +1,30 @@
 <section class="page">
-  <a class="back" routerLink="/">← Volver al roster</a>
+  @if (isEdit()) {
+    <a class="back" [routerLink]="['/clients', clientId()]">← Volver a la ficha</a>
+  } @else {
+    <a class="back" routerLink="/">← Volver al roster</a>
+  }
 
   <header class="hero">
     <div class="hero__copy">
-      <p class="eyebrow">Alta en el roster</p>
-      <h1>Nuevo cliente</h1>
+      <p class="eyebrow">{{ isEdit() ? 'Ficha del cliente' : 'Alta en el roster' }}</p>
+      <h1>{{ isEdit() ? 'Editar cliente' : 'Nuevo cliente' }}</h1>
       <p class="hero__sub">
-        Completa la ficha de acceso, el plan, las medidas y las fotos iniciales.
-        Se asignará automáticamente a la fase 1.
+        @if (isEdit()) {
+          Revisa y actualiza la ficha, las medidas, las fotos y el cuestionario inicial.
+        } @else {
+          Completa la ficha de acceso, el plan, las medidas y las fotos iniciales.
+          El cuestionario es opcional. Se asignará automáticamente a la fase 1.
+        }
       </p>
     </div>
   </header>
 
+  @if (pageLoading()) {
+    <p class="measures-hint">Cargando ficha del cliente…</p>
+  } @else if (pageError()) {
+    <p class="form__error">{{ pageError() }}</p>
+  } @else {
   <form class="form" (submit)="$event.preventDefault(); save()">
     <article class="card">
       <header class="card__head">
@@ -72,25 +85,27 @@
       </div>
     </article>
 
-    <article class="card">
-      <header class="card__head">
-        <h2>Acceso a la app</h2>
-        <p>Credenciales con las que el cliente iniciará sesión.</p>
-      </header>
-      <div class="grid">
-        <label class="field field--full">
-          <span>Contraseña de acceso</span>
-          <input
-            type="password"
-            [ngModel]="password()"
-            (ngModelChange)="password.set($event)"
-            name="password"
-            autocomplete="new-password"
-            placeholder="Mínimo 6 caracteres"
-          />
-        </label>
-      </div>
-    </article>
+    @if (!isEdit()) {
+      <article class="card">
+        <header class="card__head">
+          <h2>Acceso a la app</h2>
+          <p>Credenciales con las que el cliente iniciará sesión.</p>
+        </header>
+        <div class="grid">
+          <label class="field field--full">
+            <span>Contraseña de acceso</span>
+            <input
+              type="password"
+              [ngModel]="password()"
+              (ngModelChange)="password.set($event)"
+              name="password"
+              autocomplete="new-password"
+              placeholder="Mínimo 6 caracteres"
+            />
+          </label>
+        </div>
+      </article>
+    }
 
     <article class="card">
       <header class="card__head">
@@ -236,15 +251,200 @@
       </div>
     </article>
 
+    <article class="card">
+      <header class="card__head">
+        <div class="card__head-row">
+          <h2>Antecedentes personales</h2>
+          <span class="optional-pill">Opcional</span>
+        </div>
+        <p>Enfermedades, lesiones, medicación y el resto de la historia clínica relevante.</p>
+      </header>
+      <ng-container
+        [ngTemplateOutlet]="specFieldsTpl"
+        [ngTemplateOutletContext]="{ fields: personalHistoryFields, group: 'personalHistory' }"
+      />
+    </article>
+
+    <article class="card">
+      <header class="card__head">
+        <div class="card__head-row">
+          <h2>Expectativas</h2>
+          <span class="optional-pill">Opcional</span>
+        </div>
+        <p>Cómo se imagina al terminar el plan. Sin paños calientes: ¿qué quiere conseguir?</p>
+      </header>
+      <label class="field field--full">
+        <span>Qué quiere conseguir</span>
+        <textarea
+          rows="5"
+          [ngModel]="expectations()"
+          (ngModelChange)="expectations.set($event)"
+          name="expectations"
+          placeholder="Cuéntalo con libertad, aunque suene descabellado."
+        ></textarea>
+      </label>
+    </article>
+
+    <article class="card">
+      <header class="card__head">
+        <div class="card__head-row">
+          <h2>Hábitos alimentarios</h2>
+          <span class="optional-pill">Opcional</span>
+        </div>
+        <p>Ingestas, picoteos y alimentos que deben entrar o quedarse fuera de la dieta.</p>
+      </header>
+      <ng-container
+        [ngTemplateOutlet]="specFieldsTpl"
+        [ngTemplateOutletContext]="{ fields: eatingHabitsFields, group: 'eatingHabits' }"
+      />
+    </article>
+
+    <article class="card">
+      <header class="card__head">
+        <div class="card__head-row">
+          <h2>Recordatorio 24h</h2>
+          <span class="optional-pill">Opcional</span>
+        </div>
+        <p>Un día normal: ingredientes, cantidades, hora y lugar de cada ingesta.</p>
+      </header>
+      <div class="recall-stack">
+        @for (meal of dailyRecallMeals; track meal.key) {
+          <section class="recall-meal">
+            <h3>{{ meal.label }}</h3>
+            <div class="grid">
+              @for (field of dailyRecallEntryFields; track field.key) {
+                <label class="field" [class.field--full]="field.full">
+                  <span>{{ field.label }}</span>
+                  @if (field.textarea) {
+                    <textarea
+                      rows="2"
+                      [ngModel]="recallValue(meal.key, field.key)"
+                      (ngModelChange)="patchRecall(meal.key, field.key, $event)"
+                      [name]="'recall-' + meal.key + '-' + field.key"
+                    ></textarea>
+                  } @else {
+                    <input
+                      type="text"
+                      [ngModel]="recallValue(meal.key, field.key)"
+                      (ngModelChange)="patchRecall(meal.key, field.key, $event)"
+                      [name]="'recall-' + meal.key + '-' + field.key"
+                    />
+                  }
+                </label>
+              }
+            </div>
+          </section>
+        }
+      </div>
+    </article>
+
+    <article class="card">
+      <header class="card__head">
+        <div class="card__head-row">
+          <h2>Hábitos de vida</h2>
+          <span class="optional-pill">Opcional</span>
+        </div>
+        <p>Sueño, tabaco, alcohol y agua.</p>
+      </header>
+      <ng-container
+        [ngTemplateOutlet]="specFieldsTpl"
+        [ngTemplateOutletContext]="{ fields: lifestyleFields, group: 'lifestyle' }"
+      />
+    </article>
+
+    <article class="card">
+      <header class="card__head">
+        <div class="card__head-row">
+          <h2>Ejercicio físico</h2>
+          <span class="optional-pill">Opcional</span>
+        </div>
+        <p>Deporte, frecuencia, nivel de fuerza y material disponible.</p>
+      </header>
+      <ng-container
+        [ngTemplateOutlet]="specFieldsTpl"
+        [ngTemplateOutletContext]="{ fields: exerciseHabitsFields, group: 'exerciseHabits' }"
+      />
+    </article>
+
+    <article class="card">
+      <header class="card__head">
+        <div class="card__head-row">
+          <h2>Observaciones</h2>
+          <span class="optional-pill">Opcional</span>
+        </div>
+        <p>Cualquier cosa importante que se haya quedado fuera. Cuanto más, mejor.</p>
+      </header>
+      <label class="field field--full">
+        <span>Añadir</span>
+        <textarea
+          rows="4"
+          [ngModel]="extraNotes()"
+          (ngModelChange)="extraNotes.set($event)"
+          name="extraNotes"
+          placeholder="Cuéntame todo lo que veas necesario."
+        ></textarea>
+      </label>
+    </article>
+
+    <ng-template #specFieldsTpl let-fields="fields" let-group="group">
+      <div class="grid">
+        @for (field of fields; track field.key) {
+          <label class="field" [class.field--full]="field.full">
+            <span>{{ field.label }}</span>
+            @if (field.hint) {
+              <small class="field__hint">{{ field.hint }}</small>
+            }
+            @if (field.options; as options) {
+              <select
+                [ngModel]="specValue(group, field.key)"
+                (ngModelChange)="patchSpec(group, field.key, $event)"
+                [name]="group + '-' + field.key"
+              >
+                <option value="">Sin indicar</option>
+                @for (opt of options; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            } @else if (field.textarea) {
+              <textarea
+                rows="3"
+                [ngModel]="specValue(group, field.key)"
+                (ngModelChange)="patchSpec(group, field.key, $event)"
+                [name]="group + '-' + field.key"
+                [placeholder]="field.placeholder || ''"
+              ></textarea>
+            } @else {
+              <input
+                type="text"
+                [ngModel]="specValue(group, field.key)"
+                (ngModelChange)="patchSpec(group, field.key, $event)"
+                [name]="group + '-' + field.key"
+                [placeholder]="field.placeholder || ''"
+              />
+            }
+          </label>
+        }
+      </div>
+    </ng-template>
+
     @if (saveError()) {
       <p class="form__error">{{ saveError() }}</p>
     }
 
     <footer class="form__foot">
-      <a class="ghost-btn" routerLink="/">Cancelar</a>
+      @if (isEdit()) {
+        <a class="ghost-btn" [routerLink]="['/clients', clientId()]">Cancelar</a>
+      } @else {
+        <a class="ghost-btn" routerLink="/">Cancelar</a>
+      }
       <button type="submit" class="save-btn" [disabled]="saving()">
-        {{ saving() ? 'Creando…' : 'Crear cliente' }}
+        @if (saving()) {
+          {{ isEdit() ? 'Guardando…' : 'Creando…' }}
+        } @else {
+          {{ isEdit() ? 'Guardar cambios' : 'Crear cliente' }}
+        }
       </button>
     </footer>
   </form>
+  }
 </section>

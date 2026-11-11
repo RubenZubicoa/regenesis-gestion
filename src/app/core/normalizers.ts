@@ -5,6 +5,17 @@ import { readMealIngredients, type Meal } from '../models/meal';
 import type { MealMaster } from '../models/meal-master';
 import type { Measurement, MeasurementMaster } from '../models/measurement';
 import { isProgressImagePose, type ProgressImage } from '../models/progress-image';
+import {
+  DAILY_RECALL_MEALS,
+  emptyDailyRecall,
+  emptyDailyRecallEntry,
+  emptyEatingHabits,
+  emptyExerciseHabits,
+  emptyLifestyle,
+  emptyPersonalHistory,
+  type DailyRecall,
+  type TechnicalSpecifications,
+} from '../models/technical-specifications';
 import type { Program } from '../models/program';
 import type { Review, ReviewStatus } from '../models/review';
 import type { RoutineDay } from '../models/routine-day';
@@ -147,7 +158,8 @@ export function normalizeMeal(raw: unknown): Meal {
           return {
             name: str(option, 'name'),
             kcal: num(option, 'kcal'),
-            description: option['description'] ? str(option, 'description') : undefined,
+            observations:
+              str(option, 'observations') || str(option, 'description') || undefined,
             ingredients,
           };
         }),
@@ -350,6 +362,40 @@ export function normalizeProgressImage(raw: unknown): ProgressImage {
     createdAt: str(r, 'createdAt') || str(r, 'updatedAt'),
     updatedAt: str(r, 'updatedAt') || str(r, 'createdAt'),
   };
+}
+
+export function normalizeTechnicalSpecifications(raw: unknown): TechnicalSpecifications {
+  const r = asApiRecord(raw);
+  return {
+    _id: normalizeId(r['_id']),
+    clientId: normalizeId(r['clientId']),
+    personalHistory: mapStringGroup(r['personalHistory'], emptyPersonalHistory()),
+    eatingHabits: mapStringGroup(r['eatingHabits'], emptyEatingHabits()),
+    lifestyle: mapStringGroup(r['lifestyle'], emptyLifestyle()),
+    exerciseHabits: mapStringGroup(r['exerciseHabits'], emptyExerciseHabits()),
+    dailyRecall: normalizeDailyRecall(r['dailyRecall']),
+    observations: str(r, 'observations'),
+    createdAt: str(r, 'createdAt') || str(r, 'updatedAt'),
+    updatedAt: str(r, 'updatedAt') || str(r, 'createdAt'),
+  };
+}
+
+function mapStringGroup<T extends Record<string, string>>(raw: unknown, fallback: T): T {
+  const r = asApiRecord(raw);
+  const result = { ...fallback };
+  for (const key of Object.keys(fallback)) {
+    result[key as keyof T] = str(r, key) as T[keyof T];
+  }
+  return result;
+}
+
+function normalizeDailyRecall(raw: unknown): DailyRecall {
+  const r = asApiRecord(raw);
+  const result = emptyDailyRecall();
+  for (const meal of DAILY_RECALL_MEALS) {
+    result[meal.key] = mapStringGroup(r[meal.key], emptyDailyRecallEntry());
+  }
+  return result;
 }
 
 export type { MeasurementMaster };

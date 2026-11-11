@@ -148,7 +148,7 @@ export class MealsDialogComponent implements OnInit {
 
   updateOption(
     optionIndex: number,
-    field: 'name' | 'kcal' | 'description',
+    field: 'name' | 'kcal' | 'observations',
     value: string | number,
   ): void {
     const idx = this.activeIndex();

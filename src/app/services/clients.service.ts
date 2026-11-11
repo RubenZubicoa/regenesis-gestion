@@ -75,6 +75,12 @@ export class ClientsService {
     );
   }
 
+  get(id: string): Observable<Client> {
+    return this.api
+      .get<unknown>(`/api/clients/${encodeURIComponent(id)}`)
+      .pipe(map(normalizeClient));
+  }
+
   update(id: string, payload: ClientUpdatePayload): Observable<Client> {
     return this.api
       .put<unknown>(`/api/clients/${encodeURIComponent(id)}`, this.toFormData(payload))

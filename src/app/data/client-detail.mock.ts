@@ -39,8 +39,8 @@ const MOCK_MEALS: Record<string, Meal> = {
         time: '08:00',
         icon: 'sunny-outline',
         options: [
-          { name: 'Avena con claras y plátano', kcal: 420, description: '40g avena · 3 claras · 1 plátano' },
-          { name: 'Tostadas integrales con huevo', kcal: 390, description: '2 rebanadas · 2 huevos · aguacate' },
+          { name: 'Avena con claras y plátano', kcal: 420, observations: '40g avena · 3 claras · 1 plátano' },
+          { name: 'Tostadas integrales con huevo', kcal: 390, observations: '2 rebanadas · 2 huevos · aguacate' },
         ],
       },
       {
@@ -54,7 +54,7 @@ const MOCK_MEALS: Record<string, Meal> = {
         time: '14:00',
         icon: 'restaurant-outline',
         options: [
-          { name: 'Pollo con arroz y verduras', kcal: 580, description: '150g pollo · 80g arroz · mix verduras' },
+          { name: 'Pollo con arroz y verduras', kcal: 580, observations: '150g pollo · 80g arroz · mix verduras' },
           { name: 'Salmon con patata y ensalada', kcal: 610 },
         ],
       },
@@ -254,6 +254,7 @@ const MOCK_IMAGES: Record<string, ProgressImage[]> = {
       _id: 'pi-1',
       clientId: RUBEN_ID,
       image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=500&fit=crop',
+      pose: 'De frente',
       createdAt: '2026-06-15T10:00:00Z',
       updatedAt: '2026-06-15T10:00:00Z',
     },
@@ -261,6 +262,7 @@ const MOCK_IMAGES: Record<string, ProgressImage[]> = {
       _id: 'pi-2',
       clientId: RUBEN_ID,
       image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&h=500&fit=crop',
+      pose: 'Lateral',
       createdAt: '2026-07-20T10:00:00Z',
       updatedAt: '2026-07-20T10:00:00Z',
     },
@@ -268,6 +270,7 @@ const MOCK_IMAGES: Record<string, ProgressImage[]> = {
       _id: 'pi-3',
       clientId: RUBEN_ID,
       image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=500&fit=crop',
+      pose: 'De espaldas',
       createdAt: '2026-08-10T10:00:00Z',
       updatedAt: '2026-08-10T10:00:00Z',
     },
@@ -353,5 +356,6 @@ export function getClientDetail(clientId: string): ClientDetail | null {
     wellness: MOCK_WELLNESS[clientId] ?? [],
     dailySteps: MOCK_STEPS[clientId] ?? [],
     progressImages: MOCK_IMAGES[clientId] ?? [],
+    technicalSpecifications: null,
   };
 }

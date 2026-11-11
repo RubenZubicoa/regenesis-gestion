@@ -1,19 +1,19 @@
 export interface MealOption {
   name: string;
   kcal: number;
-  description?: string;
+  observations?: string;
   ingredients?: string[];
 }
 
 export type MealOptionDraft = {
   name: string;
   kcal: number;
-  description: string;
+  observations: string;
   ingredients: string[];
 };
 
 export function emptyMealOptionDraft(): MealOptionDraft {
-  return { name: '', kcal: 0, description: '', ingredients: [''] };
+  return { name: '', kcal: 0, observations: '', ingredients: [''] };
 }
 
 export function toMealOptionDraft(option: MealOption): MealOptionDraft {
@@ -21,7 +21,7 @@ export function toMealOptionDraft(option: MealOption): MealOptionDraft {
   return {
     name: option.name,
     kcal: option.kcal,
-    description: option.description ?? '',
+    observations: option.observations ?? '',
     ingredients: ingredients.length ? ingredients : [''],
   };
 }
@@ -29,11 +29,11 @@ export function toMealOptionDraft(option: MealOption): MealOptionDraft {
 export function toMealOption(draft: MealOptionDraft): MealOption | null {
   const name = draft.name.trim();
   if (!name) return null;
-  const description = draft.description.trim();
+  const observations = draft.observations.trim();
   return {
     name,
     kcal: draft.kcal,
-    ...(description ? { description } : {}),
+    ...(observations ? { observations } : {}),
     ingredients: readMealIngredients(draft.ingredients),
   };
 }
@@ -73,11 +73,11 @@ export function readMealIngredients(raw: unknown): string[] {
 }
 
 export function serializeMealOption(option: MealOption): Record<string, unknown> {
-  const description = option.description?.trim();
+  const observations = option.observations?.trim();
   return {
     name: option.name.trim(),
     kcal: option.kcal,
-    ...(description ? { description } : {}),
+    ...(observations ? { observations } : {}),
     ingredients: readMealIngredients(option.ingredients),
   };
 }

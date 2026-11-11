@@ -83,15 +83,6 @@
                       (ngModelChange)="updateOption(oi, 'kcal', $event)"
                     />
                   </label>
-                  <label class="field field--full">
-                    <span>Descripción</span>
-                    <input
-                      type="text"
-                      [ngModel]="opt.description"
-                      (ngModelChange)="updateOption(oi, 'description', $event)"
-                      placeholder="Notas o composición"
-                    />
-                  </label>
                   <div class="ings field--full">
                     <div class="ings__head">
                       <p class="ings__title">Ingredientes</p>
@@ -125,6 +116,15 @@
                       Añadir ingrediente
                     </button>
                   </div>
+                  <label class="field field--full">
+                    <span>Observaciones</span>
+                    <textarea
+                      rows="3"
+                      [ngModel]="opt.observations"
+                      (ngModelChange)="updateOption(oi, 'observations', $event)"
+                      placeholder="Notas o composición"
+                    ></textarea>
+                  </label>
                 </div>
                 <button
                   type="button"
