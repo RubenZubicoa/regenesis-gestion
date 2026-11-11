@@ -20,7 +20,7 @@ export interface ClientCreatePayload {
   name: string;
   fullName: string;
   email: string;
-  telefono: string;
+  telefono?: string;
   password: string;
   goal: string;
   coach: string;
@@ -106,7 +106,7 @@ export class ClientsService {
     body.append('name', payload.name);
     body.append('fullName', payload.fullName);
     body.append('email', payload.email);
-    body.append('telefono', payload.telefono);
+    body.append('telefono', payload.telefono ?? '');
     body.append('goal', payload.goal);
     body.append('coach', payload.coach);
     body.append('plan', payload.plan);

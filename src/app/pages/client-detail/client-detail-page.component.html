@@ -27,7 +27,9 @@
           <p class="profile__goal">{{ d.client.goal }} · {{ d.client.plan }}</p>
           <div class="profile__chips">
             <span class="chip">{{ d.client.email }}</span>
-            <span class="chip">{{ d.client.telefono }}</span>
+            @if (d.client.telefono) {
+              <span class="chip">{{ d.client.telefono }}</span>
+            }
             <span class="chip">{{ formatDate(d.client.startDate) }} → {{ formatDate(d.client.endDate) }}</span>
           </div>
           <div class="profile__actions">
@@ -537,8 +539,12 @@
                   </div>
                 }
               }
+              @if (spec.expectations) {
+                <h3 class="spec-subtitle">Expectativas</h3>
+                <p class="spec-notes">{{ spec.expectations }}</p>
+              }
               @if (spec.observations) {
-                <h3 class="spec-subtitle">Expectativas y notas</h3>
+                <h3 class="spec-subtitle">Observaciones</h3>
                 <p class="spec-notes">{{ spec.observations }}</p>
               }
             </div>

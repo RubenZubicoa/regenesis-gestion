@@ -17,14 +17,12 @@ import {
   EXERCISE_HABITS_FIELDS,
   LIFESTYLE_FIELDS,
   PERSONAL_HISTORY_FIELDS,
-  buildObservations,
   emptyDailyRecall,
   emptyEatingHabits,
   emptyExerciseHabits,
   emptyLifestyle,
   emptyPersonalHistory,
   hasTechnicalSpecContent,
-  parseObservations,
   type DailyRecall,
   type DailyRecallEntry,
   type EatingHabits,
@@ -289,10 +287,6 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
       this.saveError.set('El email no es válido.');
       return;
     }
-    if (!telefono) {
-      this.saveError.set('El teléfono es obligatorio.');
-      return;
-    }
     if (!this.isEdit()) {
       if (!password.trim()) {
         this.saveError.set('La contraseña es obligatoria.');
@@ -426,7 +420,7 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
         this.originalClient = client;
         this.fullName.set(client.fullName);
         this.email.set(client.email);
-        this.telefono.set(client.telefono);
+        this.telefono.set(client.telefono ?? '');
         this.goal.set(client.goal);
         this.coach.set(client.coach || DEFAULT_COACH);
         this.plan.set(client.plan || DEFAULT_PLAN);
@@ -469,9 +463,8 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
           this.lifestyle.set(specs.lifestyle);
           this.exerciseHabits.set(specs.exerciseHabits);
           this.dailyRecall.set(specs.dailyRecall);
-          const parsed = parseObservations(specs.observations);
-          this.expectations.set(parsed.expectations);
-          this.extraNotes.set(parsed.notes);
+          this.expectations.set(specs.expectations ?? '');
+          this.extraNotes.set(specs.observations ?? '');
         }
 
         this.pageLoading.set(false);
@@ -581,10 +574,8 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
       lifestyle: this.lifestyle(),
       exerciseHabits: this.exerciseHabits(),
       dailyRecall: this.dailyRecall(),
-      observations: buildObservations({
-        expectations: this.expectations(),
-        notes: this.extraNotes(),
-      }),
+      expectations: this.expectations().trim(),
+      observations: this.extraNotes().trim(),
     };
 
     if (this.existingSpecId) {

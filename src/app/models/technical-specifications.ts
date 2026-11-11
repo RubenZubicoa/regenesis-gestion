@@ -6,6 +6,7 @@ export interface TechnicalSpecifications {
   lifestyle: Lifestyle;
   exerciseHabits: ExerciseHabits;
   dailyRecall: DailyRecall;
+  expectations: string;
   observations: string;
   createdAt: string;
   updatedAt: string;
@@ -330,6 +331,7 @@ export function hasTechnicalSpecContent(input: {
   lifestyle: Lifestyle;
   exerciseHabits: ExerciseHabits;
   dailyRecall: DailyRecall;
+  expectations: string;
   observations: string;
 }): boolean {
   return (
@@ -338,32 +340,9 @@ export function hasTechnicalSpecContent(input: {
     hasFilledValues(input.lifestyle) ||
     hasFilledValues(input.exerciseHabits) ||
     hasFilledDailyRecall(input.dailyRecall) ||
+    input.expectations.trim().length > 0 ||
     input.observations.trim().length > 0
   );
-}
-
-export function buildObservations(parts: { expectations: string; notes: string }): string {
-  const blocks: string[] = [];
-  const expectations = parts.expectations.trim();
-  if (expectations) blocks.push(`Expectativas:\n${expectations}`);
-
-  const notes = parts.notes.trim();
-  if (notes) blocks.push(notes);
-
-  return blocks.join('\n\n');
-}
-
-export function parseObservations(raw: string): { expectations: string; notes: string } {
-  const text = raw.trim();
-  if (!text) return { expectations: '', notes: '' };
-
-  const match = text.match(/^Expectativas:\s*\n([\s\S]*?)(?:\n\n([\s\S]*))?$/);
-  if (!match) return { expectations: '', notes: text };
-
-  return {
-    expectations: (match[1] ?? '').trim(),
-    notes: (match[2] ?? '').trim(),
-  };
 }
 
 export function filledDailyRecall(recall: DailyRecall): {

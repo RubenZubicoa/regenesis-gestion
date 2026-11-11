@@ -374,6 +374,7 @@ export function normalizeTechnicalSpecifications(raw: unknown): TechnicalSpecifi
     lifestyle: mapStringGroup(r['lifestyle'], emptyLifestyle()),
     exerciseHabits: mapStringGroup(r['exerciseHabits'], emptyExerciseHabits()),
     dailyRecall: normalizeDailyRecall(r['dailyRecall']),
+    expectations: str(r, 'expectations'),
     observations: str(r, 'observations'),
     createdAt: str(r, 'createdAt') || str(r, 'updatedAt'),
     updatedAt: str(r, 'updatedAt') || str(r, 'createdAt'),

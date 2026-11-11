@@ -268,6 +268,7 @@ export class ClientDetailPageComponent {
   ): boolean {
     return this.specSections.some((section) => this.specRows(spec[section.group], section.fields).length > 0)
       || hasFilledDailyRecall(spec.dailyRecall)
+      || spec.expectations.trim().length > 0
       || spec.observations.trim().length > 0;
   }
 
