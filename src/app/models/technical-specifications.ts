@@ -7,6 +7,7 @@ export interface TechnicalSpecifications {
   exerciseHabits: ExerciseHabits;
   dailyRecall: DailyRecall;
   expectations: string;
+  laboralHabits: LaboralHabits;
   observations: string;
   createdAt: string;
   updatedAt: string;
@@ -60,6 +61,13 @@ export type DailyRecall = {
   dinner: DailyRecallEntry;
 };
 
+export type Job = 'Activo' | 'Sedentario';
+
+export type LaboralHabits = {
+  job: Job | '';
+  schedule: string;
+};
+
 export type CreateTechnicalSpecificationsInput = Omit<
   TechnicalSpecifications,
   '_id' | 'createdAt' | 'updatedAt'
@@ -101,6 +109,11 @@ export const DAILY_RECALL_ENTRY_FIELDS: readonly SpecField<keyof DailyRecallEntr
 export const YES_NO_OPTIONS: readonly SpecFieldOption[] = [
   { value: 'Sí', label: 'Sí' },
   { value: 'No', label: 'No' },
+];
+
+export const JOB_OPTIONS: readonly SpecFieldOption[] = [
+  { value: 'Activo', label: 'Activo' },
+  { value: 'Sedentario', label: 'Sedentario' },
 ];
 
 export const STRENGTH_LEVEL_OPTIONS: readonly SpecFieldOption[] = [
@@ -257,6 +270,18 @@ export const EXERCISE_HABITS_FIELDS: readonly SpecField<keyof ExerciseHabits>[] 
   },
 ];
 
+export const LABORAL_HABITS_FIELDS: readonly SpecField<keyof LaboralHabits>[] = [
+  {
+    key: 'job',
+    label: 'Tipo de trabajo',
+    options: JOB_OPTIONS,
+  },
+  {
+    key: 'schedule',
+    label: 'Horario',
+  },
+];
+
 export function emptyPersonalHistory(): PersonalHistory {
   return {
     diseases: '',
@@ -299,6 +324,13 @@ export function emptyExerciseHabits(): ExerciseHabits {
   };
 }
 
+export function emptyLaboralHabits(): LaboralHabits {
+  return {
+    job: '',
+    schedule: '',
+  };
+}
+
 export function emptyDailyRecallEntry(): DailyRecallEntry {
   return {
     ingredients: '',
@@ -332,6 +364,7 @@ export function hasTechnicalSpecContent(input: {
   exerciseHabits: ExerciseHabits;
   dailyRecall: DailyRecall;
   expectations: string;
+  laboralHabits: LaboralHabits;
   observations: string;
 }): boolean {
   return (
@@ -341,6 +374,7 @@ export function hasTechnicalSpecContent(input: {
     hasFilledValues(input.exerciseHabits) ||
     hasFilledDailyRecall(input.dailyRecall) ||
     input.expectations.trim().length > 0 ||
+    hasFilledValues(input.laboralHabits) ||
     input.observations.trim().length > 0
   );
 }

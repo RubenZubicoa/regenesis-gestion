@@ -5,21 +5,18 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { catchError, forkJoin, map, of, switchMap, throwError, type Observable } from 'rxjs';
 
 import type { Client } from '../../models/client';
-import type { Measurement, MeasurementMaster } from '../../models/measurement';
-import {
-  PROGRESS_IMAGE_POSES,
-  type ProgressImagePose,
-} from '../../models/progress-image';
 import {
   DAILY_RECALL_ENTRY_FIELDS,
   DAILY_RECALL_MEALS,
   EATING_HABITS_FIELDS,
   EXERCISE_HABITS_FIELDS,
+  LABORAL_HABITS_FIELDS,
   LIFESTYLE_FIELDS,
   PERSONAL_HISTORY_FIELDS,
   emptyDailyRecall,
   emptyEatingHabits,
   emptyExerciseHabits,
+  emptyLaboralHabits,
   emptyLifestyle,
   emptyPersonalHistory,
   hasTechnicalSpecContent,
@@ -27,30 +24,19 @@ import {
   type DailyRecallEntry,
   type EatingHabits,
   type ExerciseHabits,
+  type LaboralHabits,
   type Lifestyle,
   type PersonalHistory,
 } from '../../models/technical-specifications';
 import { ClientsService } from '../../services/clients.service';
-import { MeasurementsService } from '../../services/measurements.service';
-import { ProgressImagesService } from '../../services/progress-images.service';
 import { TechnicalSpecificationsService } from '../../services/technical-specifications.service';
 
-type SpecGroupKey = 'personalHistory' | 'eatingHabits' | 'lifestyle' | 'exerciseHabits';
-
-type ProgressDraft = {
-  file: File | null;
-  preview: string;
-  name: string;
-  existingId?: string;
-};
-
-function emptyProgressDrafts(): Record<ProgressImagePose, ProgressDraft> {
-  return {
-    'De frente': { file: null, preview: '', name: '' },
-    Lateral: { file: null, preview: '', name: '' },
-    'De espaldas': { file: null, preview: '', name: '' },
-  };
-}
+type SpecGroupKey =
+  | 'personalHistory'
+  | 'eatingHabits'
+  | 'lifestyle'
+  | 'exerciseHabits'
+  | 'laboralHabits';
 
 const DEFAULT_COACH = 'Onatz Health Coach';
 const DEFAULT_PLAN = 'Método Regenesis';
@@ -66,8 +52,6 @@ const DEFAULT_TOTAL_PHASES = 3;
 })
 export class NewClientPageComponent implements OnInit, OnDestroy {
   private readonly clients = inject(ClientsService);
-  private readonly measurementsApi = inject(MeasurementsService);
-  private readonly progressImagesApi = inject(ProgressImagesService);
   private readonly specsApi = inject(TechnicalSpecificationsService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -78,14 +62,12 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
   readonly pageError = signal<string | null>(null);
   private originalClient: Client | null = null;
   private existingSpecId: string | null = null;
-  private existingMeasurements: Record<string, Measurement> = {};
-  private readonly progressToDelete = new Set<string>();
 
-  readonly poses = PROGRESS_IMAGE_POSES;
   readonly personalHistoryFields = PERSONAL_HISTORY_FIELDS;
   readonly eatingHabitsFields = EATING_HABITS_FIELDS;
   readonly lifestyleFields = LIFESTYLE_FIELDS;
   readonly exerciseHabitsFields = EXERCISE_HABITS_FIELDS;
+  readonly laboralHabitsFields = LABORAL_HABITS_FIELDS;
   readonly dailyRecallMeals = DAILY_RECALL_MEALS;
   readonly dailyRecallEntryFields = DAILY_RECALL_ENTRY_FIELDS;
 
@@ -104,18 +86,11 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
   readonly avatarName = signal('');
   private objectUrl: string | null = null;
 
-  readonly progressDrafts = signal<Record<ProgressImagePose, ProgressDraft>>(emptyProgressDrafts());
-  private readonly progressObjectUrls = new Map<ProgressImagePose, string>();
-
-  readonly masters = signal<MeasurementMaster[]>([]);
-  readonly measureValues = signal<Record<string, string>>({});
-  readonly mastersLoading = signal(true);
-  readonly mastersError = signal<string | null>(null);
-
   readonly personalHistory = signal<PersonalHistory>(emptyPersonalHistory());
   readonly eatingHabits = signal<EatingHabits>(emptyEatingHabits());
   readonly lifestyle = signal<Lifestyle>(emptyLifestyle());
   readonly exerciseHabits = signal<ExerciseHabits>(emptyExerciseHabits());
+  readonly laboralHabits = signal<LaboralHabits>(emptyLaboralHabits());
   readonly expectations = signal('');
   readonly dailyRecall = signal<DailyRecall>(emptyDailyRecall());
   readonly extraNotes = signal('');
@@ -125,10 +100,7 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.loadMasters();
-      return;
-    }
+    if (!id) return;
 
     this.isEdit.set(true);
     this.clientId.set(id);
@@ -138,61 +110,6 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.revokePreview();
-    this.revokeAllProgressPreviews();
-  }
-
-  progressDraft(pose: ProgressImagePose): ProgressDraft {
-    return this.progressDrafts()[pose];
-  }
-
-  poseInputId(pose: ProgressImagePose): string {
-    return `progress-${pose.toLowerCase().replace(/\s+/g, '-')}`;
-  }
-
-  onProgressSelected(pose: ProgressImagePose, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      this.saveError.set(`El archivo de «${pose}» debe ser una imagen.`);
-      input.value = '';
-      return;
-    }
-
-    const previous = this.progressDrafts()[pose];
-    this.revokeProgressPreview(pose);
-    const preview = URL.createObjectURL(file);
-    this.progressObjectUrls.set(pose, preview);
-    this.progressDrafts.update((current) => ({
-      ...current,
-      [pose]: {
-        file,
-        preview,
-        name: file.name,
-        existingId: previous.existingId,
-      },
-    }));
-    this.saveError.set(null);
-  }
-
-  clearProgress(pose: ProgressImagePose, input: HTMLInputElement): void {
-    const current = this.progressDrafts()[pose];
-    if (current.existingId) this.progressToDelete.add(current.existingId);
-    this.revokeProgressPreview(pose);
-    this.progressDrafts.update((drafts) => ({
-      ...drafts,
-      [pose]: { file: null, preview: '', name: '' },
-    }));
-    input.value = '';
-  }
-
-  measureValue(masterId: string): string {
-    return this.measureValues()[masterId] ?? '';
-  }
-
-  updateMeasure(masterId: string, value: string | number | null): void {
-    const next = value == null || value === '' ? '' : String(value);
-    this.measureValues.update((current) => ({ ...current, [masterId]: next }));
   }
 
   specValue(group: SpecGroupKey, key: string): string {
@@ -213,7 +130,11 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
       this.lifestyle.update((current) => ({ ...current, [key]: next }));
       return;
     }
-    this.exerciseHabits.update((current) => ({ ...current, [key]: next }));
+    if (group === 'exerciseHabits') {
+      this.exerciseHabits.update((current) => ({ ...current, [key]: next }));
+      return;
+    }
+    this.laboralHabits.update((current) => ({ ...current, [key]: next }));
   }
 
   recallValue(meal: keyof DailyRecall, field: keyof DailyRecallEntry): string {
@@ -231,7 +152,8 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
     if (group === 'personalHistory') return this.personalHistory();
     if (group === 'eatingHabits') return this.eatingHabits();
     if (group === 'lifestyle') return this.lifestyle();
-    return this.exerciseHabits();
+    if (group === 'exerciseHabits') return this.exerciseHabits();
+    return this.laboralHabits();
   }
 
   onAvatarSelected(event: Event): void {
@@ -322,17 +244,6 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const invalidMeasure = this.masters().find((master) => {
-      const raw = this.measureValue(master._id).trim();
-      if (!raw) return false;
-      const parsed = Number(raw.replace(',', '.'));
-      return !Number.isFinite(parsed) || parsed < 0;
-    });
-    if (invalidMeasure) {
-      this.saveError.set(`La medida «${invalidMeasure.label}» no es válida.`);
-      return;
-    }
-
     this.saving.set(true);
     this.saveError.set(null);
 
@@ -371,11 +282,7 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
     request$
       .pipe(
         switchMap((client) =>
-          forkJoin({
-            measures: this.saveMeasurements(client._id, startDate),
-            images: this.saveProgressImages(client._id),
-            specs: this.saveTechnicalSpecs(client._id),
-          }).pipe(map((): typeof client => client)),
+          this.saveTechnicalSpecs(client._id).pipe(map((): typeof client => client)),
         ),
       )
       .subscribe({
@@ -390,33 +297,12 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  private loadMasters(): void {
-    this.measurementsApi.listMasters().subscribe({
-      next: (items) => {
-        this.masters.set(items);
-        this.mastersLoading.set(false);
-      },
-      error: (err: Error) => {
-        this.mastersError.set(err.message || 'No se pudieron cargar los tipos de medida.');
-        this.mastersLoading.set(false);
-      },
-    });
-  }
-
   private loadEdit(id: string): void {
     forkJoin({
       client: this.clients.get(id),
-      masters: this.measurementsApi.listMasters().pipe(
-        catchError((err: Error) => {
-          this.mastersError.set(err.message || 'No se pudieron cargar los tipos de medida.');
-          return of([] as MeasurementMaster[]);
-        }),
-      ),
-      measurements: this.measurementsApi.listByClient(id).pipe(catchError(() => of([]))),
-      images: this.progressImagesApi.listByClient(id).pipe(catchError(() => of([]))),
       specs: this.specsApi.getByClient(id).pipe(catchError(() => of(null))),
     }).subscribe({
-      next: ({ client, masters, measurements, images, specs }) => {
+      next: ({ client, specs }) => {
         this.originalClient = client;
         this.fullName.set(client.fullName);
         this.email.set(client.email);
@@ -430,38 +316,13 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
         this.avatar.set(client.avatar);
         this.avatarName.set(client.avatar ? 'Imagen actual' : '');
 
-        this.masters.set(masters);
-        this.mastersLoading.set(false);
-
-        const measureValues: Record<string, string> = {};
-        const existing: Record<string, Measurement> = {};
-        for (const item of measurements) {
-          existing[item.MeasurementId] = item;
-          measureValues[item.MeasurementId] = String(item.value);
-        }
-        this.existingMeasurements = existing;
-        this.measureValues.set(measureValues);
-
-        const drafts = emptyProgressDrafts();
-        const latest = this.progressImagesApi.latestByPose(images);
-        for (const pose of this.poses) {
-          const image = latest[pose];
-          if (!image) continue;
-          drafts[pose] = {
-            file: null,
-            preview: image.image,
-            name: 'Imagen actual',
-            existingId: image._id,
-          };
-        }
-        this.progressDrafts.set(drafts);
-
         if (specs) {
           this.existingSpecId = specs._id;
           this.personalHistory.set(specs.personalHistory);
           this.eatingHabits.set(specs.eatingHabits);
           this.lifestyle.set(specs.lifestyle);
           this.exerciseHabits.set(specs.exerciseHabits);
+          this.laboralHabits.set(specs.laboralHabits ?? emptyLaboralHabits());
           this.dailyRecall.set(specs.dailyRecall);
           this.expectations.set(specs.expectations ?? '');
           this.extraNotes.set(specs.observations ?? '');
@@ -472,7 +333,6 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
       error: (err: Error) => {
         this.pageError.set(err.message || 'No se pudo cargar la ficha del cliente.');
         this.pageLoading.set(false);
-        this.mastersLoading.set(false);
       },
     });
   }
@@ -514,58 +374,6 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  private saveMeasurements(clientId: string, date: string): Observable<void> {
-    const jobs = this.masters()
-      .map((master) => {
-        const raw = this.measureValue(master._id).trim();
-        if (!raw) return null;
-        const value = Number(raw.replace(',', '.'));
-        if (!Number.isFinite(value)) return null;
-        const current = this.existingMeasurements[master._id];
-        if (current) {
-          if (current.value === value) return null;
-          return this.measurementsApi.update(current._id, {
-            value,
-            delta: current.delta,
-            date: current.date,
-          });
-        }
-        return this.measurementsApi.create({
-          client: clientId,
-          MeasurementId: master._id,
-          value,
-          delta: 0,
-          date,
-        });
-      })
-      .filter((job): job is NonNullable<typeof job> => job != null);
-
-    if (jobs.length === 0) return of(undefined);
-    return forkJoin(jobs.map((job) => job.pipe(catchError(() => of(null))))).pipe(
-      map(() => undefined),
-    );
-  }
-
-  private saveProgressImages(clientId: string): Observable<void> {
-    const jobs: Observable<unknown>[] = [];
-
-    for (const pose of this.poses) {
-      const draft = this.progressDrafts()[pose];
-      if (!draft.file) continue;
-      if (draft.existingId) this.progressToDelete.add(draft.existingId);
-      jobs.push(this.progressImagesApi.create(clientId, draft.file, pose));
-    }
-
-    for (const id of this.progressToDelete) {
-      jobs.push(this.progressImagesApi.remove(id));
-    }
-
-    if (jobs.length === 0) return of(undefined);
-    return forkJoin(jobs.map((job) => job.pipe(catchError(() => of(null))))).pipe(
-      map(() => undefined),
-    );
-  }
-
   private saveTechnicalSpecs(clientId: string): Observable<void> {
     const payload = {
       clientId,
@@ -575,6 +383,7 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
       exerciseHabits: this.exerciseHabits(),
       dailyRecall: this.dailyRecall(),
       expectations: this.expectations().trim(),
+      laboralHabits: this.laboralHabits(),
       observations: this.extraNotes().trim(),
     };
 
@@ -590,18 +399,6 @@ export class NewClientPageComponent implements OnInit, OnDestroy {
       map(() => undefined),
       catchError(() => of(undefined)),
     );
-  }
-
-  private revokeProgressPreview(pose: ProgressImagePose): void {
-    const url = this.progressObjectUrls.get(pose);
-    if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
-    this.progressObjectUrls.delete(pose);
-  }
-
-  private revokeAllProgressPreviews(): void {
-    for (const pose of this.poses) {
-      this.revokeProgressPreview(pose);
-    }
   }
 
   private syncTotalWeeks(): void {

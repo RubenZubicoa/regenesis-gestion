@@ -11,10 +11,10 @@
       <h1>{{ isEdit() ? 'Editar cliente' : 'Nuevo cliente' }}</h1>
       <p class="hero__sub">
         @if (isEdit()) {
-          Revisa y actualiza la ficha, las medidas, las fotos y el cuestionario inicial.
+          Revisa y actualiza la ficha y el cuestionario inicial.
         } @else {
-          Completa la ficha de acceso, el plan, las medidas y las fotos iniciales.
-          El cuestionario es opcional. Se asignará automáticamente a la fase 1.
+          Completa la ficha de acceso y el plan. El cuestionario es opcional.
+          Se asignará automáticamente a la fase 1.
         }
       </p>
     </div>
@@ -174,85 +174,6 @@
 
     <article class="card">
       <header class="card__head">
-        <h2>Medidas corporales</h2>
-        <p>Toma inicial del cliente. Los tipos de medida vienen del catálogo del sistema.</p>
-      </header>
-
-      @if (mastersLoading()) {
-        <p class="measures-hint">Cargando tipos de medida…</p>
-      } @else if (mastersError()) {
-        <p class="measures-hint measures-hint--error">{{ mastersError() }}</p>
-      } @else if (masters().length === 0) {
-        <p class="measures-hint">No hay tipos de medida configurados en el sistema.</p>
-      } @else {
-        <div class="grid measures-grid">
-          @for (master of masters(); track master._id) {
-            <label class="field">
-              <span>{{ master.label }}</span>
-              <div class="measure-input">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  inputmode="decimal"
-                  [ngModel]="measureValue(master._id)"
-                  (ngModelChange)="updateMeasure(master._id, $event)"
-                  [name]="'measure-' + master._id"
-                />
-                <em class="measure-unit">{{ master.unit }}</em>
-              </div>
-            </label>
-          }
-        </div>
-      }
-    </article>
-
-    <article class="card">
-      <header class="card__head">
-        <h2>Imágenes de progreso</h2>
-        <p>Toma inicial de frente, de lado y de espaldas. Puedes dejar vacías las que no tengas ahora.</p>
-      </header>
-      <div class="progress-grid">
-        @for (pose of poses; track pose) {
-          <div class="progress-slot">
-            <span>{{ pose }}</span>
-            @if (progressDraft(pose).preview) {
-              <img
-                class="progress-preview"
-                [src]="progressDraft(pose).preview"
-                [alt]="pose"
-              />
-            } @else {
-              <div class="progress-placeholder">Sin foto</div>
-            }
-            <div class="file-row">
-              <input
-                #poseFileInput
-                class="file-input"
-                type="file"
-                accept="image/*"
-                [id]="poseInputId(pose)"
-                (change)="onProgressSelected(pose, $event)"
-              />
-              <label class="file-btn" [for]="poseInputId(pose)">Elegir archivo</label>
-              @if (progressDraft(pose).file) {
-                <button
-                  type="button"
-                  class="file-clear"
-                  (click)="clearProgress(pose, poseFileInput)"
-                >
-                  Quitar
-                </button>
-                <span class="file-name">{{ progressDraft(pose).name }}</span>
-              }
-            </div>
-          </div>
-        }
-      </div>
-    </article>
-
-    <article class="card">
-      <header class="card__head">
         <h2>Antecedentes personales</h2>
         <p>Enfermedades, lesiones, medicación y el resto de la historia clínica relevante.</p>
       </header>
@@ -345,6 +266,17 @@
       <ng-container
         [ngTemplateOutlet]="specFieldsTpl"
         [ngTemplateOutletContext]="{ fields: exerciseHabitsFields, group: 'exerciseHabits' }"
+      />
+    </article>
+
+    <article class="card">
+      <header class="card__head">
+        <h2>Hábitos laborales</h2>
+        <p>Tipo de trabajo y horario habitual.</p>
+      </header>
+      <ng-container
+        [ngTemplateOutlet]="specFieldsTpl"
+        [ngTemplateOutletContext]="{ fields: laboralHabitsFields, group: 'laboralHabits' }"
       />
     </article>
 

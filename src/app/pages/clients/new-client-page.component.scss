@@ -170,40 +170,10 @@
   grid-column: 1 / -1;
 }
 
-.measures-grid {
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-}
-
-.measure-input {
-  position: relative;
-  display: flex;
-  align-items: center;
-
-  input {
-    padding-right: 2.6rem;
-  }
-}
-
-.measure-unit {
-  position: absolute;
-  right: 0.85rem;
-  font-style: normal;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  pointer-events: none;
-}
-
 .measures-hint {
   margin: 0;
   color: var(--text-secondary);
   font-size: 0.9rem;
-}
-
-.measures-hint--error {
-  color: #b42318;
 }
 
 .recall-stack {
@@ -276,66 +246,6 @@
   border: 2px solid rgba(228, 169, 60, 0.45);
 }
 
-.progress-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.9rem;
-}
-
-.progress-slot {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  > span {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
-  .file-row {
-    flex-wrap: wrap;
-  }
-}
-
-.progress-preview,
-.progress-placeholder {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-}
-
-.progress-preview {
-  object-fit: cover;
-  background: var(--bg-element);
-}
-
-.progress-placeholder {
-  display: grid;
-  place-items: center;
-  background: var(--bg-element);
-  color: var(--text-muted);
-  font-size: 0.82rem;
-}
-
-.file-clear {
-  border: 0;
-  background: transparent;
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.35rem 0.15rem;
-  cursor: pointer;
-
-  &:hover {
-    color: #b42318;
-  }
-}
-
 .form__error {
   padding: 0.75rem 0.95rem;
   border-radius: var(--radius-sm);
@@ -387,8 +297,7 @@
 }
 
 @media (max-width: 720px) {
-  .grid,
-  .progress-grid {
+  .grid {
     grid-template-columns: 1fr;
   }
 

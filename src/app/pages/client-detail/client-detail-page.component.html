@@ -543,6 +543,19 @@
                 <h3 class="spec-subtitle">Expectativas</h3>
                 <p class="spec-notes">{{ spec.expectations }}</p>
               }
+              @if (specRows(spec.laboralHabits, laboralHabitsFields); as laboralRows) {
+                @if (laboralRows.length > 0) {
+                  <h3 class="spec-subtitle">Hábitos laborales</h3>
+                  <dl class="spec-list">
+                    @for (row of laboralRows; track row.key) {
+                      <div class="spec-item">
+                        <dt>{{ row.label }}</dt>
+                        <dd>{{ row.value }}</dd>
+                      </div>
+                    }
+                  </dl>
+                }
+              }
               @if (spec.observations) {
                 <h3 class="spec-subtitle">Observaciones</h3>
                 <p class="spec-notes">{{ spec.observations }}</p>

@@ -13,6 +13,7 @@ import type { Supplements } from '../../models/supplements';
 import {
   EATING_HABITS_FIELDS,
   EXERCISE_HABITS_FIELDS,
+  LABORAL_HABITS_FIELDS,
   LIFESTYLE_FIELDS,
   PERSONAL_HISTORY_FIELDS,
   filledDailyRecall,
@@ -20,6 +21,7 @@ import {
   hasFilledDailyRecall,
   type EatingHabits,
   type ExerciseHabits,
+  type LaboralHabits,
   type Lifestyle,
   type PersonalHistory,
   type SpecField,
@@ -256,8 +258,10 @@ export class ClientDetailPageComponent {
     { title: 'Ejercicio físico', group: 'exerciseHabits' as const, fields: EXERCISE_HABITS_FIELDS },
   ];
 
+  readonly laboralHabitsFields = LABORAL_HABITS_FIELDS;
+
   specRows(
-    group: PersonalHistory | EatingHabits | Lifestyle | ExerciseHabits,
+    group: PersonalHistory | EatingHabits | Lifestyle | ExerciseHabits | LaboralHabits,
     fields: readonly SpecField<string>[],
   ): { key: string; label: string; value: string }[] {
     return filledSpecFields(group, fields);
@@ -269,6 +273,7 @@ export class ClientDetailPageComponent {
     return this.specSections.some((section) => this.specRows(spec[section.group], section.fields).length > 0)
       || hasFilledDailyRecall(spec.dailyRecall)
       || spec.expectations.trim().length > 0
+      || this.specRows(spec.laboralHabits, this.laboralHabitsFields).length > 0
       || spec.observations.trim().length > 0;
   }
 
