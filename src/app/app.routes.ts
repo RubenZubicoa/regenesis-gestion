@@ -77,6 +77,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'medidas',
+        loadComponent: () =>
+          import('./pages/measurement-masters/measurement-masters-page.component').then(
+            (m) => m.MeasurementMastersPageComponent,
+          ),
+      },
+      {
         path: 'videoteca',
         loadComponent: () =>
           import('./pages/video-library/video-library-page.component').then(

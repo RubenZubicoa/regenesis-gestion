@@ -1,0 +1,82 @@
+<section class="page">
+  @if (loading()) {
+    <div class="state">Cargando medidas…</div>
+  } @else if (error()) {
+    <div class="state state--error">
+      <p>{{ error() }}</p>
+      <button type="button" class="hero__cta" (click)="reload()">Reintentar</button>
+    </div>
+  } @else {
+    <div class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Seguimiento corporal</p>
+        <h1>Maestro de<br />medidas</h1>
+        <p class="hero__sub">
+          Tipos de medida que el entrenador usa al registrar el progreso de cada cliente.
+        </p>
+        <div class="hero__actions">
+          <button type="button" class="hero__cta" (click)="openCreate()">
+            + Nueva medida
+          </button>
+        </div>
+      </div>
+
+      <div class="hero__metrics" aria-label="Resumen de medidas">
+        <div class="metric metric--gold">
+          <span class="metric__value">{{ masters().length }}</span>
+          <span class="metric__label">Total</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label class="search">
+        <span class="search__icon" aria-hidden="true">⌕</span>
+        <input
+          type="search"
+          placeholder="Buscar por nombre, clave o unidad…"
+          [ngModel]="query()"
+          (ngModelChange)="onQuery($event)"
+        />
+      </label>
+    </div>
+
+    <div class="vault">
+      <div class="section-head">
+        <h2>Catálogo</h2>
+        <p>{{ filtered().length }} medida{{ filtered().length === 1 ? '' : 's' }}</p>
+      </div>
+
+      @if (filtered().length === 0) {
+        <div class="empty">
+          <p>{{ query() ? 'No hay medidas con esa búsqueda.' : 'Aún no hay tipos de medida.' }}</p>
+          <button type="button" class="hero__cta" (click)="openCreate()">Crear la primera</button>
+        </div>
+      } @else {
+        <div class="cat-list">
+          @for (item of filtered(); track item._id) {
+            <button type="button" class="cat-row" (click)="openEdit(item)">
+              <div class="cat-row__copy">
+                <h3>{{ item.label }}</h3>
+                <p>
+                  <span class="key">{{ item.key }}</span>
+                  <span class="unit">{{ item.unit }}</span>
+                </p>
+              </div>
+              <span>Editar</span>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>
+
+@if (dialogOpen()) {
+  <app-measurement-master-dialog
+    [master]="editing()"
+    (saved)="onSaved($event)"
+    (deleted)="onDeleted($event)"
+    (closed)="closeDialog()"
+  />
+}

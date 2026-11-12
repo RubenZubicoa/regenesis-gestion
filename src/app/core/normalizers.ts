@@ -3,7 +3,8 @@ import type { DailySteps, DailyStepsChartDay } from '../models/daily-steps';
 import type { Macros } from '../models/macros';
 import { readMealIngredients, type Meal } from '../models/meal';
 import type { MealMaster } from '../models/meal-master';
-import type { Measurement, MeasurementMaster } from '../models/measurement';
+import type { Measurement } from '../models/measurement';
+import type { MeasurementMaster } from '../models/MeasurementMaster';
 import { isProgressImagePose, type ProgressImage } from '../models/progress-image';
 import {
   DAILY_RECALL_MEALS,
@@ -470,6 +471,40 @@ export function latestMeasurements(records: Measurement[]): Measurement[] {
     latest.push(record);
   }
   return latest;
+}
+
+/** Una fila por tipo del catálogo, con el último valor del cliente si existe. */
+export function projectClientMeasurements(
+  masters: MeasurementMaster[],
+  records: Measurement[],
+): Measurement[] {
+  const latest = latestMeasurements(records);
+  const byMasterId = new Map(latest.map((item) => [item.MeasurementId, item]));
+  const catalog = [...masters]
+    .filter((master) => master._id)
+    .sort((a, b) => a.label.localeCompare(b.label, 'es'))
+    .map((master) => {
+      const record = byMasterId.get(master._id);
+      if (record) {
+        return { ...record, label: master.label, unit: master.unit };
+      }
+      return {
+        _id: '',
+        client: '',
+        MeasurementId: master._id,
+        label: master.label,
+        unit: master.unit,
+        value: 0,
+        delta: 0,
+        date: '',
+      } satisfies Measurement;
+    });
+
+  const knownIds = new Set(masters.map((master) => master._id));
+  const orphans = latest.filter(
+    (item) => item.MeasurementId && !knownIds.has(item.MeasurementId),
+  );
+  return [...catalog, ...orphans];
 }
 
 export function latestWellness(records: Wellness[]): Wellness[] {

@@ -841,6 +841,11 @@
   padding: 1rem;
   text-align: center;
   border-top: 3px solid var(--teal);
+
+  &--empty {
+    border-top-color: var(--border);
+    opacity: 0.78;
+  }
 }
 
 .measure-card__label {
@@ -867,6 +872,11 @@
 .measure-card__delta {
   font-size: 0.78rem;
   font-weight: 600;
+
+  &--empty {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
 }
 
 .wellness-grid {

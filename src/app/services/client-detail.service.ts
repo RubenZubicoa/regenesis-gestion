@@ -5,14 +5,13 @@ import {
   asRecordArray,
   enrichMeasurement,
   enrichWellness,
-  latestMeasurements,
   latestWellness,
+  projectClientMeasurements,
   normalizeClient,
   normalizeDailySteps,
   normalizeMacros,
   normalizeMeal,
   normalizeMeasurement,
-  normalizeMeasurementMaster,
   normalizeProgressImage,
   normalizeProgram,
   normalizeReview,
@@ -26,10 +25,12 @@ import {
 } from '../core/normalizers';
 import type { ClientDetail } from '../models/client-detail';
 import { ApiService } from './api.service';
+import { MeasurementMastersService } from './measurement-masters.service';
 
 @Injectable({ providedIn: 'root' })
 export class ClientDetailService {
   private readonly api = inject(ApiService);
+  private readonly measurementMastersApi = inject(MeasurementMastersService);
 
   loadDetail(clientId: string): Observable<ClientDetail | null> {
     return forkJoin({
@@ -56,10 +57,10 @@ export class ClientDetailService {
       workoutHistory: this.api
         .get<unknown[]>(`/api/workout-history/${encodeURIComponent(clientId)}`)
         .pipe(catchError(() => of([]))),
-      measurements: this.api.get<unknown[]>(
-        `/api/clients/${encodeURIComponent(clientId)}/measurements`,
-      ),
-      measurementMasters: this.api.get<unknown[]>('/api/measurement-masters'),
+      measurements: this.api
+        .get<unknown[]>(`/api/clients/${encodeURIComponent(clientId)}/measurements`)
+        .pipe(catchError(() => of([]))),
+      measurementMasters: this.measurementMastersApi.list().pipe(catchError(() => of([]))),
       wellness: this.api
         .get<unknown[]>(`/api/wellness/${encodeURIComponent(clientId)}`)
         .pipe(catchError(() => of([]))),
@@ -88,14 +89,13 @@ export class ClientDetailService {
         const upcomingReview =
           reviews.find((review) => review.status === 'upcoming') ?? null;
 
-        const measurementMasters = asRecordArray(payload.measurementMasters).map(
-          normalizeMeasurementMaster,
-        );
+        const measurementMasters = payload.measurementMasters;
         const wellnessMasters = asRecordArray(payload.wellnessMasters).map(
           normalizeWellnessMaster,
         );
 
-        const measurements = latestMeasurements(
+        const measurements = projectClientMeasurements(
+          measurementMasters,
           asRecordArray(payload.measurements)
             .map(normalizeMeasurement)
             .map((record) => enrichMeasurement(record, measurementMasters)),

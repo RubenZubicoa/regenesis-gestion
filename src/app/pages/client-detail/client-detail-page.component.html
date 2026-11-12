@@ -407,22 +407,29 @@
           </div>
         }
 
-        @if (d.measurements.length > 0) {
-          <div class="panel-block">
-            <h2>Medidas corporales</h2>
+        <div class="panel-block">
+          <h2>Medidas corporales</h2>
+          @if (d.measurements.length === 0) {
+            <p class="empty-panel">Aún no hay tipos de medida en el catálogo.</p>
+          } @else {
             <div class="measure-grid">
-              @for (m of d.measurements; track m._id) {
-                <div class="measure-card">
+              @for (m of d.measurements; track m.MeasurementId) {
+                <div class="measure-card" [class.measure-card--empty]="!m._id">
                   <span class="measure-card__label">{{ m.label }}</span>
-                  <span class="measure-card__value">{{ m.value }}<small>{{ m.unit }}</small></span>
-                  <span class="measure-card__delta" [class]="deltaClass(m.delta)">
-                    {{ m.delta > 0 ? '+' : '' }}{{ m.delta }} {{ m.unit }}
-                  </span>
+                  @if (m._id) {
+                    <span class="measure-card__value">{{ m.value }}<small>{{ m.unit }}</small></span>
+                    <span class="measure-card__delta" [class]="deltaClass(m.delta)">
+                      {{ m.delta > 0 ? '+' : '' }}{{ m.delta }} {{ m.unit }}
+                    </span>
+                  } @else {
+                    <span class="measure-card__value">—<small>{{ m.unit }}</small></span>
+                    <span class="measure-card__delta measure-card__delta--empty">Sin registro</span>
+                  }
                 </div>
               }
             </div>
-          </div>
-        }
+          }
+        </div>
 
         @if (d.wellness.length > 0) {
           <div class="panel-block">

@@ -1,0 +1,60 @@
+<div class="fields">
+  <label class="field field--full">
+    <span>Nombre</span>
+    <input
+      type="text"
+      [ngModel]="draft().label"
+      (ngModelChange)="patchLabel($event)"
+      placeholder="Cintura, Cadera, Pecho…"
+    />
+  </label>
+
+  <label class="field field--full">
+    <span>Clave</span>
+    <input
+      type="text"
+      [ngModel]="draft().key"
+      (ngModelChange)="patch('key', $event)"
+      placeholder="cintura"
+    />
+    <small>Identificador único. Se genera sola a partir del nombre.</small>
+  </label>
+
+  <label class="field">
+    <span>Unidad</span>
+    <input
+      type="text"
+      [ngModel]="draft().unit"
+      (ngModelChange)="patch('unit', $event)"
+      placeholder="cm, kg, %"
+      list="measurement-units"
+    />
+    <datalist id="measurement-units">
+      <option value="cm"></option>
+      <option value="kg"></option>
+      <option value="%"></option>
+      <option value="mm"></option>
+    </datalist>
+  </label>
+
+  <div class="field">
+    <span>Icono</span>
+    <input
+      type="text"
+      [ngModel]="draft().icon"
+      (ngModelChange)="patch('icon', $event)"
+      placeholder="body-outline"
+    />
+    <div class="chips" role="list">
+      @for (icon of icons; track icon) {
+        <button
+          type="button"
+          class="chip"
+          [class.is-active]="draft().icon === icon"
+          (click)="patch('icon', icon)">
+          {{ icon }}
+        </button>
+      }
+    </div>
+  </div>
+</div>

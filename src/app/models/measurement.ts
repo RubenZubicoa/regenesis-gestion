@@ -1,10 +1,8 @@
-export interface MeasurementMaster {
-  _id: string;
-  key: string;
-  label: string;
-  unit: string;
-  icon: string;
-}
+export type {
+  CreateMeasurementMasterInput,
+  MeasurementMaster,
+  UpdateMeasurementMasterInput,
+} from './MeasurementMaster';
 
 export interface Measurement {
   _id: string;

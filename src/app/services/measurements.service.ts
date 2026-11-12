@@ -5,10 +5,10 @@ import {
   asRecordArray,
   latestMeasurements,
   normalizeMeasurement,
-  normalizeMeasurementMaster,
 } from '../core/normalizers';
 import type { Measurement, MeasurementCreatePayload, MeasurementMaster } from '../models/measurement';
 import { ApiService } from './api.service';
+import { MeasurementMastersService } from './measurement-masters.service';
 
 function unwrapList(raw: unknown): unknown {
   if (Array.isArray(raw)) return raw;
@@ -24,15 +24,10 @@ function unwrapList(raw: unknown): unknown {
 @Injectable({ providedIn: 'root' })
 export class MeasurementsService {
   private readonly api = inject(ApiService);
+  private readonly mastersApi = inject(MeasurementMastersService);
 
   listMasters(): Observable<MeasurementMaster[]> {
-    return this.api.get<unknown>('/api/measurement-masters').pipe(
-      map((raw) =>
-        asRecordArray(unwrapList(raw))
-          .map(normalizeMeasurementMaster)
-          .filter((item) => item._id),
-      ),
-    );
+    return this.mastersApi.list();
   }
 
   listByClient(clientId: string): Observable<Measurement[]> {
