@@ -420,7 +420,14 @@
         </div>
 
         <div class="panel-block">
-          <h2>Medidas corporales</h2>
+          <div class="panel-block__head">
+            <h2>Medidas corporales</h2>
+            <div class="panel-block__actions">
+              <button type="button" class="action-btn" (click)="openMeasurementsDialog()">
+                {{ hasRecordedMeasurements(d.measurements) ? 'Registrar o editar medidas' : 'Registrar medidas' }}
+              </button>
+            </div>
+          </div>
           @if (d.measurements.length === 0) {
             <p class="empty-panel">Aún no hay tipos de medida en el catálogo.</p>
           } @else {
@@ -631,6 +638,18 @@
         [weight]="d.weight"
         (saved)="onWeightTargetSaved($event)"
         (closed)="closeWeightTargetDialog()"
+      />
+    }
+  }
+
+  @if (measurementsDialogOpen()) {
+    @if (detail(); as d) {
+      <app-measurements-dialog
+        [clientId]="d.client._id"
+        [clientName]="d.client.fullName"
+        [measurements]="d.measurements"
+        (saved)="onMeasurementsSaved($event)"
+        (closed)="closeMeasurementsDialog()"
       />
     }
   }

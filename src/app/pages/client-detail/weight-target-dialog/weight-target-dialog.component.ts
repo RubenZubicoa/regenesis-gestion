@@ -1,15 +1,15 @@
 import { Component, HostListener, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import type { Weight } from '../../models/weight';
-import { WeightsService } from '../../services/weights.service';
+import type { Weight } from '../../../models/weight';
+import { WeightsService } from '../../../services/weights.service';
 
 @Component({
   selector: 'app-weight-target-dialog',
   standalone: true,
   imports: [FormsModule],
   templateUrl: './weight-target-dialog.component.html',
-  styleUrl: './weight-dialog.component.scss',
+  styleUrl: '../weight-dialog/weight-dialog.component.scss',
 })
 export class WeightTargetDialogComponent implements OnInit {
   private readonly weightsApi = inject(WeightsService);

@@ -1,13 +1,13 @@
 import { Component, HostListener, computed, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import type { Meal, MealOption, MealOptionDraft, MealSlot } from '../../models/meal';
+import type { Meal, MealOption, MealOptionDraft, MealSlot } from '../../../models/meal';
 import {
   emptyMealOptionDraft,
   toMealOption,
   toMealOptionDraft,
-} from '../../models/meal';
-import { MealsService } from '../../services/meals.service';
+} from '../../../models/meal';
+import { MealsService } from '../../../services/meals.service';
 
 export interface EditableSlot {
   label: string;

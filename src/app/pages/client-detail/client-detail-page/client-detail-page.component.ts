@@ -3,13 +3,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { of, switchMap } from 'rxjs';
 
-import { lastDailyStepsChartDays } from '../../core/normalizers';
-import type { Client } from '../../models/client';
-import type { ClientDetail } from '../../models/client-detail';
-import type { Macros } from '../../models/macros';
-import type { Meal, MealSlot } from '../../models/meal';
-import type { MealMaster } from '../../models/meal-master';
-import type { Supplements } from '../../models/supplements';
+import { lastDailyStepsChartDays } from '../../../core/normalizers';
+import type { Client } from '../../../models/client';
+import type { ClientDetail } from '../../../models/client-detail';
+import type { Macros } from '../../../models/macros';
+import type { Meal, MealSlot } from '../../../models/meal';
+import type { MealMaster } from '../../../models/meal-master';
+import type { Measurement } from '../../../models/measurement';
+import type { Supplements } from '../../../models/supplements';
 import {
   EATING_HABITS_FIELDS,
   EXERCISE_HABITS_FIELDS,
@@ -25,18 +26,19 @@ import {
   type Lifestyle,
   type PersonalHistory,
   type SpecField,
-} from '../../models/technical-specifications';
-import type { Weight } from '../../models/weight';
-import { ClientDetailService } from '../../services/client-detail.service';
-import { WeightDialogComponent } from './weight-dialog.component';
-import { WeightTargetDialogComponent } from './weight-target-dialog.component';
-import { PasswordDialogComponent } from '../clients/password-dialog.component';
-import { PhaseDialogComponent } from '../clients/phase-dialog.component';
-import { MacrosDialogComponent } from './macros-dialog.component';
-import { MealsDialogComponent } from './meals-dialog.component';
-import { LoadMealPlanDialogComponent } from './load-meal-plan-dialog.component';
-import { RenewPlanDialogComponent } from './renew-plan-dialog.component';
-import { SupplementsDialogComponent } from './supplements-dialog.component';
+} from '../../../models/technical-specifications';
+import type { Weight } from '../../../models/weight';
+import { ClientDetailService } from '../../../services/client-detail.service';
+import { MeasurementsDialogComponent } from '../measurements-dialog/measurements-dialog.component';
+import { WeightDialogComponent } from '../weight-dialog/weight-dialog.component';
+import { WeightTargetDialogComponent } from '../weight-target-dialog/weight-target-dialog.component';
+import { PasswordDialogComponent } from '../../clients/password-dialog.component';
+import { PhaseDialogComponent } from '../../clients/phase-dialog.component';
+import { MacrosDialogComponent } from '../macros-dialog/macros-dialog.component';
+import { MealsDialogComponent } from '../meals-dialog/meals-dialog.component';
+import { LoadMealPlanDialogComponent } from '../load-meal-plan-dialog/load-meal-plan-dialog.component';
+import { RenewPlanDialogComponent } from '../renew-plan-dialog/renew-plan-dialog.component';
+import { SupplementsDialogComponent } from '../supplements-dialog/supplements-dialog.component';
 
 
 
@@ -95,6 +97,7 @@ export interface WeightChartView {
     RenewPlanDialogComponent,
     WeightDialogComponent,
     WeightTargetDialogComponent,
+    MeasurementsDialogComponent,
   ],
 
   templateUrl: './client-detail-page.component.html',
@@ -133,6 +136,7 @@ export class ClientDetailPageComponent {
   readonly renewPlanDialogOpen = signal(false);
   readonly weightDialogOpen = signal(false);
   readonly weightTargetDialogOpen = signal(false);
+  readonly measurementsDialogOpen = signal(false);
 
 
 
@@ -523,6 +527,35 @@ export class ClientDetailPageComponent {
       this.detail.set({ ...current, weight });
     }
     this.weightTargetDialogOpen.set(false);
+  }
+
+  hasRecordedMeasurements(items: Measurement[]): boolean {
+    return items.some((item) => Boolean(item._id));
+  }
+
+  openMeasurementsDialog(): void {
+    this.measurementsDialogOpen.set(true);
+  }
+
+  closeMeasurementsDialog(): void {
+    this.measurementsDialogOpen.set(false);
+  }
+
+  onMeasurementsSaved(updated: Measurement[]): void {
+    const current = this.detail();
+    if (current) {
+      const byId = new Map(updated.map((item) => [item.MeasurementId, item]));
+      this.detail.set({
+        ...current,
+        measurements: current.measurements.map((item) => {
+          const saved = byId.get(item.MeasurementId);
+          if (!saved) return item;
+          if (!item._id || saved.date >= item.date) return saved;
+          return item;
+        }),
+      });
+    }
+    this.measurementsDialogOpen.set(false);
   }
 
   openMacrosDialog(): void {

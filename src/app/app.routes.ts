@@ -37,7 +37,7 @@ export const routes: Routes = [
       {
         path: 'clients/:id',
         loadComponent: () =>
-          import('./pages/client-detail/client-detail-page.component').then(
+          import('./pages/client-detail/client-detail-page/client-detail-page.component').then(
             (m) => m.ClientDetailPageComponent,
           ),
       },

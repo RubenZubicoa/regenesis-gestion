@@ -1,12 +1,12 @@
 import { Component, HostListener, computed, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import type { Client } from '../../models/client';
+import type { Client } from '../../../models/client';
 import {
   ClientsService,
   PLAN_RENEWAL_DAYS,
   PLAN_RENEWAL_WEEKS,
-} from '../../services/clients.service';
+} from '../../../services/clients.service';
 
 @Component({
   selector: 'app-renew-plan-dialog',

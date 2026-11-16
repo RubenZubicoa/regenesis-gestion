@@ -1,8 +1,8 @@
 import { Component, HostListener, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { todayIsoDate, type Weight } from '../../models/weight';
-import { WeightsService } from '../../services/weights.service';
+import { todayIsoDate, type Weight } from '../../../models/weight';
+import { WeightsService } from '../../../services/weights.service';
 
 @Component({
   selector: 'app-weight-dialog',

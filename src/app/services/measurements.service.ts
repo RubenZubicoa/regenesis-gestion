@@ -1,12 +1,18 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { forkJoin, map, Observable, of } from 'rxjs';
 
 import {
   asRecordArray,
   latestMeasurements,
   normalizeMeasurement,
 } from '../core/normalizers';
-import type { Measurement, MeasurementCreatePayload, MeasurementMaster } from '../models/measurement';
+import {
+  isSameMeasurementDay,
+  measurementDelta,
+  type Measurement,
+  type MeasurementCreatePayload,
+  type MeasurementMaster,
+} from '../models/measurement';
 import { ApiService } from './api.service';
 import { MeasurementMastersService } from './measurement-masters.service';
 
@@ -66,6 +72,46 @@ export class MeasurementsService {
         label: '',
         unit: '',
       })),
+    );
+  }
+
+  saveValue(
+    clientId: string,
+    current: Measurement,
+    input: { date: string; value: number },
+  ): Observable<Measurement> {
+    const date = input.date.slice(0, 10);
+    const delta = measurementDelta(current, input.value, date);
+    const request$ = isSameMeasurementDay(current, date)
+      ? this.update(current._id, { value: input.value, delta, date })
+      : this.create({
+          client: clientId,
+          MeasurementId: current.MeasurementId,
+          value: input.value,
+          delta,
+          date,
+        });
+
+    return request$.pipe(
+      map((saved) => ({
+        ...saved,
+        client: saved.client || clientId,
+        MeasurementId: saved.MeasurementId || current.MeasurementId,
+        label: current.label,
+        unit: current.unit,
+        value: saved.value || input.value,
+        date: saved.date || date,
+      })),
+    );
+  }
+
+  saveMany(
+    clientId: string,
+    entries: { current: Measurement; date: string; value: number }[],
+  ): Observable<Measurement[]> {
+    if (entries.length === 0) return of([]);
+    return forkJoin(
+      entries.map((entry) => this.saveValue(clientId, entry.current, entry)),
     );
   }
 }

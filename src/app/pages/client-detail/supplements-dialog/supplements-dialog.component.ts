@@ -1,8 +1,8 @@
 import { Component, HostListener, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import type { SupplementElement, Supplements } from '../../models/supplements';
-import { SupplementsService } from '../../services/supplements.service';
+import type { SupplementElement, Supplements } from '../../../models/supplements';
+import { SupplementsService } from '../../../services/supplements.service';
 
 export interface EditableSupplement {
   name: string;

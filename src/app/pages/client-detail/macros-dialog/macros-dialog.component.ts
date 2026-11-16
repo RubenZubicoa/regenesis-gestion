@@ -1,8 +1,8 @@
 import { Component, HostListener, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import type { Macros } from '../../models/macros';
-import { MacrosService } from '../../services/macros.service';
+import type { Macros } from '../../../models/macros';
+import { MacrosService } from '../../../services/macros.service';
 
 @Component({
   selector: 'app-macros-dialog',

@@ -3,9 +3,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
 
-import type { MealMaster } from '../../models/meal-master';
-import { mealPlanOptionsCount, mealPlanTitle } from '../../models/meal-master';
-import { MealMastersService } from '../../services/meal-masters.service';
+import type { MealMaster } from '../../../models/meal-master';
+import { mealPlanOptionsCount, mealPlanTitle } from '../../../models/meal-master';
+import { MealMastersService } from '../../../services/meal-masters.service';
 
 @Component({
   selector: 'app-load-meal-plan-dialog',
