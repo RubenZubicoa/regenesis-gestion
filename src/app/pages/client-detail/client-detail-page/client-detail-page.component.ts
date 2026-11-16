@@ -6,6 +6,7 @@ import { of, switchMap } from 'rxjs';
 import { lastDailyStepsChartDays } from '../../../core/normalizers';
 import type { Client } from '../../../models/client';
 import type { ClientDetail } from '../../../models/client-detail';
+import { latestDailyStepsGoal, type DailySteps } from '../../../models/daily-steps';
 import type { Macros } from '../../../models/macros';
 import type { Meal, MealSlot } from '../../../models/meal';
 import type { MealMaster } from '../../../models/meal-master';
@@ -28,8 +29,12 @@ import {
   type SpecField,
 } from '../../../models/technical-specifications';
 import type { Weight } from '../../../models/weight';
+import type { Wellness } from '../../../models/wellness';
 import { ClientDetailService } from '../../../services/client-detail.service';
 import { MeasurementsDialogComponent } from '../measurements-dialog/measurements-dialog.component';
+import { StepsDialogComponent } from '../steps-dialog/steps-dialog.component';
+import { StepsTargetDialogComponent } from '../steps-target-dialog/steps-target-dialog.component';
+import { WellnessDialogComponent } from '../wellness-dialog/wellness-dialog.component';
 import { WeightDialogComponent } from '../weight-dialog/weight-dialog.component';
 import { WeightTargetDialogComponent } from '../weight-target-dialog/weight-target-dialog.component';
 import { PasswordDialogComponent } from '../../clients/password-dialog.component';
@@ -98,6 +103,9 @@ export interface WeightChartView {
     WeightDialogComponent,
     WeightTargetDialogComponent,
     MeasurementsDialogComponent,
+    WellnessDialogComponent,
+    StepsDialogComponent,
+    StepsTargetDialogComponent,
   ],
 
   templateUrl: './client-detail-page.component.html',
@@ -137,6 +145,10 @@ export class ClientDetailPageComponent {
   readonly weightDialogOpen = signal(false);
   readonly weightTargetDialogOpen = signal(false);
   readonly measurementsDialogOpen = signal(false);
+  readonly wellnessDialogOpen = signal(false);
+  readonly stepsDialogOpen = signal(false);
+  readonly stepsDialogDate = signal<string | null>(null);
+  readonly stepsTargetDialogOpen = signal(false);
 
 
 
@@ -170,6 +182,10 @@ export class ClientDetailPageComponent {
 
   readonly hasRecentSteps = computed(() =>
     this.stepsChartDays().some((day) => day.steps > 0),
+  );
+
+  readonly stepsGoal = computed(() =>
+    latestDailyStepsGoal(this.detail()?.dailySteps ?? []),
   );
 
   readonly maxSteps = computed(() => {
@@ -556,6 +572,73 @@ export class ClientDetailPageComponent {
       });
     }
     this.measurementsDialogOpen.set(false);
+  }
+
+  hasRecordedWellness(items: Wellness[]): boolean {
+    return items.some((item) => Boolean(item._id));
+  }
+
+  openWellnessDialog(): void {
+    this.wellnessDialogOpen.set(true);
+  }
+
+  closeWellnessDialog(): void {
+    this.wellnessDialogOpen.set(false);
+  }
+
+  onWellnessSaved(updated: Wellness[]): void {
+    const current = this.detail();
+    if (current) {
+      const byId = new Map(updated.map((item) => [item.wellnessId, item]));
+      this.detail.set({
+        ...current,
+        wellness: current.wellness.map((item) => {
+          const saved = byId.get(item.wellnessId);
+          if (!saved) return item;
+          if (!item._id || saved.date >= item.date) return saved;
+          return item;
+        }),
+      });
+    }
+    this.wellnessDialogOpen.set(false);
+  }
+
+  hasRecordedSteps(items: DailySteps[]): boolean {
+    return items.some((item) => Boolean(item._id));
+  }
+
+  openStepsDialog(date?: string): void {
+    this.stepsDialogDate.set(date ?? null);
+    this.stepsDialogOpen.set(true);
+  }
+
+  closeStepsDialog(): void {
+    this.stepsDialogOpen.set(false);
+    this.stepsDialogDate.set(null);
+  }
+
+  onStepsSaved(records: DailySteps[]): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({ ...current, dailySteps: records });
+    }
+    this.closeStepsDialog();
+  }
+
+  openStepsTargetDialog(): void {
+    this.stepsTargetDialogOpen.set(true);
+  }
+
+  closeStepsTargetDialog(): void {
+    this.stepsTargetDialogOpen.set(false);
+  }
+
+  onStepsTargetSaved(records: DailySteps[]): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({ ...current, dailySteps: records });
+    }
+    this.closeStepsTargetDialog();
   }
 
   openMacrosDialog(): void {

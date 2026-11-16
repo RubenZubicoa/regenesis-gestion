@@ -450,12 +450,24 @@
           }
         </div>
 
-        @if (d.wellness.length > 0) {
-          <div class="panel-block">
+        <div class="panel-block">
+          <div class="panel-block__head">
             <h2>Sensaciones</h2>
+            <div class="panel-block__actions">
+              <button type="button" class="action-btn" (click)="openWellnessDialog()">
+                {{ hasRecordedWellness(d.wellness) ? 'Registrar o editar sensaciones' : 'Registrar sensaciones' }}
+              </button>
+            </div>
+          </div>
+          @if (d.wellness.length === 0) {
+            <p class="empty-panel">Aún no hay tipos de sensación en el catálogo.</p>
+          } @else {
             <div class="wellness-grid">
-              @for (w of d.wellness; track w._id) {
-                <div class="wellness-card" [class]="macroToneClass(w.tone)">
+              @for (w of d.wellness; track w.wellnessId) {
+                <div
+                  class="wellness-card"
+                  [class]="macroToneClass(w.tone)"
+                  [class.wellness-card--empty]="!w._id">
                   <span class="wellness-card__label">{{ w.label }}</span>
                   <div class="wellness-card__ring">
                     <svg viewBox="0 0 80 80">
@@ -466,32 +478,51 @@
                         r="34"
                         class="wellness-ring__fill"
                         [style.strokeDasharray]="213.6"
-                        [style.strokeDashoffset]="213.6 - (213.6 * w.value) / 100"
+                        [style.strokeDashoffset]="w._id ? 213.6 - (213.6 * w.value) / 100 : 213.6"
                       />
                     </svg>
-                    <span class="wellness-card__value">{{ w.value }}</span>
+                    <span class="wellness-card__value">{{ w._id ? w.value : '—' }}</span>
                   </div>
                 </div>
               }
             </div>
-          </div>
-        }
+          }
+        </div>
 
         <div class="panel-block">
-          <h2>Pasos de los últimos 15 días</h2>
+          <div class="panel-block__head">
+            <h2>Pasos de los últimos 15 días</h2>
+            <div class="panel-block__actions">
+              <button type="button" class="action-btn" (click)="openStepsDialog()">
+                {{ hasRecordedSteps(d.dailySteps) ? 'Registrar o editar pasos' : 'Registrar pasos' }}
+              </button>
+              <button type="button" class="action-btn action-btn--ghost" (click)="openStepsTargetDialog()">
+                {{ stepsGoal() ? 'Editar objetivo' : 'Fijar objetivo' }}
+              </button>
+            </div>
+          </div>
           @if (hasRecentSteps()) {
             <div class="steps-chart">
               @for (day of stepsChartDays(); track day.date) {
-                <div class="steps-bar">
+                <button
+                  type="button"
+                  class="steps-bar"
+                  [attr.aria-label]="'Pasos del ' + day.date + ': ' + day.steps"
+                  (click)="openStepsDialog(day.date)">
                   <span
                     class="steps-bar__fill"
                     [class.steps-bar__fill--goal]="day.goal > 0 && day.steps >= day.goal"
                     [style.height.%]="(day.steps / maxSteps()) * 100"></span>
                   <span class="steps-bar__val">{{ formatSteps(day.steps) }}</span>
                   <span class="steps-bar__day">{{ day.label }}</span>
-                </div>
+                </button>
               }
             </div>
+            @if (stepsGoal(); as goal) {
+              <div class="weight-chart__footer">
+                <span>Objetivo: {{ goal }} pasos</span>
+              </div>
+            }
           } @else {
             <p class="empty-panel">Aún no hay pasos registrados en los últimos 15 días.</p>
           }
@@ -650,6 +681,43 @@
         [measurements]="d.measurements"
         (saved)="onMeasurementsSaved($event)"
         (closed)="closeMeasurementsDialog()"
+      />
+    }
+  }
+
+  @if (wellnessDialogOpen()) {
+    @if (detail(); as d) {
+      <app-wellness-dialog
+        [clientId]="d.client._id"
+        [clientName]="d.client.fullName"
+        [wellness]="d.wellness"
+        (saved)="onWellnessSaved($event)"
+        (closed)="closeWellnessDialog()"
+      />
+    }
+  }
+
+  @if (stepsDialogOpen()) {
+    @if (detail(); as d) {
+      <app-steps-dialog
+        [clientId]="d.client._id"
+        [clientName]="d.client.fullName"
+        [records]="d.dailySteps"
+        [initialDate]="stepsDialogDate()"
+        (saved)="onStepsSaved($event)"
+        (closed)="closeStepsDialog()"
+      />
+    }
+  }
+
+  @if (stepsTargetDialogOpen()) {
+    @if (detail(); as d) {
+      <app-steps-target-dialog
+        [clientId]="d.client._id"
+        [clientName]="d.client.fullName"
+        [records]="d.dailySteps"
+        (saved)="onStepsTargetSaved($event)"
+        (closed)="closeStepsTargetDialog()"
       />
     }
   }

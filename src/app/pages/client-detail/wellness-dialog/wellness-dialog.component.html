@@ -1,0 +1,74 @@
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="wellness-dialog-title">
+  <button type="button" class="sheet__backdrop" (click)="close()" aria-label="Cerrar"></button>
+
+  <div class="board">
+    <div class="board__glow" aria-hidden="true"></div>
+
+    <header class="board__head">
+      <div>
+        <p class="eyebrow">Seguimiento corporal</p>
+        <h2 id="wellness-dialog-title">
+          {{ isEdit ? 'Editar sensaciones' : 'Registrar sensaciones' }}
+        </h2>
+      </div>
+      <button type="button" class="board__close" (click)="close()" aria-label="Cerrar">×</button>
+    </header>
+
+    @if (clientName()) {
+      <p class="client-note">{{ clientName() }}</p>
+    }
+
+    <form class="board__form" (submit)="$event.preventDefault(); save()">
+      <div class="board__body">
+        <p class="field"><small>Escala de 0 a 100. Los campos vacíos no se guardan.</small></p>
+
+        @if (rows().length === 0) {
+          <p class="empty">Aún no hay tipos de sensación en el catálogo.</p>
+        } @else {
+          <div class="measure-list">
+            @for (row of rows(); track row.current.wellnessId; let i = $index) {
+              <label class="measure-row">
+                <span class="measure-row__meta">
+                  <strong>{{ row.current.label }}</strong>
+                  @if (row.current._id) {
+                    <small>Último: {{ row.current.value }}</small>
+                  } @else {
+                    <small>Sin registro</small>
+                  }
+                </span>
+                <span class="measure-row__input">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    inputmode="numeric"
+                    [name]="'value-' + row.current.wellnessId"
+                    [ngModel]="row.value"
+                    (ngModelChange)="setRowValue(i, $event)"
+                    placeholder="0"
+                  />
+                </span>
+              </label>
+            }
+          </div>
+        }
+      </div>
+
+      @if (saveError()) {
+        <p class="board__error">{{ saveError() }}</p>
+      }
+
+      <footer class="board__foot">
+        <div class="board__foot-right">
+          <button type="button" class="ghost-btn" (click)="close()" [disabled]="saving()">
+            Cancelar
+          </button>
+          <button type="submit" class="save-btn" [disabled]="saving() || rows().length === 0">
+            {{ saving() ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Registrar sensaciones' }}
+          </button>
+        </div>
+      </footer>
+    </form>
+  </div>
+</div>

@@ -5,10 +5,9 @@ import {
   asRecordArray,
   enrichMeasurement,
   enrichWellness,
-  latestWellness,
   projectClientMeasurements,
+  projectClientWellness,
   normalizeClient,
-  normalizeDailySteps,
   normalizeMacros,
   normalizeMeal,
   normalizeMeasurement,
@@ -25,11 +24,13 @@ import {
 } from '../core/normalizers';
 import type { ClientDetail } from '../models/client-detail';
 import { ApiService } from './api.service';
+import { DailyStepsService } from './daily-steps.service';
 import { MeasurementMastersService } from './measurement-masters.service';
 
 @Injectable({ providedIn: 'root' })
 export class ClientDetailService {
   private readonly api = inject(ApiService);
+  private readonly dailyStepsApi = inject(DailyStepsService);
   private readonly measurementMastersApi = inject(MeasurementMastersService);
 
   loadDetail(clientId: string): Observable<ClientDetail | null> {
@@ -64,9 +65,11 @@ export class ClientDetailService {
       wellness: this.api
         .get<unknown[]>(`/api/wellness/${encodeURIComponent(clientId)}`)
         .pipe(catchError(() => of([]))),
-      wellnessMasters: this.api.get<unknown[]>('/api/wellness-masters'),
-      dailyStepsRecords: this.api
-        .get<unknown[]>(`/api/daily-steps/${encodeURIComponent(clientId)}`)
+      wellnessMasters: this.api
+        .get<unknown[]>('/api/wellness-masters')
+        .pipe(catchError(() => of([]))),
+      dailyStepsRecords: this.dailyStepsApi
+        .listByClient(clientId)
         .pipe(catchError(() => of([]))),
       progressImages: this.api
         .get<unknown[]>(
@@ -101,14 +104,11 @@ export class ClientDetailService {
             .map((record) => enrichMeasurement(record, measurementMasters)),
         );
 
-        const wellness = latestWellness(
+        const wellness = projectClientWellness(
+          wellnessMasters,
           asRecordArray(payload.wellness)
             .map(normalizeWellness)
             .map((record) => enrichWellness(record, wellnessMasters)),
-        );
-
-        const dailyStepsRecords = asRecordArray(payload.dailyStepsRecords).map(
-          normalizeDailySteps,
         );
 
         return {
@@ -124,7 +124,7 @@ export class ClientDetailService {
           workoutHistory: asRecordArray(payload.workoutHistory).map(normalizeWorkoutHistory),
           measurements,
           wellness,
-          dailySteps: dailyStepsRecords,
+          dailySteps: payload.dailyStepsRecords,
           progressImages: asRecordArray(payload.progressImages).map(normalizeProgressImage),
           technicalSpecifications: payload.technicalSpecifications
             ? normalizeTechnicalSpecifications(payload.technicalSpecifications)

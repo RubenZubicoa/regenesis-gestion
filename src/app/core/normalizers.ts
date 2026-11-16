@@ -1,5 +1,9 @@
 import type { Client } from '../models/client';
-import type { DailySteps, DailyStepsChartDay } from '../models/daily-steps';
+import {
+  latestDailyStepsGoal,
+  type DailySteps,
+  type DailyStepsChartDay,
+} from '../models/daily-steps';
 import type { Macros } from '../models/macros';
 import { readMealIngredients, type Meal } from '../models/meal';
 import type { MealMaster } from '../models/meal-master';
@@ -519,6 +523,46 @@ export function latestWellness(records: Wellness[]): Wellness[] {
   return latest;
 }
 
+/** Una fila por tipo del catálogo, con el último valor del cliente si existe. */
+export function projectClientWellness(
+  masters: WellnessMaster[],
+  records: Wellness[],
+): Wellness[] {
+  const latest = latestWellness(records);
+  const byMasterId = new Map(latest.map((item) => [item.wellnessId, item]));
+  const catalog = [...masters]
+    .filter((master) => master._id)
+    .sort((a, b) => a.label.localeCompare(b.label, 'es'))
+    .map((master) => {
+      const record = byMasterId.get(master._id) ?? byMasterId.get(master.key);
+      if (record) {
+        return {
+          ...record,
+          wellnessId: master._id,
+          label: master.label,
+          icon: master.icon,
+          tone: master.tone,
+        };
+      }
+      return {
+        _id: '',
+        clientId: '',
+        wellnessId: master._id,
+        label: master.label,
+        icon: master.icon,
+        tone: master.tone,
+        value: 0,
+        date: '',
+      } satisfies Wellness;
+    });
+
+  const knownIds = new Set(masters.flatMap((master) => [master._id, master.key]));
+  const orphans = latest.filter(
+    (item) => item.wellnessId && !knownIds.has(item.wellnessId),
+  );
+  return [...catalog, ...orphans];
+}
+
 export function lastDailyStepsChartDays(
   records: DailySteps[],
   days = 15,
@@ -530,9 +574,7 @@ export function lastDailyStepsChartDays(
     byDate.set(key, record);
   }
 
-  const fallbackGoal =
-    [...records].reverse().find((record) => record.goal != null && record.goal > 0)
-      ?.goal ?? 0;
+  const fallbackGoal = latestDailyStepsGoal(records) ?? 0;
 
   const today = new Date();
   today.setHours(12, 0, 0, 0);
@@ -549,7 +591,7 @@ export function lastDailyStepsChartDays(
           ? date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
           : String(date.getDate()),
       steps: record?.steps ?? 0,
-      goal: record?.goal && record.goal > 0 ? record.goal : fallbackGoal,
+      goal: fallbackGoal,
     };
   });
 }
