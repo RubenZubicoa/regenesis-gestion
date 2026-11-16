@@ -1,0 +1,105 @@
+.preview {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+
+  img {
+    display: block;
+    width: 100%;
+    max-height: 240px;
+    object-fit: contain;
+    background: rgba(0, 0, 0, 0.25);
+  }
+}
+
+.pose-picks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  padding: 0.3rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.pose-pick {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.55rem 0.3rem;
+  border-radius: 10px;
+  cursor: pointer;
+
+  &.is-on {
+    background: var(--gold);
+    color: var(--navy);
+  }
+}
+
+.file-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.file-btn {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+}
+
+.file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.board__foot {
+  justify-content: space-between;
+}
+
+.danger-btn {
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: #ffb4b4;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: #ff6b6b;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}

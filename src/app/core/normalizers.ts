@@ -360,13 +360,16 @@ export function normalizeDailySteps(raw: unknown): DailySteps {
 export function normalizeProgressImage(raw: unknown): ProgressImage {
   const r = asApiRecord(raw);
   const pose = r['pose'];
+  const createdAt = str(r, 'createdAt') || str(r, 'updatedAt');
+  const date = normalizeDate(r['date']) || (createdAt ? createdAt.slice(0, 10) : '');
   return {
     _id: normalizeId(r['_id']),
     clientId: normalizeId(r['clientId']),
     image: str(r, 'image'),
     ...(isProgressImagePose(pose) ? { pose } : {}),
-    createdAt: str(r, 'createdAt') || str(r, 'updatedAt'),
-    updatedAt: str(r, 'updatedAt') || str(r, 'createdAt'),
+    ...(date ? { date } : {}),
+    createdAt,
+    updatedAt: str(r, 'updatedAt') || createdAt,
   };
 }
 

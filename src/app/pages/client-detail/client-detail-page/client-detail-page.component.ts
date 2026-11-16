@@ -11,6 +11,7 @@ import type { Macros } from '../../../models/macros';
 import type { Meal, MealSlot } from '../../../models/meal';
 import type { MealMaster } from '../../../models/meal-master';
 import type { Measurement } from '../../../models/measurement';
+import type { ProgressImage } from '../../../models/progress-image';
 import type { Supplements } from '../../../models/supplements';
 import {
   EATING_HABITS_FIELDS,
@@ -32,6 +33,8 @@ import type { Weight } from '../../../models/weight';
 import type { Wellness } from '../../../models/wellness';
 import { ClientDetailService } from '../../../services/client-detail.service';
 import { MeasurementsDialogComponent } from '../measurements-dialog/measurements-dialog.component';
+import { ProgressImageEditDialogComponent } from '../progress-image-edit-dialog/progress-image-edit-dialog.component';
+import { ProgressImagesDialogComponent } from '../progress-images-dialog/progress-images-dialog.component';
 import { StepsDialogComponent } from '../steps-dialog/steps-dialog.component';
 import { StepsTargetDialogComponent } from '../steps-target-dialog/steps-target-dialog.component';
 import { WellnessDialogComponent } from '../wellness-dialog/wellness-dialog.component';
@@ -106,6 +109,8 @@ export interface WeightChartView {
     WellnessDialogComponent,
     StepsDialogComponent,
     StepsTargetDialogComponent,
+    ProgressImagesDialogComponent,
+    ProgressImageEditDialogComponent,
   ],
 
   templateUrl: './client-detail-page.component.html',
@@ -149,6 +154,9 @@ export class ClientDetailPageComponent {
   readonly stepsDialogOpen = signal(false);
   readonly stepsDialogDate = signal<string | null>(null);
   readonly stepsTargetDialogOpen = signal(false);
+  readonly progressImagesDialogOpen = signal(false);
+  readonly progressImageEditOpen = signal(false);
+  readonly progressImageEditing = signal<ProgressImage | null>(null);
 
 
 
@@ -639,6 +647,33 @@ export class ClientDetailPageComponent {
       this.detail.set({ ...current, dailySteps: records });
     }
     this.closeStepsTargetDialog();
+  }
+
+  openProgressImagesDialog(): void {
+    this.progressImagesDialogOpen.set(true);
+  }
+
+  closeProgressImagesDialog(): void {
+    this.progressImagesDialogOpen.set(false);
+  }
+
+  onProgressImagesSaved(images: ProgressImage[]): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({ ...current, progressImages: images });
+    }
+    this.closeProgressImagesDialog();
+    this.closeProgressImageEditDialog();
+  }
+
+  openProgressImageEditDialog(image: ProgressImage): void {
+    this.progressImageEditing.set(image);
+    this.progressImageEditOpen.set(true);
+  }
+
+  closeProgressImageEditDialog(): void {
+    this.progressImageEditOpen.set(false);
+    this.progressImageEditing.set(null);
   }
 
   openMacrosDialog(): void {

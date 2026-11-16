@@ -11,7 +11,6 @@ import {
   normalizeMacros,
   normalizeMeal,
   normalizeMeasurement,
-  normalizeProgressImage,
   normalizeProgram,
   normalizeReview,
   normalizeRoutineDay,
@@ -26,12 +25,14 @@ import type { ClientDetail } from '../models/client-detail';
 import { ApiService } from './api.service';
 import { DailyStepsService } from './daily-steps.service';
 import { MeasurementMastersService } from './measurement-masters.service';
+import { ProgressImagesService } from './progress-images.service';
 
 @Injectable({ providedIn: 'root' })
 export class ClientDetailService {
   private readonly api = inject(ApiService);
   private readonly dailyStepsApi = inject(DailyStepsService);
   private readonly measurementMastersApi = inject(MeasurementMastersService);
+  private readonly progressImagesApi = inject(ProgressImagesService);
 
   loadDetail(clientId: string): Observable<ClientDetail | null> {
     return forkJoin({
@@ -71,10 +72,8 @@ export class ClientDetailService {
       dailyStepsRecords: this.dailyStepsApi
         .listByClient(clientId)
         .pipe(catchError(() => of([]))),
-      progressImages: this.api
-        .get<unknown[]>(
-          `/api/progress-images?clientId=${encodeURIComponent(clientId)}`,
-        )
+      progressImages: this.progressImagesApi
+        .listByClient(clientId)
         .pipe(catchError(() => of([]))),
       technicalSpecifications: this.api
         .getOptional<unknown>(
@@ -125,7 +124,7 @@ export class ClientDetailService {
           measurements,
           wellness,
           dailySteps: payload.dailyStepsRecords,
-          progressImages: asRecordArray(payload.progressImages).map(normalizeProgressImage),
+          progressImages: payload.progressImages,
           technicalSpecifications: payload.technicalSpecifications
             ? normalizeTechnicalSpecifications(payload.technicalSpecifications)
             : null,
