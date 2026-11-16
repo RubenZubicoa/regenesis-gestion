@@ -28,6 +28,8 @@ import {
 } from '../../models/technical-specifications';
 import type { Weight } from '../../models/weight';
 import { ClientDetailService } from '../../services/client-detail.service';
+import { WeightDialogComponent } from './weight-dialog.component';
+import { WeightTargetDialogComponent } from './weight-target-dialog.component';
 import { PasswordDialogComponent } from '../clients/password-dialog.component';
 import { PhaseDialogComponent } from '../clients/phase-dialog.component';
 import { MacrosDialogComponent } from './macros-dialog.component';
@@ -91,6 +93,8 @@ export interface WeightChartView {
     PasswordDialogComponent,
     PhaseDialogComponent,
     RenewPlanDialogComponent,
+    WeightDialogComponent,
+    WeightTargetDialogComponent,
   ],
 
   templateUrl: './client-detail-page.component.html',
@@ -127,6 +131,8 @@ export class ClientDetailPageComponent {
   readonly passwordDialogOpen = signal(false);
   readonly phaseDialogOpen = signal(false);
   readonly renewPlanDialogOpen = signal(false);
+  readonly weightDialogOpen = signal(false);
+  readonly weightTargetDialogOpen = signal(false);
 
 
 
@@ -485,6 +491,38 @@ export class ClientDetailPageComponent {
 
     void this.router.navigate(['/']);
 
+  }
+
+  openWeightDialog(): void {
+    this.weightDialogOpen.set(true);
+  }
+
+  closeWeightDialog(): void {
+    this.weightDialogOpen.set(false);
+  }
+
+  onWeightSaved(weight: Weight): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({ ...current, weight });
+    }
+    this.weightDialogOpen.set(false);
+  }
+
+  openWeightTargetDialog(): void {
+    this.weightTargetDialogOpen.set(true);
+  }
+
+  closeWeightTargetDialog(): void {
+    this.weightTargetDialogOpen.set(false);
+  }
+
+  onWeightTargetSaved(weight: Weight): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({ ...current, weight });
+    }
+    this.weightTargetDialogOpen.set(false);
   }
 
   openMacrosDialog(): void {

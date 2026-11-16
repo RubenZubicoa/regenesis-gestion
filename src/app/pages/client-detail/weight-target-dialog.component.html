@@ -1,0 +1,52 @@
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="weight-target-dialog-title">
+  <button type="button" class="sheet__backdrop" (click)="close()" aria-label="Cerrar"></button>
+
+  <div class="board">
+    <div class="board__glow" aria-hidden="true"></div>
+
+    <header class="board__head">
+      <div>
+        <p class="eyebrow">Seguimiento corporal</p>
+        <h2 id="weight-target-dialog-title">Objetivo de peso</h2>
+      </div>
+      <button type="button" class="board__close" (click)="close()" aria-label="Cerrar">×</button>
+    </header>
+
+    @if (clientName()) {
+      <p class="client-note">{{ clientName() }}</p>
+    }
+
+    <form class="board__form" (submit)="$event.preventDefault(); save()">
+      <div class="board__body">
+        <label class="field">
+          <span>Objetivo (kg)</span>
+          <input
+            type="number"
+            min="0"
+            step="0.1"
+            inputmode="decimal"
+            [ngModel]="target()"
+            (ngModelChange)="setTarget($event)"
+            name="target"
+            placeholder="62"
+          />
+        </label>
+      </div>
+
+      @if (saveError()) {
+        <p class="board__error">{{ saveError() }}</p>
+      }
+
+      <footer class="board__foot">
+        <div class="board__foot-right">
+          <button type="button" class="ghost-btn" (click)="close()" [disabled]="saving()">
+            Cancelar
+          </button>
+          <button type="submit" class="save-btn" [disabled]="saving()">
+            {{ saving() ? 'Guardando…' : 'Guardar objetivo' }}
+          </button>
+        </div>
+      </footer>
+    </form>
+  </div>
+</div>

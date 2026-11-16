@@ -315,6 +315,13 @@
   }
 }
 
+.panel-block__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
 .action-btn {
   border: 0;
   background: var(--navy);
@@ -337,6 +344,16 @@
 
   &:active {
     transform: translateY(1px);
+  }
+}
+
+.action-btn--ghost {
+  background: transparent;
+  color: var(--navy);
+  border: 1px solid var(--border);
+
+  &:hover {
+    background: rgba(7, 16, 32, 0.06);
   }
 }
 
@@ -1226,6 +1243,15 @@
   .panel-block__head {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .panel-block__actions {
+    justify-content: stretch;
+
+    .action-btn {
+      flex: 1;
+      justify-content: center;
+    }
   }
 }
 

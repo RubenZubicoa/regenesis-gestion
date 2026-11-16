@@ -336,10 +336,20 @@
 
     @if (activeTab() === 'progress') {
       <div class="panel" role="tabpanel">
-        @if (d.weight; as w) {
-          @let chart = buildWeightChart(w);
-          <div class="panel-block">
+        <div class="panel-block">
+          <div class="panel-block__head">
             <h2>Evolución del peso</h2>
+            <div class="panel-block__actions">
+              <button type="button" class="action-btn" (click)="openWeightDialog()">
+                {{ d.weight ? 'Registrar o editar peso' : 'Registrar peso' }}
+              </button>
+              <button type="button" class="action-btn action-btn--ghost" (click)="openWeightTargetDialog()">
+                {{ d.weight ? 'Editar objetivo' : 'Fijar objetivo' }}
+              </button>
+            </div>
+          </div>
+          @if (d.weight; as w) {
+            @let chart = buildWeightChart(w);
             <div class="weight-chart">
               <svg
                 class="weight-chart__svg"
@@ -404,8 +414,10 @@
                 <span>Objetivo: {{ w.target }} {{ w.unit }}</span>
               </div>
             </div>
-          </div>
-        }
+          } @else {
+            <p class="empty-panel">Aún no hay peso registrado para este cliente.</p>
+          }
+        </div>
 
         <div class="panel-block">
           <h2>Medidas corporales</h2>
@@ -598,6 +610,29 @@
       </div>
     }
   </section>
+  }
+
+  @if (weightDialogOpen()) {
+    @if (detail(); as d) {
+      <app-weight-dialog
+        [clientId]="d.client._id"
+        [clientName]="d.client.fullName"
+        [weight]="d.weight"
+        (saved)="onWeightSaved($event)"
+        (closed)="closeWeightDialog()"
+      />
+    }
+  }
+
+  @if (weightTargetDialogOpen()) {
+    @if (detail(); as d) {
+      <app-weight-target-dialog
+        [clientName]="d.client.fullName"
+        [weight]="d.weight"
+        (saved)="onWeightTargetSaved($event)"
+        (closed)="closeWeightTargetDialog()"
+      />
+    }
   }
 
   @if (macrosDialogOpen()) {
