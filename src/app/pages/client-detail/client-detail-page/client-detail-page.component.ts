@@ -13,22 +13,6 @@ import type { MealMaster } from '../../../models/meal-master';
 import type { Measurement } from '../../../models/measurement';
 import type { ProgressImage } from '../../../models/progress-image';
 import type { Supplements } from '../../../models/supplements';
-import {
-  EATING_HABITS_FIELDS,
-  EXERCISE_HABITS_FIELDS,
-  LABORAL_HABITS_FIELDS,
-  LIFESTYLE_FIELDS,
-  PERSONAL_HISTORY_FIELDS,
-  filledDailyRecall,
-  filledSpecFields,
-  hasFilledDailyRecall,
-  type EatingHabits,
-  type ExerciseHabits,
-  type LaboralHabits,
-  type Lifestyle,
-  type PersonalHistory,
-  type SpecField,
-} from '../../../models/technical-specifications';
 import type { Weight } from '../../../models/weight';
 import type { Wellness } from '../../../models/wellness';
 import { ClientDetailService } from '../../../services/client-detail.service';
@@ -283,36 +267,6 @@ export class ClientDetailPageComponent {
 
     this.activeTab.set(tab);
 
-  }
-
-  readonly specSections = [
-    { title: 'Antecedentes personales', group: 'personalHistory' as const, fields: PERSONAL_HISTORY_FIELDS },
-    { title: 'Hábitos alimentarios', group: 'eatingHabits' as const, fields: EATING_HABITS_FIELDS },
-    { title: 'Hábitos de vida', group: 'lifestyle' as const, fields: LIFESTYLE_FIELDS },
-    { title: 'Ejercicio físico', group: 'exerciseHabits' as const, fields: EXERCISE_HABITS_FIELDS },
-  ];
-
-  readonly laboralHabitsFields = LABORAL_HABITS_FIELDS;
-
-  specRows(
-    group: PersonalHistory | EatingHabits | Lifestyle | ExerciseHabits | LaboralHabits,
-    fields: readonly SpecField<string>[],
-  ): { key: string; label: string; value: string }[] {
-    return filledSpecFields(group, fields);
-  }
-
-  specHasContent(
-    spec: NonNullable<ClientDetail['technicalSpecifications']>,
-  ): boolean {
-    return this.specSections.some((section) => this.specRows(spec[section.group], section.fields).length > 0)
-      || hasFilledDailyRecall(spec.dailyRecall)
-      || spec.expectations.trim().length > 0
-      || this.specRows(spec.laboralHabits, this.laboralHabitsFields).length > 0
-      || spec.observations.trim().length > 0;
-  }
-
-  recallRows(spec: NonNullable<ClientDetail['technicalSpecifications']>) {
-    return filledDailyRecall(spec.dailyRecall);
   }
 
   macroTarget(macros: Macros, key: string): number {
