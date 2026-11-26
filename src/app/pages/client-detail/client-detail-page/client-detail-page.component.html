@@ -349,15 +349,28 @@
             </div>
           </div>
           @if (d.weight; as w) {
-            <app-progress-line-chart
-              [points]="weightChartPoints(w)"
-              [target]="w.target"
-              [targetLabel]="'Objetivo ' + w.target"
-              ariaLabel="Gráfico lineal de evolución del peso">
-              <span>Inicio: {{ w.start }} {{ w.unit }}</span>
-              <span>Actual: {{ w.current }} {{ w.unit }}</span>
-              <span>Objetivo: {{ w.target }} {{ w.unit }}</span>
-            </app-progress-line-chart>
+            <app-progress-date-range-filter
+              [embedded]="true"
+              [from]="weightFrom()"
+              (fromChange)="weightFrom.set($event)"
+              [to]="weightTo()"
+              (toChange)="weightTo.set($event)"
+              ariaLabel="Rango de fechas del peso"
+              hint="Rango visible en el gráfico"
+            />
+            @if (visibleWeightPoints().length === 0) {
+              <p class="empty-panel">No hay peso registrado en este rango de {{ weightWeeksLabel() }}.</p>
+            } @else {
+              <app-progress-line-chart
+                [points]="visibleWeightPoints()"
+                [target]="w.target"
+                [targetLabel]="'Objetivo ' + w.target"
+                ariaLabel="Gráfico lineal de evolución del peso">
+                <span>Inicio: {{ visibleWeightStart() }} {{ w.unit }}</span>
+                <span>Actual: {{ visibleWeightCurrent() }} {{ w.unit }}</span>
+                <span>Objetivo: {{ w.target }} {{ w.unit }}</span>
+              </app-progress-line-chart>
+            }
           } @else {
             <p class="empty-panel">Aún no hay peso registrado para este cliente.</p>
           }

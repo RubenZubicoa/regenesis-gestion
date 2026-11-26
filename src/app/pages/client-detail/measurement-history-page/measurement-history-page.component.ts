@@ -4,20 +4,22 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap } from 'rxjs';
 
 import {
-  defaultMeasurementHistoryRange,
   filterMeasurementHistoryByRange,
-  measurementHistoryWeeksLabel,
   type MeasurementHistorySeries,
 } from '../../../models/measurement';
+import {
+  defaultProgressDateRange,
+  progressWeeksLabel,
+} from '../../../models/progress-date-range';
 import { ClientsService } from '../../../services/clients.service';
 import { MeasurementsService } from '../../../services/measurements.service';
 import { MeasurementHistoryChartComponent } from '../measurement-history-chart/measurement-history-chart.component';
-import { MeasurementHistoryFilterComponent } from '../measurement-history-filter/measurement-history-filter.component';
+import { ProgressDateRangeFilterComponent } from '../progress-date-range-filter/progress-date-range-filter.component';
 
 @Component({
   selector: 'app-measurement-history-page',
   standalone: true,
-  imports: [RouterLink, MeasurementHistoryChartComponent, MeasurementHistoryFilterComponent],
+  imports: [RouterLink, MeasurementHistoryChartComponent, ProgressDateRangeFilterComponent],
   templateUrl: './measurement-history-page.component.html',
   styleUrl: './measurement-history-page.component.scss',
 })
@@ -33,16 +35,14 @@ export class MeasurementHistoryPageComponent {
   readonly clientName = signal('');
   readonly series = signal<MeasurementHistorySeries[]>([]);
 
-  readonly from = signal(defaultMeasurementHistoryRange().from);
-  readonly to = signal(defaultMeasurementHistoryRange().to);
+  readonly from = signal(defaultProgressDateRange().from);
+  readonly to = signal(defaultProgressDateRange().to);
 
   readonly visibleSeries = computed(() =>
     filterMeasurementHistoryByRange(this.series(), this.from(), this.to()),
   );
 
-  readonly weeksLabel = computed(() =>
-    measurementHistoryWeeksLabel(this.from(), this.to()),
-  );
+  readonly weeksLabel = computed(() => progressWeeksLabel(this.from(), this.to()));
 
   constructor() {
     this.route.paramMap

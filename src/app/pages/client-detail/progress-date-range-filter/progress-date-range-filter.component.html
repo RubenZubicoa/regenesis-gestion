@@ -1,4 +1,4 @@
-<div class="filter" role="search" aria-label="Rango de fechas del histórico">
+<div class="filter" role="search" [attr.aria-label]="ariaLabel()">
   <label class="field">
     <span>Desde</span>
     <input
@@ -23,7 +23,7 @@
 
   <div class="filter__range">
     <strong>{{ weeksLabel() }}</strong>
-    <span>Rango visible en los gráficos</span>
+    <span>{{ hint() }}</span>
   </div>
 
   <button

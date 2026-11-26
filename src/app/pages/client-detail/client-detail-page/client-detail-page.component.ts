@@ -13,10 +13,16 @@ import type { MealMaster } from '../../../models/meal-master';
 import type { Measurement } from '../../../models/measurement';
 import type { ProgressImage } from '../../../models/progress-image';
 import type { Supplements } from '../../../models/supplements';
+import {
+  defaultProgressDateRange,
+  filterWeightChartPoints,
+  progressWeeksLabel,
+} from '../../../models/progress-date-range';
 import type { Weight } from '../../../models/weight';
 import type { Wellness } from '../../../models/wellness';
 import { ClientDetailService } from '../../../services/client-detail.service';
 import { MeasurementsDialogComponent } from '../measurements-dialog/measurements-dialog.component';
+import { ProgressDateRangeFilterComponent } from '../progress-date-range-filter/progress-date-range-filter.component';
 import { ProgressLineChartComponent } from '../progress-line-chart/progress-line-chart.component';
 import { ProgressImageEditDialogComponent } from '../progress-image-edit-dialog/progress-image-edit-dialog.component';
 import { ProgressImagesDialogComponent } from '../progress-images-dialog/progress-images-dialog.component';
@@ -56,6 +62,7 @@ type TabKey = 'nutrition' | 'training' | 'progress';
     RenewPlanDialogComponent,
     WeightDialogComponent,
     WeightTargetDialogComponent,
+    ProgressDateRangeFilterComponent,
     MeasurementsDialogComponent,
     ProgressLineChartComponent,
     WellnessDialogComponent,
@@ -132,6 +139,26 @@ export class ClientDetailPageComponent {
 
     return Number((w.current - w.start).toFixed(1));
 
+  });
+
+  readonly weightFrom = signal(defaultProgressDateRange().from);
+  readonly weightTo = signal(defaultProgressDateRange().to);
+
+  readonly visibleWeightPoints = computed(() => {
+    const weight = this.detail()?.weight;
+    if (!weight) return [];
+    return filterWeightChartPoints(weight, this.weightFrom(), this.weightTo());
+  });
+
+  readonly weightWeeksLabel = computed(() =>
+    progressWeeksLabel(this.weightFrom(), this.weightTo()),
+  );
+
+  readonly visibleWeightStart = computed(() => this.visibleWeightPoints()[0]?.value);
+
+  readonly visibleWeightCurrent = computed(() => {
+    const points = this.visibleWeightPoints();
+    return points[points.length - 1]?.value;
   });
 
 
@@ -333,13 +360,6 @@ export class ClientDetailPageComponent {
   }
 
 
-
-  weightChartPoints(w: Weight): { label: string; value: number }[] {
-    return w.data.map((value, index) => ({
-      value,
-      label: w.labels[index] ?? '',
-    }));
-  }
 
   goBack(): void {
 

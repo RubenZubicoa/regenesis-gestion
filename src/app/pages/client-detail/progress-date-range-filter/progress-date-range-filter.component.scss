@@ -1,3 +1,7 @@
+:host {
+  display: block;
+}
+
 .filter {
   display: flex;
   flex-wrap: wrap;
@@ -7,6 +11,15 @@
   border-radius: var(--radius-xl);
   background: var(--card);
   box-shadow: var(--shadow-card, 0 10px 28px rgba(7, 16, 32, 0.06));
+}
+
+:host.is-embedded .filter {
+  padding: 0 0 1rem;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
 }
 
 .field {

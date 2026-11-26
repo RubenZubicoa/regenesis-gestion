@@ -22,11 +22,12 @@
       </div>
     </header>
 
-    <app-measurement-history-filter
+    <app-progress-date-range-filter
       [from]="from()"
       (fromChange)="from.set($event)"
       [to]="to()"
       (toChange)="to.set($event)"
+      ariaLabel="Rango de fechas del histórico"
     />
 
     @if (series().length === 0) {
