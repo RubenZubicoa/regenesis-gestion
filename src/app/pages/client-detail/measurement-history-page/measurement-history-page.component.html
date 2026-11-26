@@ -1,0 +1,34 @@
+@if (loading()) {
+  <section class="page page--empty">
+    <p>Cargando histórico de medidas…</p>
+  </section>
+} @else if (error()) {
+  <section class="page page--empty">
+    <p>{{ error() }}</p>
+    <a routerLink="/">Volver al roster</a>
+  </section>
+} @else {
+  <section class="page">
+    <button type="button" class="back" (click)="goBack()">← Volver a la ficha</button>
+
+    <header class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">Seguimiento corporal</p>
+        <h1>Histórico de medidas</h1>
+        <p class="hero__sub">
+          Evolución de cada medida corporal de {{ clientName() || 'este cliente' }}.
+        </p>
+      </div>
+    </header>
+
+    @if (series().length === 0) {
+      <p class="empty">Aún no hay medidas registradas para este cliente.</p>
+    } @else {
+      <div class="charts">
+        @for (item of series(); track item.measurementId) {
+          <app-measurement-history-chart [series]="item" />
+        }
+      </div>
+    }
+  </section>
+}

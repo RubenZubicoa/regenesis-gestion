@@ -1,0 +1,87 @@
+.line-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.line-chart__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+  fill: none;
+}
+
+.line-chart__grid {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.line-chart__ylabel {
+  font-size: 7px;
+  fill: var(--text-muted);
+  text-anchor: end;
+  font-weight: 600;
+}
+
+.line-chart__target {
+  stroke: var(--gold);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+
+.line-chart__target-label {
+  font-size: 7px;
+  fill: var(--gold);
+  text-anchor: end;
+  font-weight: 700;
+}
+
+.line-chart__area {
+  fill: rgba(76, 141, 246, 0.18);
+}
+
+.line-chart__line {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.line-chart__dot-halo {
+  fill: rgba(76, 141, 246, 0.15);
+}
+
+.line-chart__dot {
+  fill: var(--blue);
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.line-chart__value {
+  font-size: 7px;
+  fill: var(--navy);
+  text-anchor: middle;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.line-chart__xlabel {
+  font-size: 7px;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  font-weight: 600;
+}
+
+.line-chart__footer {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}

@@ -17,6 +17,7 @@ import type { Weight } from '../../../models/weight';
 import type { Wellness } from '../../../models/wellness';
 import { ClientDetailService } from '../../../services/client-detail.service';
 import { MeasurementsDialogComponent } from '../measurements-dialog/measurements-dialog.component';
+import { ProgressLineChartComponent } from '../progress-line-chart/progress-line-chart.component';
 import { ProgressImageEditDialogComponent } from '../progress-image-edit-dialog/progress-image-edit-dialog.component';
 import { ProgressImagesDialogComponent } from '../progress-images-dialog/progress-images-dialog.component';
 import { StepsDialogComponent } from '../steps-dialog/steps-dialog.component';
@@ -38,40 +39,6 @@ type TabKey = 'nutrition' | 'training' | 'progress';
 
 
 
-interface WeightChartPoint {
-
-  x: number;
-
-  y: number;
-
-  value: number;
-
-  label: string;
-
-}
-
-
-
-export interface WeightChartView {
-
-  width: number;
-
-  height: number;
-
-  points: WeightChartPoint[];
-
-  linePath: string;
-
-  areaPath: string;
-
-  targetY: number;
-
-  yTicks: { y: number; label: string }[];
-
-}
-
-
-
 @Component({
 
   selector: 'app-client-detail-page',
@@ -90,6 +57,7 @@ export interface WeightChartView {
     WeightDialogComponent,
     WeightTargetDialogComponent,
     MeasurementsDialogComponent,
+    ProgressLineChartComponent,
     WellnessDialogComponent,
     StepsDialogComponent,
     StepsTargetDialogComponent,
@@ -196,15 +164,14 @@ export class ClientDetailPageComponent {
 
 
 
-  private readonly chartWidth = 400;
-
-  private readonly chartHeight = 180;
-
-  private readonly chartPad = { top: 24, right: 20, bottom: 32, left: 44 };
-
-
-
   constructor() {
+
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      const tab = params.get('tab');
+      if (tab === 'nutrition' || tab === 'training' || tab === 'progress') {
+        this.activeTab.set(tab);
+      }
+    });
 
     this.route.paramMap
 
@@ -367,107 +334,12 @@ export class ClientDetailPageComponent {
 
 
 
-  buildWeightChart(w: Weight): WeightChartView {
-
-    const min = Math.min(...w.data, w.target) - 0.8;
-
-    const max = Math.max(...w.data, w.start) + 0.8;
-
-    const range = max - min || 1;
-
-    const innerW = this.chartWidth - this.chartPad.left - this.chartPad.right;
-
-    const innerH = this.chartHeight - this.chartPad.top - this.chartPad.bottom;
-
-    const count = w.data.length;
-
-    const baseline = this.chartHeight - this.chartPad.bottom;
-
-
-
-    const points: WeightChartPoint[] = w.data.map((value, i) => ({
-
-      x:
-
-        this.chartPad.left +
-
-        (count === 1 ? innerW / 2 : (i / (count - 1)) * innerW),
-
-      y: this.chartPad.top + innerH - ((value - min) / range) * innerH,
-
+  weightChartPoints(w: Weight): { label: string; value: number }[] {
+    return w.data.map((value, index) => ({
       value,
-
-      label: w.labels[i] ?? '',
-
+      label: w.labels[index] ?? '',
     }));
-
-
-
-    const linePath =
-
-      points.length > 0
-
-        ? points
-
-            .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
-
-            .join(' ')
-
-        : '';
-
-
-
-    const areaPath =
-
-      points.length > 0
-
-        ? `${linePath} L ${points[points.length - 1].x.toFixed(1)} ${baseline} L ${points[0].x.toFixed(1)} ${baseline} Z`
-
-        : '';
-
-
-
-    const targetY =
-
-      this.chartPad.top + innerH - ((w.target - min) / range) * innerH;
-
-
-
-    const steps = 4;
-
-    const yTicks = Array.from({ length: steps + 1 }, (_, i) => {
-
-      const val = min + ((max - min) * i) / steps;
-
-      const y = this.chartPad.top + innerH - ((val - min) / range) * innerH;
-
-      return { y, label: val.toFixed(1) };
-
-    });
-
-
-
-    return {
-
-      width: this.chartWidth,
-
-      height: this.chartHeight,
-
-      points,
-
-      linePath,
-
-      areaPath,
-
-      targetY,
-
-      yTicks,
-
-    };
-
   }
-
-
 
   goBack(): void {
 

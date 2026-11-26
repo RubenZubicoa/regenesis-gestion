@@ -1,16 +1,19 @@
 import { Injectable, inject } from '@angular/core';
-import { forkJoin, map, Observable, of } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 
 import {
   asRecordArray,
+  enrichMeasurement,
   latestMeasurements,
   normalizeMeasurement,
 } from '../core/normalizers';
 import {
   isSameMeasurementDay,
   measurementDelta,
+  measurementHistorySeries,
   type Measurement,
   type MeasurementCreatePayload,
+  type MeasurementHistorySeries,
   type MeasurementMaster,
 } from '../models/measurement';
 import { ApiService } from './api.service';
@@ -37,19 +40,21 @@ export class MeasurementsService {
   }
 
   listByClient(clientId: string): Observable<Measurement[]> {
-    return this.api
-      .get<unknown>(`/api/clients/${encodeURIComponent(clientId)}/measurements`)
-      .pipe(
-        map((raw) =>
-          latestMeasurements(
-            asRecordArray(unwrapList(raw)).map((item) => ({
-              ...normalizeMeasurement(item),
-              label: '',
-              unit: '',
-            })),
-          ),
+    return this.listRecordsByClient(clientId).pipe(map(latestMeasurements));
+  }
+
+  listHistoryByClient(clientId: string): Observable<MeasurementHistorySeries[]> {
+    return forkJoin({
+      masters: this.listMasters().pipe(catchError(() => of([]))),
+      records: this.listRecordsByClient(clientId),
+    }).pipe(
+      map(({ masters, records }) =>
+        measurementHistorySeries(
+          records.map((record) => enrichMeasurement(record, masters)),
+          masters,
         ),
-      );
+      ),
+    );
   }
 
   create(payload: MeasurementCreatePayload): Observable<Measurement> {
@@ -103,6 +108,21 @@ export class MeasurementsService {
         date: saved.date || date,
       })),
     );
+  }
+
+  private listRecordsByClient(clientId: string): Observable<Measurement[]> {
+    return this.api
+      .get<unknown>(`/api/clients/${encodeURIComponent(clientId)}/measurements`)
+      .pipe(
+        map((raw) =>
+          asRecordArray(unwrapList(raw)).map((item) => ({
+            ...normalizeMeasurement(item),
+            label: '',
+            unit: '',
+          })),
+        ),
+        catchError(() => of([])),
+      );
   }
 
   saveMany(

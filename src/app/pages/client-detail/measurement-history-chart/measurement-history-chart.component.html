@@ -1,0 +1,16 @@
+<article class="history-chart">
+  <header class="history-chart__head">
+    <h2>{{ series().label }}</h2>
+    <p>
+      {{ series().records.length }}
+      registro{{ series().records.length === 1 ? '' : 's' }}
+    </p>
+  </header>
+
+  <app-progress-line-chart
+    [points]="points()"
+    [ariaLabel]="'Evolución de ' + series().label">
+    <span>Inicio: {{ start() }} {{ series().unit }}</span>
+    <span>Actual: {{ current() }} {{ series().unit }}</span>
+  </app-progress-line-chart>
+</article>

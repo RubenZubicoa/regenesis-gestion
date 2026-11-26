@@ -49,6 +49,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'clients/:id/medidas/historico',
+        loadComponent: () =>
+          import('./pages/client-detail/measurement-history-page/measurement-history-page.component').then(
+            (m) => m.MeasurementHistoryPageComponent,
+          ),
+      },
+      {
         path: 'ejercicios/categorias',
         loadComponent: () =>
           import('./pages/exercises/exercise-categories-page.component').then(

@@ -349,71 +349,15 @@
             </div>
           </div>
           @if (d.weight; as w) {
-            @let chart = buildWeightChart(w);
-            <div class="weight-chart">
-              <svg
-                class="weight-chart__svg"
-                [attr.viewBox]="'0 0 ' + chart.width + ' ' + chart.height"
-                role="img"
-                aria-label="Gráfico lineal de evolución del peso">
-                <defs>
-                  <linearGradient id="weightAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="var(--blue-light)" stop-opacity="0.35" />
-                    <stop offset="100%" stop-color="var(--blue-light)" stop-opacity="0.02" />
-                  </linearGradient>
-                </defs>
-
-                @for (tick of chart.yTicks; track tick.label) {
-                  <line
-                    [attr.x1]="44"
-                    [attr.x2]="chart.width - 20"
-                    [attr.y1]="tick.y"
-                    [attr.y2]="tick.y"
-                    class="weight-chart__grid"
-                  />
-                  <text [attr.x]="38" [attr.y]="tick.y + 4" class="weight-chart__ylabel">
-                    {{ tick.label }}
-                  </text>
-                }
-
-                <line
-                  [attr.x1]="44"
-                  [attr.x2]="chart.width - 20"
-                  [attr.y1]="chart.targetY"
-                  [attr.y2]="chart.targetY"
-                  class="weight-chart__target"
-                />
-                <text
-                  [attr.x]="chart.width - 18"
-                  [attr.y]="chart.targetY - 6"
-                  class="weight-chart__target-label">
-                  Objetivo {{ w.target }}
-                </text>
-
-                @if (chart.areaPath) {
-                  <path [attr.d]="chart.areaPath" class="weight-chart__area" />
-                }
-                @if (chart.linePath) {
-                  <path [attr.d]="chart.linePath" class="weight-chart__line" />
-                }
-
-                @for (p of chart.points; track p.label) {
-                  <circle [attr.cx]="p.x" [attr.cy]="p.y" r="5" class="weight-chart__dot" />
-                  <circle [attr.cx]="p.x" [attr.cy]="p.y" r="9" class="weight-chart__dot-halo" />
-                  <text [attr.x]="p.x" [attr.y]="p.y - 12" class="weight-chart__value">
-                    {{ p.value }}
-                  </text>
-                  <text [attr.x]="p.x" [attr.y]="chart.height - 10" class="weight-chart__xlabel">
-                    {{ formatDate(p.label) }}
-                  </text>
-                }
-              </svg>
-              <div class="weight-chart__footer">
-                <span>Inicio: {{ w.start }} {{ w.unit }}</span>
-                <span>Actual: {{ w.current }} {{ w.unit }}</span>
-                <span>Objetivo: {{ w.target }} {{ w.unit }}</span>
-              </div>
-            </div>
+            <app-progress-line-chart
+              [points]="weightChartPoints(w)"
+              [target]="w.target"
+              [targetLabel]="'Objetivo ' + w.target"
+              ariaLabel="Gráfico lineal de evolución del peso">
+              <span>Inicio: {{ w.start }} {{ w.unit }}</span>
+              <span>Actual: {{ w.current }} {{ w.unit }}</span>
+              <span>Objetivo: {{ w.target }} {{ w.unit }}</span>
+            </app-progress-line-chart>
           } @else {
             <p class="empty-panel">Aún no hay peso registrado para este cliente.</p>
           }
@@ -423,6 +367,11 @@
           <div class="panel-block__head">
             <h2>Medidas corporales</h2>
             <div class="panel-block__actions">
+              <a
+                class="action-btn action-btn--ghost"
+                [routerLink]="['/clients', d.client._id, 'medidas', 'historico']">
+                Ver histórico
+              </a>
               <button type="button" class="action-btn" (click)="openMeasurementsDialog()">
                 {{ hasRecordedMeasurements(d.measurements) ? 'Registrar o editar medidas' : 'Registrar medidas' }}
               </button>
