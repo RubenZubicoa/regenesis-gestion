@@ -1,4 +1,7 @@
 import type { MeasurementMaster } from './MeasurementMaster';
+import { todayIsoDate } from './weight';
+
+export const MEASUREMENT_HISTORY_WEEKS = 12;
 
 export type {
   CreateMeasurementMasterInput,
@@ -109,4 +112,50 @@ function toHistoryPoints(records: Measurement[]): MeasurementHistoryPoint[] {
     byDay.set(day, record.value);
   }
   return [...byDay.entries()].map(([date, value]) => ({ date, value }));
+}
+
+function padDatePart(value: number): string {
+  return String(value).padStart(2, '0');
+}
+
+function toIsoDate(date: Date): string {
+  return `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`;
+}
+
+export function shiftIsoDate(iso: string, days: number): string {
+  const date = new Date(`${iso.slice(0, 10)}T12:00:00`);
+  date.setDate(date.getDate() + days);
+  return toIsoDate(date);
+}
+
+export function defaultMeasurementHistoryRange(): { from: string; to: string } {
+  const to = todayIsoDate();
+  return { from: shiftIsoDate(to, -(MEASUREMENT_HISTORY_WEEKS * 7)), to };
+}
+
+export function measurementHistoryWeekCount(from: string, to: string): number {
+  const start = new Date(`${from.slice(0, 10)}T12:00:00`);
+  const end = new Date(`${to.slice(0, 10)}T12:00:00`);
+  const days = Math.max(0, Math.round((end.getTime() - start.getTime()) / 86_400_000));
+  return Math.max(1, Math.round(days / 7));
+}
+
+export function measurementHistoryWeeksLabel(from: string, to: string): string {
+  const weeks = measurementHistoryWeekCount(from, to);
+  return weeks === 1 ? '1 semana' : `${weeks} semanas`;
+}
+
+export function filterMeasurementHistoryByRange(
+  series: MeasurementHistorySeries[],
+  from: string,
+  to: string,
+): MeasurementHistorySeries[] {
+  const start = from.slice(0, 10);
+  const end = to.slice(0, 10);
+  return series
+    .map((item) => ({
+      ...item,
+      records: item.records.filter((record) => record.date >= start && record.date <= end),
+    }))
+    .filter((item) => item.records.length > 0);
 }

@@ -1,0 +1,36 @@
+<div class="filter" role="search" aria-label="Rango de fechas del histórico">
+  <label class="field">
+    <span>Desde</span>
+    <input
+      type="date"
+      [ngModel]="from()"
+      (ngModelChange)="setFrom($event)"
+      name="from"
+      [attr.max]="to()"
+    />
+  </label>
+
+  <label class="field">
+    <span>Hasta</span>
+    <input
+      type="date"
+      [ngModel]="to()"
+      (ngModelChange)="setTo($event)"
+      name="to"
+      [attr.min]="from()"
+    />
+  </label>
+
+  <div class="filter__range">
+    <strong>{{ weeksLabel() }}</strong>
+    <span>Rango visible en los gráficos</span>
+  </div>
+
+  <button
+    type="button"
+    class="reset"
+    (click)="reset()"
+    [disabled]="isDefaultRange()">
+    Últimas {{ defaultWeeks }} semanas
+  </button>
+</div>

@@ -1,17 +1,23 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap } from 'rxjs';
 
-import type { MeasurementHistorySeries } from '../../../models/measurement';
+import {
+  defaultMeasurementHistoryRange,
+  filterMeasurementHistoryByRange,
+  measurementHistoryWeeksLabel,
+  type MeasurementHistorySeries,
+} from '../../../models/measurement';
 import { ClientsService } from '../../../services/clients.service';
 import { MeasurementsService } from '../../../services/measurements.service';
 import { MeasurementHistoryChartComponent } from '../measurement-history-chart/measurement-history-chart.component';
+import { MeasurementHistoryFilterComponent } from '../measurement-history-filter/measurement-history-filter.component';
 
 @Component({
   selector: 'app-measurement-history-page',
   standalone: true,
-  imports: [RouterLink, MeasurementHistoryChartComponent],
+  imports: [RouterLink, MeasurementHistoryChartComponent, MeasurementHistoryFilterComponent],
   templateUrl: './measurement-history-page.component.html',
   styleUrl: './measurement-history-page.component.scss',
 })
@@ -26,6 +32,17 @@ export class MeasurementHistoryPageComponent {
   readonly clientId = signal('');
   readonly clientName = signal('');
   readonly series = signal<MeasurementHistorySeries[]>([]);
+
+  readonly from = signal(defaultMeasurementHistoryRange().from);
+  readonly to = signal(defaultMeasurementHistoryRange().to);
+
+  readonly visibleSeries = computed(() =>
+    filterMeasurementHistoryByRange(this.series(), this.from(), this.to()),
+  );
+
+  readonly weeksLabel = computed(() =>
+    measurementHistoryWeeksLabel(this.from(), this.to()),
+  );
 
   constructor() {
     this.route.paramMap
