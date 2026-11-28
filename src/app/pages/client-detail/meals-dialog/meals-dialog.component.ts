@@ -56,6 +56,7 @@ export class MealsDialogComponent implements OnInit {
   readonly saveError = signal<string | null>(null);
   readonly attachmentFile = signal<File | null>(null);
   readonly existingAttachment = signal('');
+  readonly removingAttachment = signal(false);
 
   readonly activeSlot = computed(() => {
     const list = this.slots();
@@ -269,13 +270,45 @@ export class MealsDialogComponent implements OnInit {
     this.attachmentFile.set(selected);
   }
 
+  clearPendingAttachment(): void {
+    this.attachmentFile.set(null);
+    this.saveError.set(null);
+  }
+
+  removeAttachment(): void {
+    const current = this.filesAttachment();
+    if (
+      !current?._id ||
+      !this.existingAttachment() ||
+      this.saving() ||
+      this.deleting() ||
+      this.removingAttachment()
+    ) {
+      return;
+    }
+
+    this.removingAttachment.set(true);
+    this.saveError.set(null);
+    this.filesApi.clearField(current, 'meal').subscribe({
+      next: (files) => {
+        this.removingAttachment.set(false);
+        this.existingAttachment.set('');
+        this.filesSaved.emit(files);
+      },
+      error: (err: Error) => {
+        this.removingAttachment.set(false);
+        this.saveError.set(err.message || 'No se pudo eliminar el archivo.');
+      },
+    });
+  }
+
   close(): void {
-    if (this.saving() || this.deleting()) return;
+    if (this.saving() || this.deleting() || this.removingAttachment()) return;
     this.closed.emit();
   }
 
   save(): void {
-    if (this.deleting()) return;
+    if (this.deleting() || this.removingAttachment() || this.saving()) return;
     const payload = this.buildPayload();
     if (!payload) return;
 
@@ -307,7 +340,7 @@ export class MealsDialogComponent implements OnInit {
 
   remove(): void {
     const current = this.meal();
-    if (!current || this.saving() || this.deleting()) return;
+    if (!current || this.saving() || this.deleting() || this.removingAttachment()) return;
 
     this.deleting.set(true);
     this.saveError.set(null);

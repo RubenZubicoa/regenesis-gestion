@@ -549,8 +549,15 @@
   color: var(--text-secondary);
 }
 
-.file-open {
+.file-actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.file-open {
   color: var(--blue);
   font-weight: 700;
   font-size: 0.82rem;
@@ -559,6 +566,27 @@
 
   &:hover {
     color: var(--navy);
+  }
+}
+
+.file-remove {
+  border: 0;
+  background: transparent;
+  color: var(--coral);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    color: #c62828;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
   }
 }
 

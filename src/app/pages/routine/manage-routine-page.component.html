@@ -20,7 +20,7 @@
           <span class="save-ok">Rutina guardada</span>
         }
         <button type="button" class="ghost-btn" (click)="openAddDay()">+ Añadir día</button>
-        <button type="button" class="save-btn" (click)="save()" [disabled]="saving()">
+        <button type="button" class="save-btn" (click)="save()" [disabled]="saving() || removingAttachment()">
           {{ saving() ? 'Guardando…' : 'Guardar rutina' }}
         </button>
       </div>
@@ -40,20 +40,38 @@
           (change)="onFileSelected($event)"
         />
         <label class="file-btn" for="routine-attachment">
-          {{ attachmentFile() ? 'Cambiar archivo' : 'Adjuntar archivo' }}
+          {{ attachmentFile() || filesAttachment()?.workout ? 'Cambiar archivo' : 'Adjuntar archivo' }}
         </label>
         <span class="file-name">{{ attachmentLabel() }}</span>
-        @if (!attachmentFile()) {
-          @if (filesAttachment()?.workout; as workoutFile) {
-            <a
-              class="file-open"
-              [href]="workoutFile"
-              target="_blank"
-              rel="noopener noreferrer">
-              Abrir
-            </a>
+        <div class="file-actions">
+          @if (!attachmentFile()) {
+            @if (filesAttachment()?.workout; as workoutFile) {
+              <a
+                class="file-open"
+                [href]="workoutFile"
+                target="_blank"
+                rel="noopener noreferrer">
+                Abrir
+              </a>
+              <button
+                type="button"
+                class="file-remove"
+                (click)="removeAttachment()"
+                [disabled]="saving() || removingAttachment()">
+                {{ removingAttachment() ? 'Eliminando…' : 'Eliminar' }}
+              </button>
+            }
           }
-        }
+          @if (attachmentFile()) {
+            <button
+              type="button"
+              class="file-remove"
+              (click)="clearPendingAttachment()"
+              [disabled]="saving() || removingAttachment()">
+              Quitar
+            </button>
+          }
+        </div>
       </div>
     </div>
 

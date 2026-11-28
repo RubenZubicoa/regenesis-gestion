@@ -46,8 +46,8 @@ export class ApiService {
     );
   }
 
-  delete(path: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}${path}`).pipe(
+  delete<T = void>(path: string): Observable<T> {
+    return this.http.delete<T>(`${this.baseUrl}${path}`).pipe(
       catchError((err: HttpErrorResponse) =>
         throwError(() => new Error(this.readErrorMessage(err))),
       ),

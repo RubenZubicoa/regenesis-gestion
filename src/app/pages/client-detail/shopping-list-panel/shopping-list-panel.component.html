@@ -5,7 +5,7 @@
       type="button"
       class="action-btn"
       (click)="save()"
-      [disabled]="saving() || !file()">
+      [disabled]="busy() || !file()">
       {{ saving() ? 'Guardando…' : 'Guardar lista' }}
     </button>
   </div>
@@ -20,23 +20,37 @@
         (change)="onFileSelected($event)"
       />
       <label class="file-btn" for="shopping-list-file">
-        {{ file() ? 'Cambiar archivo' : 'Adjuntar archivo' }}
+        {{ file() || currentUrl() ? 'Cambiar archivo' : 'Adjuntar archivo' }}
       </label>
       <span class="file-name">{{ fileLabel() }}</span>
-      @if (currentUrl() && !file()) {
-        <a
-          class="file-open"
-          [href]="currentUrl()"
-          target="_blank"
-          rel="noopener noreferrer">
-          Abrir
-        </a>
-      }
+      <div class="file-actions">
+        @if (currentUrl() && !file()) {
+          <a
+            class="file-open"
+            [href]="currentUrl()"
+            target="_blank"
+            rel="noopener noreferrer">
+            Abrir
+          </a>
+          <button
+            type="button"
+            class="file-remove"
+            (click)="remove()"
+            [disabled]="busy()">
+            {{ deleting() ? 'Eliminando…' : 'Eliminar' }}
+          </button>
+        }
+        @if (file()) {
+          <button type="button" class="file-remove" (click)="clearPending()" [disabled]="busy()">
+            Quitar
+          </button>
+        }
+      </div>
     </div>
   </div>
 
-  @if (saveOk() && !file()) {
-    <p class="state state--ok">Lista de la compra guardada.</p>
+  @if (status()) {
+    <p class="state state--ok">{{ status() }}</p>
   }
   @if (error()) {
     <p class="state state--error">{{ error() }}</p>

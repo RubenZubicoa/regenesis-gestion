@@ -183,12 +183,22 @@
                   rel="noopener noreferrer">
                   Ver archivo
                 </a>
+                <button
+                  type="button"
+                  class="action-btn action-btn--ghost action-btn--danger"
+                  (click)="removeFilesAttachment('meal')"
+                  [disabled]="removingAttachment() !== null">
+                  {{ removingAttachment() === 'meal' ? 'Eliminando…' : 'Eliminar' }}
+                </button>
               }
               <button type="button" class="action-btn" (click)="openMealsDialog()">
                 {{ d.meal ? 'Gestionar comidas' : 'Crear o cargar plan' }}
               </button>
             </div>
           </div>
+          @if (fileError()) {
+            <p class="file-error">{{ fileError() }}</p>
+          }
           @if (d.meal; as meal) {
             <div class="meal-timeline">
               @for (slot of meal.slots; track slot.label) {
@@ -284,12 +294,22 @@
                   rel="noopener noreferrer">
                   Ver archivo
                 </a>
+                <button
+                  type="button"
+                  class="action-btn action-btn--ghost action-btn--danger"
+                  (click)="removeFilesAttachment('workout')"
+                  [disabled]="removingAttachment() !== null">
+                  {{ removingAttachment() === 'workout' ? 'Eliminando…' : 'Eliminar' }}
+                </button>
               }
               <button type="button" class="action-btn" (click)="openRoutineManager()">
                 Gestionar rutina semanal
               </button>
             </div>
           </div>
+          @if (fileError()) {
+            <p class="file-error">{{ fileError() }}</p>
+          }
           @if (d.routineDays.length > 0) {
             <div class="routine-rail">
               @for (day of d.routineDays; track day._id) {

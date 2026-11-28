@@ -22,9 +22,11 @@ export class ShoppingListPanelComponent {
 
   readonly file = signal<File | null>(null);
   readonly saving = signal(false);
+  readonly deleting = signal(false);
   readonly error = signal<string | null>(null);
-  readonly saveOk = signal(false);
+  readonly status = signal<string | null>(null);
 
+  readonly busy = computed(() => this.saving() || this.deleting());
   readonly currentUrl = computed(() => this.filesAttachment()?.shoppingList?.trim() ?? '');
 
   readonly fileLabel = computed(() => {
@@ -43,28 +45,55 @@ export class ShoppingListPanelComponent {
       return;
     }
     this.error.set(null);
-    this.saveOk.set(false);
+    this.status.set(null);
     this.file.set(selected);
+  }
+
+  clearPending(): void {
+    this.file.set(null);
+    this.error.set(null);
   }
 
   save(): void {
     const file = this.file();
-    if (!file || this.saving()) return;
+    if (!file || this.busy()) return;
 
     this.saving.set(true);
     this.error.set(null);
-    this.saveOk.set(false);
+    this.status.set(null);
 
     this.filesApi.upsertField(this.clientId(), this.filesAttachment(), 'shoppingList', file).subscribe({
       next: (record) => {
         this.saving.set(false);
         this.file.set(null);
-        this.saveOk.set(true);
+        this.status.set('Lista de la compra guardada.');
         this.saved.emit(record);
       },
       error: (err: Error) => {
         this.saving.set(false);
         this.error.set(err.message || 'No se pudo guardar la lista de la compra.');
+      },
+    });
+  }
+
+  remove(): void {
+    const current = this.filesAttachment();
+    if (!current?._id || !this.currentUrl() || this.busy()) return;
+
+    this.deleting.set(true);
+    this.error.set(null);
+    this.status.set(null);
+
+    this.filesApi.clearField(current, 'shoppingList').subscribe({
+      next: (record) => {
+        this.deleting.set(false);
+        this.file.set(null);
+        this.status.set('Lista de la compra eliminada.');
+        this.saved.emit(record);
+      },
+      error: (err: Error) => {
+        this.deleting.set(false);
+        this.error.set(err.message || 'No se pudo eliminar la lista de la compra.');
       },
     });
   }

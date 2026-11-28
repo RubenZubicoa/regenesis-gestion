@@ -32,4 +32,21 @@ export class FilesAttachmentsService {
 
     return request$.pipe(map((raw) => normalizeFilesAttachment(raw)));
   }
+
+  clearField(
+    current: FilesAttachment,
+    field: FilesAttachmentField,
+  ): Observable<FilesAttachment> {
+    return this.api
+      .delete<unknown>(
+        `${this.path}/${encodeURIComponent(current._id)}/${encodeURIComponent(field)}`,
+      )
+      .pipe(
+        map((raw) =>
+          raw && typeof raw === 'object'
+            ? normalizeFilesAttachment(raw)
+            : { ...current, [field]: '' },
+        ),
+      );
+  }
 }

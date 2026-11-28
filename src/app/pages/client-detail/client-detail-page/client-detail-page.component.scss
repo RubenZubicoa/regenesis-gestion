@@ -355,6 +355,27 @@
   &:hover {
     background: rgba(7, 16, 32, 0.06);
   }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.action-btn--danger {
+  color: var(--coral);
+  border-color: color-mix(in srgb, var(--coral) 35%, var(--border));
+
+  &:hover:not(:disabled) {
+    background: rgba(196, 40, 40, 0.08);
+    color: #c62828;
+  }
+}
+
+.file-error {
+  margin: 0 0 1rem;
+  color: #b42318;
+  font-size: 0.82rem;
 }
 
 .empty-hint {

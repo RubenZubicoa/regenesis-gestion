@@ -8,7 +8,7 @@ import type { Client } from '../../../models/client';
 import type { ClientDetail } from '../../../models/client-detail';
 import { latestDailyStepsGoal, type DailySteps } from '../../../models/daily-steps';
 import type { Macros } from '../../../models/macros';
-import type { FilesAttachment } from '../../../models/files-attachment';
+import type { FilesAttachment, FilesAttachmentField } from '../../../models/files-attachment';
 import type { Meal, MealSlot } from '../../../models/meal';
 import type { MealMaster } from '../../../models/meal-master';
 import type { Measurement } from '../../../models/measurement';
@@ -22,6 +22,7 @@ import {
 import type { Weight } from '../../../models/weight';
 import type { Wellness } from '../../../models/wellness';
 import { ClientDetailService } from '../../../services/client-detail.service';
+import { FilesAttachmentsService } from '../../../services/files-attachments.service';
 import { MeasurementsDialogComponent } from '../measurements-dialog/measurements-dialog.component';
 import { ProgressDateRangeFilterComponent } from '../progress-date-range-filter/progress-date-range-filter.component';
 import { ProgressLineChartComponent } from '../progress-line-chart/progress-line-chart.component';
@@ -88,6 +89,7 @@ export class ClientDetailPageComponent {
   private readonly router = inject(Router);
 
   private readonly clientDetailService = inject(ClientDetailService);
+  private readonly filesApi = inject(FilesAttachmentsService);
 
 
 
@@ -119,6 +121,8 @@ export class ClientDetailPageComponent {
   readonly progressImagesDialogOpen = signal(false);
   readonly progressImageEditOpen = signal(false);
   readonly progressImageEditing = signal<ProgressImage | null>(null);
+  readonly removingAttachment = signal<Extract<FilesAttachmentField, 'meal' | 'workout'> | null>(null);
+  readonly fileError = signal<string | null>(null);
 
 
 
@@ -593,6 +597,24 @@ export class ClientDetailPageComponent {
     if (current) {
       this.detail.set({ ...current, filesAttachment });
     }
+  }
+
+  removeFilesAttachment(field: Extract<FilesAttachmentField, 'meal' | 'workout'>): void {
+    const current = this.detail()?.filesAttachment;
+    if (!current?._id || this.removingAttachment()) return;
+
+    this.removingAttachment.set(field);
+    this.fileError.set(null);
+    this.filesApi.clearField(current, field).subscribe({
+      next: (files) => {
+        this.removingAttachment.set(null);
+        this.onFilesAttachmentSaved(files);
+      },
+      error: (err: Error) => {
+        this.removingAttachment.set(null);
+        this.fileError.set(err.message || 'No se pudo eliminar el archivo.');
+      },
+    });
   }
 
   onMealsDeleted(): void {

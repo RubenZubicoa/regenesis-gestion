@@ -151,18 +151,36 @@
           (change)="onFileSelected($event)"
         />
         <label class="file-btn" for="meal-attachment">
-          {{ attachmentFile() ? 'Cambiar archivo' : 'Adjuntar archivo' }}
+          {{ attachmentFile() || existingAttachment() ? 'Cambiar archivo' : 'Adjuntar archivo' }}
         </label>
         <span class="file-name">{{ attachmentLabel() }}</span>
-        @if (existingAttachment() && !attachmentFile()) {
-          <a
-            class="file-open"
-            [href]="existingAttachment()"
-            target="_blank"
-            rel="noopener noreferrer">
-            Abrir
-          </a>
-        }
+        <div class="file-actions">
+          @if (existingAttachment() && !attachmentFile()) {
+            <a
+              class="file-open"
+              [href]="existingAttachment()"
+              target="_blank"
+              rel="noopener noreferrer">
+              Abrir
+            </a>
+            <button
+              type="button"
+              class="file-remove"
+              (click)="removeAttachment()"
+              [disabled]="saving() || deleting() || removingAttachment()">
+              {{ removingAttachment() ? 'Eliminando…' : 'Eliminar' }}
+            </button>
+          }
+          @if (attachmentFile()) {
+            <button
+              type="button"
+              class="file-remove"
+              (click)="clearPendingAttachment()"
+              [disabled]="saving() || deleting() || removingAttachment()">
+              Quitar
+            </button>
+          }
+        </div>
       </div>
     </div>
 
@@ -176,15 +194,23 @@
           type="button"
           class="danger-btn"
           (click)="remove()"
-          [disabled]="saving() || deleting()">
+          [disabled]="saving() || deleting() || removingAttachment()">
           {{ deleting() ? 'Eliminando…' : 'Eliminar plan' }}
         </button>
       }
       <div class="board__foot-right">
-        <button type="button" class="ghost-btn" (click)="close()" [disabled]="saving() || deleting()">
+        <button
+          type="button"
+          class="ghost-btn"
+          (click)="close()"
+          [disabled]="saving() || deleting() || removingAttachment()">
           Cancelar
         </button>
-        <button type="button" class="gold-btn" (click)="save()" [disabled]="saving() || deleting()">
+        <button
+          type="button"
+          class="gold-btn"
+          (click)="save()"
+          [disabled]="saving() || deleting() || removingAttachment()">
           {{ saving() ? 'Guardando…' : 'Guardar plan' }}
         </button>
       </div>

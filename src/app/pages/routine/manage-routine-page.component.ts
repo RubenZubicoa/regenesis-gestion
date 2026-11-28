@@ -70,6 +70,7 @@ export class ManageRoutinePageComponent {
   readonly addDayOpen = signal(false);
   readonly attachmentFile = signal<File | null>(null);
   readonly filesAttachment = signal<FilesAttachment | null>(null);
+  readonly removingAttachment = signal(false);
 
   readonly filteredMasters = computed(() => {
     const q = this.masterQuery().trim().toLowerCase();
@@ -232,6 +233,32 @@ export class ManageRoutinePageComponent {
     this.saveOk.set(false);
   }
 
+  clearPendingAttachment(): void {
+    this.attachmentFile.set(null);
+    this.saveError.set(null);
+  }
+
+  removeAttachment(): void {
+    const current = this.filesAttachment();
+    if (!current?._id || !current.workout?.trim() || this.saving() || this.removingAttachment()) {
+      return;
+    }
+
+    this.removingAttachment.set(true);
+    this.saveError.set(null);
+    this.saveOk.set(false);
+    this.filesApi.clearField(current, 'workout').subscribe({
+      next: (files) => {
+        this.removingAttachment.set(false);
+        this.filesAttachment.set(files);
+      },
+      error: (err: Error) => {
+        this.removingAttachment.set(false);
+        this.saveError.set(err.message || 'No se pudo eliminar el archivo.');
+      },
+    });
+  }
+
   removeExercise(dayUid: string, exerciseUid: string): void {
     this.days.update((list) =>
       list.map((d) =>
@@ -301,6 +328,8 @@ export class ManageRoutinePageComponent {
   }
 
   save(): void {
+    if (this.saving() || this.removingAttachment()) return;
+
     const clientId = this.clientId();
     const days = this.days();
 
