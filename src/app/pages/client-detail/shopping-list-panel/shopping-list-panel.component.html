@@ -1,0 +1,44 @@
+<div class="panel-block">
+  <div class="panel-block__head">
+    <h2>Lista de la compra</h2>
+    <button
+      type="button"
+      class="action-btn"
+      (click)="save()"
+      [disabled]="saving() || !file()">
+      {{ saving() ? 'Guardando…' : 'Guardar lista' }}
+    </button>
+  </div>
+
+  <div class="attach">
+    <span>Archivo</span>
+    <div class="file-row">
+      <input
+        id="shopping-list-file"
+        class="file-input"
+        type="file"
+        (change)="onFileSelected($event)"
+      />
+      <label class="file-btn" for="shopping-list-file">
+        {{ file() ? 'Cambiar archivo' : 'Adjuntar archivo' }}
+      </label>
+      <span class="file-name">{{ fileLabel() }}</span>
+      @if (currentUrl() && !file()) {
+        <a
+          class="file-open"
+          [href]="currentUrl()"
+          target="_blank"
+          rel="noopener noreferrer">
+          Abrir
+        </a>
+      }
+    </div>
+  </div>
+
+  @if (saveOk() && !file()) {
+    <p class="state state--ok">Lista de la compra guardada.</p>
+  }
+  @if (error()) {
+    <p class="state state--error">{{ error() }}</p>
+  }
+</div>

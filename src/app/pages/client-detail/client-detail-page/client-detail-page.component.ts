@@ -36,6 +36,7 @@ import { PasswordDialogComponent } from '../../clients/password-dialog.component
 import { PhaseDialogComponent } from '../../clients/phase-dialog.component';
 import { MacrosDialogComponent } from '../macros-dialog/macros-dialog.component';
 import { MealsDialogComponent } from '../meals-dialog/meals-dialog.component';
+import { ShoppingListPanelComponent } from '../shopping-list-panel/shopping-list-panel.component';
 import { LoadMealPlanDialogComponent } from '../load-meal-plan-dialog/load-meal-plan-dialog.component';
 import { RenewPlanDialogComponent } from '../renew-plan-dialog/renew-plan-dialog.component';
 import { SupplementsDialogComponent } from '../supplements-dialog/supplements-dialog.component';
@@ -56,6 +57,7 @@ type TabKey = 'nutrition' | 'training' | 'progress';
     RouterLink,
     MacrosDialogComponent,
     MealsDialogComponent,
+    ShoppingListPanelComponent,
     LoadMealPlanDialogComponent,
     SupplementsDialogComponent,
     PasswordDialogComponent,

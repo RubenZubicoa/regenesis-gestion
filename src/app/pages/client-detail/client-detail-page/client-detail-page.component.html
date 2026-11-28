@@ -230,6 +230,12 @@
           }
         </div>
 
+        <app-shopping-list-panel
+          [clientId]="d.client._id"
+          [filesAttachment]="d.filesAttachment"
+          (saved)="onFilesAttachmentSaved($event)"
+        />
+
         <div class="panel-block">
           <div class="panel-block__head">
             <h2>Suplementación</h2>
