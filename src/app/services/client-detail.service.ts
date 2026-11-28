@@ -8,6 +8,7 @@ import {
   projectClientMeasurements,
   projectClientWellness,
   normalizeClient,
+  normalizeFilesAttachment,
   normalizeMacros,
   normalizeMeal,
   normalizeMeasurement,
@@ -49,6 +50,11 @@ export class ClientDetailService {
         .pipe(catchError(() => of(null))),
       meal: this.api
         .get<unknown>(`/api/meals/client/${encodeURIComponent(clientId)}`)
+        .pipe(catchError(() => of(null))),
+      filesAttachment: this.api
+        .getOptional<unknown>(
+          `/api/files-attachments/client/${encodeURIComponent(clientId)}`,
+        )
         .pipe(catchError(() => of(null))),
       supplements: this.api
         .get<unknown>(`/api/supplements/${encodeURIComponent(clientId)}`)
@@ -118,6 +124,9 @@ export class ClientDetailService {
           weight: payload.weight ? normalizeWeight(payload.weight) : null,
           macros: payload.macros ? normalizeMacros(payload.macros) : null,
           meal: payload.meal ? normalizeMeal(payload.meal) : null,
+          filesAttachment: payload.filesAttachment
+            ? normalizeFilesAttachment(payload.filesAttachment)
+            : null,
           supplements: payload.supplements ? normalizeSupplements(payload.supplements) : null,
           routineDays: asRecordArray(payload.routineDays).map(normalizeRoutineDay),
           workoutHistory: asRecordArray(payload.workoutHistory).map(normalizeWorkoutHistory),

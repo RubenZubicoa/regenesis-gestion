@@ -3,14 +3,16 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { catchError, forkJoin, of, switchMap } from 'rxjs';
+import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
 
 import type { ExerciseCategory, ExerciseMaster } from '../../models/exercise-master';
 import { categoryMatches } from '../../models/exercise-master';
+import { filesAttachmentName, type FilesAttachment } from '../../models/files-attachment';
 import type { RoutineExercise } from '../../models/routine-day';
 import type { RoutineMaster } from '../../models/routine-master';
 import { ExerciseCategoriesService } from '../../services/exercise-categories.service';
 import { ExerciseMastersService } from '../../services/exercise-masters.service';
+import { FilesAttachmentsService } from '../../services/files-attachments.service';
 import { RoutineMastersService } from '../../services/routine-masters.service';
 import { RoutineService } from '../../services/routine.service';
 import { AddDayDialogComponent } from './add-day-dialog.component';
@@ -42,6 +44,7 @@ export class ManageRoutinePageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly routineService = inject(RoutineService);
+  private readonly filesApi = inject(FilesAttachmentsService);
   private readonly routineMastersApi = inject(RoutineMastersService);
   private readonly exerciseMasters = inject(ExerciseMastersService);
   private readonly categoriesApi = inject(ExerciseCategoriesService);
@@ -65,6 +68,8 @@ export class ManageRoutinePageComponent {
   readonly masterCategoryFilter = signal('all');
   readonly activeDayUid = signal<string | null>(null);
   readonly addDayOpen = signal(false);
+  readonly attachmentFile = signal<File | null>(null);
+  readonly filesAttachment = signal<FilesAttachment | null>(null);
 
   readonly filteredMasters = computed(() => {
     const q = this.masterQuery().trim().toLowerCase();
@@ -104,6 +109,7 @@ export class ManageRoutinePageComponent {
           return forkJoin({
             client: this.routineService.loadClient(id),
             days: this.routineService.listByClient(id),
+            filesAttachment: this.filesApi.getByClient(id).pipe(catchError(() => of(null))),
             masters: this.exerciseMasters.list(),
             categories: this.categoriesApi.list().pipe(catchError(() => of([]))),
             templates: this.routineMastersApi.list().pipe(catchError(() => of([]))),
@@ -128,6 +134,8 @@ export class ManageRoutinePageComponent {
           this.days.set(editable);
           this.originalIds.set(payload.days.map((d) => d._id));
           this.activeDayUid.set(editable[0]?.uid ?? null);
+          this.attachmentFile.set(null);
+          this.filesAttachment.set(payload.filesAttachment);
           this.loading.set(false);
         },
         error: (err: Error) => {
@@ -201,6 +209,26 @@ export class ManageRoutinePageComponent {
     this.days.update((list) =>
       list.map((d) => (d.uid === uid ? { ...d, [field]: value } : d)),
     );
+    this.saveOk.set(false);
+  }
+
+  attachmentLabel(): string {
+    const selected = this.attachmentFile();
+    if (selected) return selected.name;
+    return filesAttachmentName(this.filesAttachment()?.workout) || 'Sin archivo';
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const selected = input.files?.[0] ?? null;
+    input.value = '';
+    if (!selected) return;
+    if (selected.size > 10 * 1024 * 1024) {
+      this.saveError.set('El archivo no puede superar 10 MB.');
+      return;
+    }
+    this.saveError.set(null);
+    this.attachmentFile.set(selected);
     this.saveOk.set(false);
   }
 
@@ -313,12 +341,27 @@ export class ManageRoutinePageComponent {
           exercises: d.exercises,
         })),
       )
+      .pipe(
+        switchMap((saved) => {
+          const file = this.attachmentFile();
+          if (!file) return of(saved);
+          return this.filesApi
+            .upsertField(clientId, this.filesAttachment(), 'workout', file)
+            .pipe(
+              map((files) => {
+                this.filesAttachment.set(files);
+                return saved;
+              }),
+            );
+        }),
+      )
       .subscribe({
         next: (saved) => {
           const editable = saved.map((day) => this.toEditableDay(day));
           this.days.set(editable);
           this.originalIds.set(saved.map((d) => d._id));
           this.activeDayUid.set(editable[0]?.uid ?? null);
+          this.attachmentFile.set(null);
           this.saving.set(false);
           this.saveOk.set(true);
         },

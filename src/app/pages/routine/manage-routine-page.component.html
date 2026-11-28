@@ -30,6 +30,33 @@
       <p class="banner-error">{{ saveError() }}</p>
     }
 
+    <div class="attach">
+      <span>Archivo adjunto</span>
+      <div class="file-row">
+        <input
+          id="routine-attachment"
+          class="file-input"
+          type="file"
+          (change)="onFileSelected($event)"
+        />
+        <label class="file-btn" for="routine-attachment">
+          {{ attachmentFile() ? 'Cambiar archivo' : 'Adjuntar archivo' }}
+        </label>
+        <span class="file-name">{{ attachmentLabel() }}</span>
+        @if (!attachmentFile()) {
+          @if (filesAttachment()?.workout; as workoutFile) {
+            <a
+              class="file-open"
+              [href]="workoutFile"
+              target="_blank"
+              rel="noopener noreferrer">
+              Abrir
+            </a>
+          }
+        }
+      </div>
+    </div>
+
     <div class="board">
       <aside class="library">
         <div class="library__head">

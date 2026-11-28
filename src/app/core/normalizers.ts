@@ -5,6 +5,7 @@ import {
   type DailyStepsChartDay,
 } from '../models/daily-steps';
 import type { Macros } from '../models/macros';
+import type { FilesAttachment } from '../models/files-attachment';
 import { readMealIngredients, type Meal } from '../models/meal';
 import type { MealMaster } from '../models/meal-master';
 import type { Measurement } from '../models/measurement';
@@ -183,6 +184,19 @@ function unwrapMealEntity(raw: unknown): unknown {
     if (Array.isArray(inner['slots'])) return nested;
   }
   return raw;
+}
+
+export function normalizeFilesAttachment(raw: unknown): FilesAttachment {
+  const r = asApiRecord(raw);
+  return {
+    _id: normalizeId(r['_id']),
+    clientId: normalizeId(r['clientId']),
+    meal: str(r, 'meal'),
+    workout: str(r, 'workout') || str(r, 'worlout'),
+    shoppingList: str(r, 'shoppingList'),
+    createdAt: str(r, 'createdAt'),
+    updatedAt: str(r, 'updatedAt'),
+  };
 }
 
 export function normalizeMealMaster(raw: unknown): MealMaster {

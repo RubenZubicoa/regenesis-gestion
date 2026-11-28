@@ -8,6 +8,7 @@ import type { Client } from '../../../models/client';
 import type { ClientDetail } from '../../../models/client-detail';
 import { latestDailyStepsGoal, type DailySteps } from '../../../models/daily-steps';
 import type { Macros } from '../../../models/macros';
+import type { FilesAttachment } from '../../../models/files-attachment';
 import type { Meal, MealSlot } from '../../../models/meal';
 import type { MealMaster } from '../../../models/meal-master';
 import type { Measurement } from '../../../models/measurement';
@@ -583,6 +584,13 @@ export class ClientDetailPageComponent {
       this.detail.set({ ...current, meal });
     }
     this.closeMealsDialog();
+  }
+
+  onFilesAttachmentSaved(filesAttachment: FilesAttachment): void {
+    const current = this.detail();
+    if (current) {
+      this.detail.set({ ...current, filesAttachment });
+    }
   }
 
   onMealsDeleted(): void {

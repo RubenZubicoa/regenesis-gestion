@@ -349,6 +349,7 @@ export function getClientDetail(clientId: string): ClientDetail | null {
     weight,
     macros: MOCK_MACROS[clientId] ?? fallbackMacros(clientId),
     meal: MOCK_MEALS[clientId] ?? fallbackMeal(clientId),
+    filesAttachment: null,
     supplements: MOCK_SUPPLEMENTS[clientId] ?? { _id: `sup-${clientId}`, clientId, elements: [] },
     routineDays: MOCK_ROUTINE[clientId] ?? fallbackRoutine(clientId),
     workoutHistory: MOCK_WORKOUTS[clientId] ?? [],

@@ -141,6 +141,31 @@
       }
     </div>
 
+    <div class="attach">
+      <span>Archivo adjunto</span>
+      <div class="file-row">
+        <input
+          id="meal-attachment"
+          class="file-input"
+          type="file"
+          (change)="onFileSelected($event)"
+        />
+        <label class="file-btn" for="meal-attachment">
+          {{ attachmentFile() ? 'Cambiar archivo' : 'Adjuntar archivo' }}
+        </label>
+        <span class="file-name">{{ attachmentLabel() }}</span>
+        @if (existingAttachment() && !attachmentFile()) {
+          <a
+            class="file-open"
+            [href]="existingAttachment()"
+            target="_blank"
+            rel="noopener noreferrer">
+            Abrir
+          </a>
+        }
+      </div>
+    </div>
+
     @if (saveError()) {
       <p class="board__error">{{ saveError() }}</p>
     }

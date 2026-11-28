@@ -84,9 +84,7 @@ export class RoutineService {
         return forkJoin(
           days.map((day) => {
             const payload = this.toPayload(clientId, day);
-            return day._id
-              ? this.update(day._id, payload)
-              : this.create(payload);
+            return day._id ? this.update(day._id, payload) : this.create(payload);
           }),
         );
       }),

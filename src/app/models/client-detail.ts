@@ -1,5 +1,6 @@
 import type { Client } from './client';
 import type { DailySteps } from './daily-steps';
+import type { FilesAttachment } from './files-attachment';
 import type { Macros } from './macros';
 import type { Meal } from './meal';
 import type { Measurement } from './measurement';
@@ -21,6 +22,7 @@ export interface ClientDetail {
   weight: Weight | null;
   macros: Macros | null;
   meal: Meal | null;
+  filesAttachment: FilesAttachment | null;
   supplements: Supplements | null;
   routineDays: RoutineDay[];
   workoutHistory: WorkoutHistory[];

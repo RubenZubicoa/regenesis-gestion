@@ -1,12 +1,15 @@
 import { Component, HostListener, computed, inject, input, OnInit, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { map, of, switchMap } from 'rxjs';
 
+import { filesAttachmentName, type FilesAttachment } from '../../../models/files-attachment';
 import type { Meal, MealOption, MealOptionDraft, MealSlot } from '../../../models/meal';
 import {
   emptyMealOptionDraft,
   toMealOption,
   toMealOptionDraft,
 } from '../../../models/meal';
+import { FilesAttachmentsService } from '../../../services/files-attachments.service';
 import { MealsService } from '../../../services/meals.service';
 
 export interface EditableSlot {
@@ -33,13 +36,16 @@ const SLOT_PRESETS: EditableSlot[] = [
 })
 export class MealsDialogComponent implements OnInit {
   private readonly mealsService = inject(MealsService);
+  private readonly filesApi = inject(FilesAttachmentsService);
 
   readonly clientId = input.required<string>();
   readonly clientName = input.required<string>();
   readonly meal = input<Meal | null>(null);
   readonly seed = input<MealSlot[] | null>(null);
+  readonly filesAttachment = input<FilesAttachment | null>(null);
 
   readonly saved = output<Meal>();
+  readonly filesSaved = output<FilesAttachment>();
   readonly deleted = output<void>();
   readonly closed = output<void>();
 
@@ -48,6 +54,8 @@ export class MealsDialogComponent implements OnInit {
   readonly saving = signal(false);
   readonly deleting = signal(false);
   readonly saveError = signal<string | null>(null);
+  readonly attachmentFile = signal<File | null>(null);
+  readonly existingAttachment = signal('');
 
   readonly activeSlot = computed(() => {
     const list = this.slots();
@@ -75,6 +83,8 @@ export class MealsDialogComponent implements OnInit {
       );
     }
     this.activeIndex.set(0);
+    this.attachmentFile.set(null);
+    this.existingAttachment.set(this.filesAttachment()?.meal ?? '');
   }
 
   get isEdit(): boolean {
@@ -240,6 +250,25 @@ export class MealsDialogComponent implements OnInit {
     );
   }
 
+  attachmentLabel(): string {
+    const selected = this.attachmentFile();
+    if (selected) return selected.name;
+    return filesAttachmentName(this.existingAttachment()) || 'Sin archivo';
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const selected = input.files?.[0] ?? null;
+    input.value = '';
+    if (!selected) return;
+    if (selected.size > 10 * 1024 * 1024) {
+      this.saveError.set('El archivo no puede superar 10 MB.');
+      return;
+    }
+    this.saveError.set(null);
+    this.attachmentFile.set(selected);
+  }
+
   close(): void {
     if (this.saving() || this.deleting()) return;
     this.closed.emit();
@@ -252,16 +281,28 @@ export class MealsDialogComponent implements OnInit {
 
     this.saving.set(true);
     this.saveError.set(null);
-    this.mealsService.save(this.clientId(), this.meal(), payload).subscribe({
-      next: (meal) => {
-        this.saving.set(false);
-        this.saved.emit(meal);
-      },
-      error: (err: Error) => {
-        this.saving.set(false);
-        this.saveError.set(err.message);
-      },
-    });
+    this.mealsService
+      .save(this.clientId(), this.meal(), payload)
+      .pipe(
+        switchMap((meal) => {
+          const file = this.attachmentFile();
+          if (!file) return of({ meal, files: null as FilesAttachment | null });
+          return this.filesApi
+            .upsertField(this.clientId(), this.filesAttachment(), 'meal', file)
+            .pipe(map((files) => ({ meal, files })));
+        }),
+      )
+      .subscribe({
+        next: ({ meal, files }) => {
+          this.saving.set(false);
+          if (files) this.filesSaved.emit(files);
+          this.saved.emit(meal);
+        },
+        error: (err: Error) => {
+          this.saving.set(false);
+          this.saveError.set(err.message);
+        },
+      });
   }
 
   remove(): void {

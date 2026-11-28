@@ -174,9 +174,20 @@
         <div class="panel-block">
           <div class="panel-block__head">
             <h2>Plan de comidas</h2>
-            <button type="button" class="action-btn" (click)="openMealsDialog()">
-              {{ d.meal ? 'Gestionar comidas' : 'Crear o cargar plan' }}
-            </button>
+            <div class="panel-block__actions">
+              @if (d.filesAttachment?.meal; as mealFile) {
+                <a
+                  class="action-btn action-btn--ghost"
+                  [href]="mealFile"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  Ver archivo
+                </a>
+              }
+              <button type="button" class="action-btn" (click)="openMealsDialog()">
+                {{ d.meal ? 'Gestionar comidas' : 'Crear o cargar plan' }}
+              </button>
+            </div>
           </div>
           @if (d.meal; as meal) {
             <div class="meal-timeline">
@@ -258,9 +269,20 @@
         <div class="panel-block">
           <div class="panel-block__head">
             <h2>Rutina semanal</h2>
-            <button type="button" class="action-btn" (click)="openRoutineManager()">
-              Gestionar rutina semanal
-            </button>
+            <div class="panel-block__actions">
+              @if (d.filesAttachment?.workout; as routineFile) {
+                <a
+                  class="action-btn action-btn--ghost"
+                  [href]="routineFile"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  Ver archivo
+                </a>
+              }
+              <button type="button" class="action-btn" (click)="openRoutineManager()">
+                Gestionar rutina semanal
+              </button>
+            </div>
           </div>
           @if (d.routineDays.length > 0) {
             <div class="routine-rail">
@@ -674,7 +696,9 @@
         [clientName]="d.client.fullName"
         [meal]="d.meal"
         [seed]="mealSeed()"
+        [filesAttachment]="d.filesAttachment"
         (saved)="onMealsSaved($event)"
+        (filesSaved)="onFilesAttachmentSaved($event)"
         (deleted)="onMealsDeleted()"
         (closed)="closeMealsDialog()"
       />
